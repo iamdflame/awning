@@ -1,0 +1,151 @@
+{
+  "about": "Edit list for the founder's three screen recordings (launch/RECORDING-RUNBOOK.md): public/rec/owner.mp4 (Claude: P1, the plan, the preview, P2, the PayBox approval, the live storefront), public/rec/buyer.mp4 (a different agent: Claude Code in Windows Terminal, connected to PayBox over MCP, same PayBox account, paying the shop's separate sales wallet: P3, the tool calls, the 5.00 USDC approval, the confirmation) and public/rec/owner-2.mp4 (Claude: P5, P6). All times are seconds in that recording; every rect is [x, y, width, height] as fractions of the recording frame (0-1). A beat plays its segments in order at normal speed: cut the waits, never speed anything up. A beat with no segments keeps its placeholder card in the film. 'crop' is the part of the recording shown inside the film's frame (the defaults cut Chrome's tabs and address bar, or the terminal's tab bar, at the top and the Windows taskbar at the bottom of a full-screen 1920x1080 recording). 'frame' is the window the film draws around it (browser, or terminal for the buyer); 'url' is what the browser frame's address bar shows, 'title' the terminal's tab. 'zoom' keys frame a rect by that time (the film keeps 16:9 around it; null goes back to the whole page); 'blur' hides a rect between two times (the owner token awn_ot_... wherever it shows); 'type' marks when the prompt's first and last characters were typed, so the big caption types in step; 'approve' rings the PayBox approval at that moment, with a chime. Read the times off any player that shows seconds (VLC: View > Status bar, or MPC-HC), then run npm run render:main.",
+  "owner": {
+    "file": "rec/owner.mp4",
+    "url": "claude.ai",
+    "crop": [
+      0,
+      0.075,
+      1,
+      0.88
+    ],
+    "beats": {
+      "p1-type": {
+        "what": "A new chat with PayBox connected. P1 typed and sent.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P1"
+        },
+        "zoom": [],
+        "blur": []
+      },
+      "plan": {
+        "what": "awning_plan answers: the name, the offers with prices, the domains with totals, the preview link. Hold 3 s.",
+        "segments": [],
+        "zoom": [],
+        "blur": []
+      },
+      "preview": {
+        "what": "The preview link opened: the draft storefront with the 'Preview, not open yet' ribbon, scrolled to the offers.",
+        "url": null,
+        "segments": [],
+        "zoom": [],
+        "blur": []
+      },
+      "p2-approve": {
+        "what": "P2 typed and sent; awning_open proposes; the PayBox approval shows the amount in USDC on Base; approved with the passkey.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P2"
+        },
+        "approve": {
+          "at": null,
+          "rect": [
+            0.36,
+            0.3,
+            0.28,
+            0.42
+          ]
+        },
+        "zoom": [],
+        "blur": []
+      },
+      "live-answer": {
+        "what": "The paid response: 'live at ...', the steps, the awning.sh address (liveNowAt). Blur the owner token if it shows.",
+        "segments": [],
+        "zoom": [],
+        "blur": []
+      },
+      "live-store": {
+        "what": "The awning.sh address opened: the live storefront, scrolled from the top to the 'Buy with your AI agent' box.",
+        "url": null,
+        "segments": [],
+        "zoom": [],
+        "blur": []
+      }
+    }
+  },
+  "buyer": {
+    "file": "rec/buyer.mp4",
+    "frame": "terminal",
+    "title": "Claude Code",
+    "url": "terminal",
+    "crop": [
+      0,
+      0.04,
+      1,
+      0.915
+    ],
+    "beats": {
+      "p3-find": {
+        "what": "Claude Code in Windows Terminal (a different agent; same PayBox account). P3 typed and sent; PayBox discover_plugins / use_plugin, then Awning awning_find: Ridge Roast and the $5 tasting.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P3"
+        },
+        "zoom": [],
+        "blur": []
+      },
+      "p4-buy": {
+        "what": "P4 typed and sent; awning_buy proposes; the PayBox approval for 5.00 USDC to the owner's sales wallet (a browser or passkey prompt may appear); approved; the confirmation with the order code.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P4"
+        },
+        "approve": {
+          "at": null,
+          "rect": [
+            0.36,
+            0.3,
+            0.28,
+            0.42
+          ]
+        },
+        "zoom": [],
+        "blur": []
+      }
+    }
+  },
+  "owner2": {
+    "file": "rec/owner-2.mp4",
+    "url": "claude.ai",
+    "crop": [
+      0,
+      0.075,
+      1,
+      0.88
+    ],
+    "beats": {
+      "p5-offer": {
+        "what": "P5 typed and sent; awning_add_offer confirms the $30 monthly box.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P5"
+        },
+        "zoom": [],
+        "blur": []
+      },
+      "p6-orders": {
+        "what": "P6 typed and sent; awning_orders lists the 5.00 USDC order, paid, with its transaction. Hold 3 s.",
+        "segments": [],
+        "type": {
+          "start": null,
+          "end": null,
+          "prompt": "P6"
+        },
+        "zoom": [],
+        "blur": []
+      }
+    }
+  }
+}
