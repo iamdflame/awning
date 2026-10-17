@@ -1,0 +1,92 @@
+{
+  "about": "Every third-party file the film uses, where it comes from and under which license. scripts/fetch-assets.mjs downloads them (none are committed: the licenses allow use in the film, not redistribution of the files on their own). CREDITS.md is the human-readable list.",
+  "stock": [
+    {
+      "id": "roast",
+      "file": "public/stock/roast.mp4",
+      "url": "https://assets.mixkit.co/videos/4676/4676-1080.mp4",
+      "page": "https://mixkit.co/free-stock-video/person-roasting-coffee-beans-4676/",
+      "title": "Person roasting coffee beans",
+      "author": "Mixkit (no individual creator credited on the page)",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "pageLicenseMarker": "videoFree"
+    },
+    {
+      "id": "market",
+      "file": "public/stock/market.mp4",
+      "url": "https://assets.mixkit.co/videos/991/991-1080.mp4",
+      "page": "https://mixkit.co/free-stock-video/slow-motion-video-of-a-fruit-and-veggie-stand-991/",
+      "title": "Slow motion video of a fruit and veggie stand",
+      "author": "Mixkit (no individual creator credited on the page)",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "pageLicenseMarker": "videoFree"
+    },
+    {
+      "id": "bike",
+      "file": "public/stock/bike.mp4",
+      "url": "https://assets.mixkit.co/videos/41935/41935-1080.mp4",
+      "page": "https://mixkit.co/free-stock-video/man-maintaining-a-motorcycle-41935/",
+      "title": "Man maintaining a motorcycle",
+      "author": "Mixkit (no individual creator credited on the page)",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "pageLicenseMarker": "videoFree"
+    },
+    {
+      "id": "pottery",
+      "file": "public/stock/pottery.mp4",
+      "url": "https://assets.mixkit.co/videos/1975/1975-1080.mp4",
+      "page": "https://mixkit.co/free-stock-video/a-female-ceramic-artist-working-1975/",
+      "title": "A female ceramic artist working",
+      "author": "Mixkit (no individual creator credited on the page)",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "pageLicenseMarker": "videoFree"
+    },
+    {
+      "id": "shutter",
+      "file": "public/stock/shutter.mp4",
+      "url": "https://assets.mixkit.co/videos/817/817-1080.mp4",
+      "page": "https://mixkit.co/free-stock-video/barista-cleaning-a-coffee-machine-817/",
+      "title": "Barista cleaning a coffee machine",
+      "author": "Mixkit (no individual creator credited on the page)",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "pageLicenseMarker": "videoFree"
+    }
+  ],
+  "music": [
+    {
+      "id": "music",
+      "file": "public/audio/stock-music.mp3",
+      "url": "https://assets.mixkit.co/music/852/852.mp3",
+      "page": "https://mixkit.co/free-stock-music/mood/happy/",
+      "title": "Music and Life",
+      "author": "Michael Ramir C.",
+      "license": "Mixkit Stock Music Free License",
+      "licenseUrl": "https://mixkit.co/license/#musicFree"
+    }
+  ],
+  "sfx": [
+    { "id": "print", "file": "public/audio/sfx/print.wav", "url": "https://assets.mixkit.co/active_storage/sfx/1371/1371.wav", "page": "https://mixkit.co/free-sound-effects/discover/typewriter/", "title": "Vintage dot printing", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" },
+    { "id": "chime", "file": "public/audio/sfx/chime.wav", "url": "https://assets.mixkit.co/active_storage/sfx/2867/2867.wav", "page": "https://mixkit.co/free-sound-effects/discover/notification/", "title": "Confirmation tone", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" },
+    { "id": "pop", "file": "public/audio/sfx/pop.wav", "url": "https://assets.mixkit.co/active_storage/sfx/2357/2357.wav", "page": "https://mixkit.co/free-sound-effects/discover/pop/", "title": "Bubble pop up alert notification", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" },
+    { "id": "cloth", "file": "public/audio/sfx/cloth.wav", "url": "https://assets.mixkit.co/active_storage/sfx/1898/1898.wav", "page": "https://mixkit.co/free-sound-effects/discover/cloth/", "title": "Cloth slide out", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" },
+    { "id": "type", "file": "public/audio/sfx/type.wav", "url": "https://assets.mixkit.co/active_storage/sfx/1376/1376.wav", "page": "https://mixkit.co/free-sound-effects/discover/typewriter/", "title": "Typing on an electronic device", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" },
+    { "id": "bell", "file": "public/audio/sfx/bell.wav", "url": "https://assets.mixkit.co/active_storage/sfx/931/931.wav", "page": "https://mixkit.co/free-sound-effects/discover/bell/", "title": "Service bell", "author": "Mixkit", "license": "Mixkit Sound Effects Free License", "licenseUrl": "https://mixkit.co/license/#sfxFree" }
+  ],
+  "fonts": [
+    { "id": "archivo", "file": "public/fonts/Archivo-VF.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivo/Archivo%5Bwdth,wght%5D.ttf", "title": "Archivo (variable)", "author": "Omnibus-Type", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "martian", "file": "public/fonts/MartianMono-VF.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/martianmono/MartianMono%5Bwdth,wght%5D.ttf", "title": "Martian Mono (variable)", "author": "Evil Martians", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "alfa", "file": "public/fonts/AlfaSlabOne-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/alfaslabone/AlfaSlabOne-Regular.ttf", "title": "Alfa Slab One", "author": "JM Solé", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "bigshoulders", "file": "public/fonts/BigShouldersDisplay-VF.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/bigshouldersdisplay/BigShouldersDisplay%5Bwght%5D.ttf", "title": "Big Shoulders Display", "author": "Patric King", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "youngserif", "file": "public/fonts/YoungSerif-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/youngserif/YoungSerif-Regular.ttf", "title": "Young Serif", "author": "Bastien Sozeau", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "shrikhand", "file": "public/fonts/Shrikhand-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/shrikhand/Shrikhand-Regular.ttf", "title": "Shrikhand", "author": "Jonny Pinhorn", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "rubikmono", "file": "public/fonts/RubikMonoOne-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/rubikmonoone/RubikMonoOne-Regular.ttf", "title": "Rubik Mono One", "author": "Hubert and Fischer", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "gloock", "file": "public/fonts/Gloock-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/gloock/Gloock-Regular.ttf", "title": "Gloock", "author": "Duarte Pinto", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "bagel", "file": "public/fonts/BagelFatOne-Regular.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/bagelfatone/BagelFatOne-Regular.ttf", "title": "Bagel Fat One", "author": "Kyungwon Kim, JAMO", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" },
+    { "id": "worksans", "file": "public/fonts/WorkSans-VF.ttf", "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans%5Bwght%5D.ttf", "title": "Work Sans (variable)", "author": "Wei Huang", "license": "SIL Open Font License 1.1", "licenseUrl": "https://openfontlicense.org" }
+  ]
+}
