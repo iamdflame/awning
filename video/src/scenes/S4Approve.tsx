@@ -72,7 +72,8 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
                 startSec={0.2}
                 holdAt={2.6}
                 urlHighlight={interpolate(f, [tReal - 2, tReal + 10], [0, 1], { ...clamp, easing: EASE.out })}
-                cam={[{ at: 0, x: 0.5, y: 0.5, z: 1.1 }, { at: 54, x: 0.5, y: 0.5, z: 1, ease: "out" }]}
+                // framed on the name and the two offers it opened with (the $30 box below came later)
+                cam={[{ at: 0, x: 0.5, y: 0.46, z: 1.3 }, { at: 54, x: 0.5, y: 0.468, z: 1.2, ease: "out" }]}
               />
             ) : (
               <RecordingBeat who="owner" beat="live-store" file={ownerFile} width={FW} height={FH} slot={timing.frames - slotStore} />

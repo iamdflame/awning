@@ -38,7 +38,7 @@ for (const who of ["owner", "buyer", "owner2"]) {
   }
   console.log(`${who}: preparing ${rec.file} → ${path.relative(VIDEO, out)} …`);
   const tmp = out + ".part.mp4";
-  const r = spawnSync(ffmpegPath(), ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-an", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "15", "-g", "30", "-keyint_min", "30", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["ignore", "inherit", "inherit"] });
+  const r = spawnSync(ffmpegPath(), ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-an", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "15", "-g", "30", "-keyint_min", "30", "-bf", "0", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["ignore", "inherit", "inherit"] });
   if (r.status !== 0) throw new Error(`ffmpeg failed preparing ${rec.file}`);
   fs.renameSync(tmp, out);
   index[rec.file] = fp;

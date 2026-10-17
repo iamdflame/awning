@@ -94,6 +94,7 @@ export type CaptureShot = {
   capturedAt: string;
   realtime?: { file: string; width: number; height: number; fps: number };
   data?: Record<string, unknown>;
+  still?: string; // a one-frame capture (a third-party page)
 };
 export type CaptureManifest = {
   shots: Record<string, CaptureShot>;
@@ -116,6 +117,10 @@ export async function resolveAssets(): Promise<Assets> {
   const capture = (await json<CaptureManifest>("capture/manifest.json")) ?? { shots: {} };
   // keep only clips whose files are really there
   for (const [k, s] of Object.entries(capture.shots)) {
+    if (s.still) {
+      if (!(await exists(s.still))) delete capture.shots[k];
+      continue;
+    }
     const stepped = s.file && (await exists(s.file));
     if (!stepped) {
       if (s.realtime && (await exists(s.realtime.file))) capture.shots[k] = { ...s, file: s.realtime.file, width: s.realtime.width, height: s.realtime.height, fps: s.realtime.fps };

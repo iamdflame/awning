@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { SHOTS } from "./shots.mjs";
-import { launch, captureStepped, captureRealtime, readManifest, writeManifest, OUT, VIDEO } from "./lib.mjs";
+import { launch, captureStepped, captureRealtime, captureStill, readManifest, writeManifest, OUT, VIDEO } from "./lib.mjs";
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
@@ -93,7 +93,7 @@ try {
     if (only && !only.includes(shot.id)) continue;
     const p = await plan(shot);
     const run = { ...shot, url: p.url ?? shot.url };
-    console.log(`${shot.id} ← ${p.url ?? new URL(shot.path, p.base).toString()} (${p.source})`);
+    console.log(`${shot.id} ← ${run.url ?? new URL(shot.path, p.base).toString()} (${p.source})`);
     let sale;
     if (shot.actions?.some((a) => a.sale) && p.source === "local-mock" && !p.noSale) {
       const L = await useLocal();
@@ -102,6 +102,13 @@ try {
       if (ridge && offer) sale = async () => L.localSale(ridge.slug, offer.sku);
     }
     const entry = { ...(manifest.shots[shot.id] ?? {}) };
+    if (shot.still) {
+      Object.assign(entry, await captureStill(browser, run, { base: p.base, source: p.source }));
+      entry.source = p.source;
+      manifest.shots[shot.id] = entry;
+      writeManifest(manifest);
+      continue;
+    }
     for (const mode of modes) {
       if (mode === "stepped") Object.assign(entry, await captureStepped(browser, run, { base: p.base, source: p.source, sale }));
       else entry.realtime = await captureRealtime(browser, run, { base: p.base, source: p.source, sale });

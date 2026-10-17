@@ -194,7 +194,7 @@ export async function captureStepped(browser, shot, { base, source, dsf = 2, qua
   fs.mkdirSync(path.join(OUT, "stills"), { recursive: true });
   const file = path.join(OUT, `${shot.id}.mp4`);
   const tmp = file + ".part.mp4";
-  const ff = spawn(ffmpegPath(), ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-g", "30", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["pipe", "inherit", "inherit"] });
+  const ff = spawn(ffmpegPath(), ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-g", "15", "-bf", "0", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["pipe", "inherit", "inherit"] });
   const ffDone = new Promise((res, rej) => ff.on("exit", (c) => (c === 0 ? res() : rej(new Error("ffmpeg exit " + c)))));
   const write = (buf) => new Promise((res) => (ff.stdin.write(buf) ? res() : ff.stdin.once("drain", res)));
 
@@ -237,6 +237,25 @@ export async function captureStepped(browser, shot, { base, source, dsf = 2, qua
   await context.close();
   log(`  ${shot.id}: ${frames} frames in ${((Date.now() - started) / 1000).toFixed(0)} s → ${path.relative(VIDEO, file)}`);
   return { id: shot.id, file: `capture/${shot.id}.mp4`, width: viewport.width * dsf, height: viewport.height * dsf, fps: FPS, frames, durationSec: shot.duration, url: meta.url, title: meta.title, source, displayUrl: shot.displayUrl ?? prettyUrl(meta.url, source), capturedAt: new Date().toISOString(), viewport, dsf, mode: "stepped" };
+}
+
+// ---------- a still (third-party pages: a plain page load, no virtual clock, one DSF 2 screenshot) ----------
+export async function captureStill(browser, shot, { base, source, dsf = 2, log = console.log } = {}) {
+  const viewport = shot.viewport ?? { width: 1536, height: 864 };
+  const context = await browser.newContext({ viewport, deviceScaleFactor: dsf, colorScheme: "light", locale: "en-US", timezoneId: "UTC", userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" });
+  const page = await context.newPage();
+  const url = shot.url ?? new URL(shot.path, base).toString();
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
+  await page.waitForTimeout(shot.settle ?? 4000);
+  if (shot.setup) await shot.setup(page);
+  await page.waitForTimeout(800);
+  fs.mkdirSync(path.join(OUT, "stills"), { recursive: true });
+  const file = path.join(OUT, "stills", `${shot.id}.png`);
+  await page.screenshot({ path: file, type: "png", scale: "device" });
+  const title = await page.title();
+  await context.close();
+  log(`  ${shot.id}: still → ${path.relative(VIDEO, file)} (${title})`);
+  return { id: shot.id, still: `capture/stills/${shot.id}.png`, file: `capture/stills/${shot.id}.png`, width: viewport.width * dsf, height: viewport.height * dsf, url, title, source, displayUrl: shot.displayUrl ?? prettyUrl(url, source), capturedAt: new Date().toISOString(), viewport, dsf, mode: "still" };
 }
 
 // ---------- realtime (Playwright recordVideo) ----------

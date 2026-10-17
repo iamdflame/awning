@@ -59,7 +59,7 @@ for (const group of ["fonts", "sfx", "music", "stock"]) {
         // 30 fps H.264 (no audio) so every frame the film asks for exists
         const src = out + ".src.mp4";
         fs.writeFileSync(src, buf);
-        const r = spawnSync(ffmpegPath(), ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-t", "14", "-an", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "17", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { encoding: "utf8" });
+        const r = spawnSync(ffmpegPath(), ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-t", "14", "-an", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "17", "-g", "15", "-bf", "0", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { encoding: "utf8" });
         fs.rmSync(src, { force: true });
         if (r.status !== 0) throw new Error("re-encode failed: " + r.stderr.slice(-300));
       } else fs.writeFileSync(out, buf);

@@ -316,68 +316,378 @@
     ],
     "beats": {
       "p3-find": {
-        "what": "A fresh Claude.ai chat (same PayBox account; it knows nothing about Ridge Roast). P3 typed and sent; awning_find returns Ridge Roast and the $5 tasting.",
-        "segments": [],
+        "what": "A fresh Claude.ai chat (same PayBox account; it knows nothing about Ridge Roast). The prompt pasted at 14.2 s (an earlier paste with a stray '1.' list marker is cut), sent at 21.7 s; 'I'll look up Awning through PayBox'; after the tool calls (20 s of loading and two permission prompts are cut), 'Ridge Roast's Tasting Session is the match at 5.00 USDC.'",
+        "segments": [
+          [
+            12.9,
+            15.5
+          ],
+          [
+            21.35,
+            23.6
+          ],
+          [
+            24.7,
+            26.1
+          ],
+          [
+            43.45,
+            45.38
+          ]
+        ],
         "type": {
-          "start": null,
-          "end": null,
-          "prompt": "P3"
+          "start": 14.2,
+          "end": 14.2,
+          "prompt": "P3",
+          "paste": true
         },
-        "zoom": [],
+        "zoom": [
+          {
+            "at": 12.9,
+            "rect": [
+              0.2917,
+              0.4352,
+              0.4167,
+              0.213
+            ],
+            "pad": 1.04,
+            "dur": 0
+          },
+          {
+            "at": 13.5,
+            "rect": [
+              0.2969,
+              0.5231,
+              0.4063,
+              0.0833
+            ],
+            "pad": 1.02,
+            "dur": 0.9
+          },
+          {
+            "at": 21.35,
+            "rect": [
+              0.2969,
+              0.5231,
+              0.4063,
+              0.0833
+            ],
+            "pad": 1.02,
+            "dur": 0
+          },
+          {
+            "at": 21.75,
+            "rect": [
+              0.35,
+              0.1991,
+              0.3896,
+              0.0741
+            ],
+            "pad": 1.04,
+            "dur": 0
+          },
+          {
+            "at": 24.7,
+            "rect": [
+              0.2604,
+              0.3148,
+              0.4479,
+              0.1019
+            ],
+            "pad": 1.04,
+            "dur": 0
+          },
+          {
+            "at": 43.45,
+            "rect": [
+              0.2604,
+              0.3657,
+              0.4479,
+              0.25
+            ],
+            "pad": 1.04,
+            "dur": 0
+          },
+          {
+            "at": 44.2,
+            "rect": [
+              0.2604,
+              0.5667,
+              0.4375,
+              0.0556
+            ],
+            "pad": 1.04,
+            "dur": 0.7
+          }
+        ],
+        "mark": [
+          {
+            "at": 44.6,
+            "rect": [
+              0.2625,
+              0.5704,
+              0.1469,
+              0.0204
+            ]
+          }
+        ],
+        "fade": {
+          "right": 0.06
+        },
         "blur": []
       },
       "p4-buy": {
-        "what": "P4 typed and sent; awning_buy proposes; the PayBox panel shows 5.00 USDC to the owner's sales wallet; approved ('Payment sent'); the confirmation with the order code.",
-        "segments": [],
+        "what": "The PayBox panel in the chat: $5.00 to api.awning.sh/x402/b/ridge-roast/tasting-session, 'Sending payment...' turns to 'Payment sent' at 102.33 s (spotlit: the reopen request and a permission prompt around it are dimmed); then 'You're booked. The 5.00 USDC payment went through...' with booking code RID-7R4G4U and the Base transaction (the 40 s of waiting before it are cut).",
+        "segments": [
+          [
+            101,
+            103.25
+          ],
+          [
+            109.9,
+            113.3
+          ]
+        ],
         "type": {
           "start": null,
           "end": null,
           "prompt": "P4"
         },
         "approve": {
-          "at": null,
+          "at": 102.33,
           "rect": [
             0.2604,
-            0.3935,
+            0.4861,
             0.4792,
-            0.2204
+            0.2222
           ]
         },
-        "zoom": [],
+        "focus": [
+          {
+            "from": 101,
+            "to": 103.3,
+            "rect": [
+              0.2604,
+              0.4861,
+              0.4792,
+              0.2222
+            ],
+            "dim": 0.85
+          }
+        ],
+        "zoom": [
+          {
+            "at": 101,
+            "rect": [
+              0.2708,
+              0.4907,
+              0.4583,
+              0.2093
+            ],
+            "pad": 1.05,
+            "dur": 0
+          },
+          {
+            "at": 109.9,
+            "rect": [
+              0.2583,
+              0.4676,
+              0.4583,
+              0.2778
+            ],
+            "pad": 1.02,
+            "dur": 0
+          },
+          {
+            "at": 111,
+            "rect": [
+              0.2583,
+              0.5537,
+              0.3438,
+              0.0926
+            ],
+            "pad": 1,
+            "dur": 0.8
+          }
+        ],
+        "mark": [
+          {
+            "at": 111.9,
+            "rect": [
+              0.2844,
+              0.6194,
+              0.1313,
+              0.0204
+            ]
+          }
+        ],
+        "fade": {
+          "right": 0.07
+        },
         "blur": []
       }
     }
   },
   "owner2": {
-    "file": "rec/owner-2.mp4",
+    "file": "rec/owner2.mp4",
     "url": "claude.ai",
+    "theme": "dark",
+    "bg": "#141414",
     "crop": [
       0,
-      0.075,
+      0.1,
       1,
-      0.88
+      0.9
     ],
     "beats": {
       "p5-offer": {
-        "what": "P5 typed and sent; awning_add_offer confirms the $30 monthly box.",
-        "segments": [],
+        "what": "The owner's chat, later: P5 pasted in the reply box (4.73 s) and sent (the page's scroll after sending, 8.38-8.6 s, is cut); after the tool call (a permission prompt and 18 s are cut) 'The Monthly Subscription Box is now live on Ridge Roast at $30'. The owner token from the opening answer is covered while that page is on screen.",
+        "segments": [
+          [
+            4.45,
+            5.9
+          ],
+          [
+            8.6,
+            9.3
+          ],
+          [
+            28.45,
+            31.3
+          ]
+        ],
         "type": {
-          "start": null,
-          "end": null,
-          "prompt": "P5"
+          "start": 4.73,
+          "end": 4.73,
+          "prompt": "P5",
+          "paste": true
         },
-        "zoom": [],
-        "blur": []
+        "zoom": [
+          {
+            "at": 4.45,
+            "rect": [
+              0.25,
+              0.9537,
+              0.5,
+              0.0463
+            ],
+            "pad": 1.04,
+            "dur": 0
+          },
+          {
+            "at": 8.6,
+            "rect": [
+              0.4271,
+              0.1556,
+              0.3125,
+              0.0463
+            ],
+            "pad": 1.06,
+            "dur": 0
+          },
+          {
+            "at": 28.45,
+            "rect": [
+              0.2604,
+              0.3704,
+              0.4479,
+              0.2778
+            ],
+            "pad": 1.03,
+            "dur": 0
+          },
+          {
+            "at": 29.4,
+            "rect": [
+              0.2604,
+              0.5926,
+              0.4479,
+              0.0556
+            ],
+            "pad": 1.04,
+            "dur": 0.8
+          }
+        ],
+        "mark": [
+          {
+            "at": 30.1,
+            "rect": [
+              0.2625,
+              0.5935,
+              0.2875,
+              0.0222
+            ]
+          }
+        ],
+        "fade": {
+          "right": 0.06
+        },
+        "blur": [
+          {
+            "from": 0,
+            "to": 8.42,
+            "rect": [
+              0.3479,
+              0.4148,
+              0.2734,
+              0.0278
+            ],
+            "label": "owner token hidden"
+          }
+        ]
       },
       "p6-orders": {
-        "what": "P6 typed and sent; awning_orders lists the 5.00 USDC order, paid, with its transaction. Hold 3 s.",
-        "segments": [],
+        "what": "The answer to P6, with the question's bubble above it (the paste and 14 s of tool calls are cut): 'Ridge Roast has made its first sale: one Tasting Session for $5, paid at 18:33 today... It went straight to your wallet; the transaction is 0x893b3fa685...'",
+        "segments": [
+          [
+            54.65,
+            58.4
+          ]
+        ],
         "type": {
-          "start": null,
-          "end": null,
-          "prompt": "P6"
+          "start": 31.83,
+          "end": 31.83,
+          "prompt": "P6",
+          "paste": true
         },
-        "zoom": [],
+        "zoom": [
+          {
+            "at": 54.65,
+            "rect": [
+              0.2604,
+              0.3889,
+              0.4792,
+              0.2778
+            ],
+            "pad": 1.03,
+            "dur": 0
+          },
+          {
+            "at": 55.5,
+            "rect": [
+              0.2604,
+              0.5648,
+              0.4479,
+              0.0741
+            ],
+            "pad": 1.03,
+            "dur": 0.8
+          }
+        ],
+        "mark": [
+          {
+            "at": 56.4,
+            "rect": [
+              0.4188,
+              0.5676,
+              0.124,
+              0.0204
+            ]
+          }
+        ],
+        "fade": {
+          "right": 0.06
+        },
         "blur": []
       }
     }

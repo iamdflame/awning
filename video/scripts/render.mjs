@@ -70,8 +70,10 @@ async function video(id, file) {
     audioCodec: "aac",
     audioBitrate: "192k",
     scale: preview ? 0.5 : 1,
-    // 3072x1728 product captures: fewer tabs at once and a patient frame timeout keep extraction steady
-    concurrency: 6,
+    // 3072x1728 captures and a 1080p recording on a machine with little free memory: fewer tabs, a
+    // fixed frame cache (the default sizes itself from free memory and evicts frames mid-request)
+    concurrency: Number(process.env.RENDER_CONCURRENCY || 3),
+    offthreadVideoCacheSizeInBytes: Number(process.env.RENDER_CACHE_MB || 2048) * 1024 * 1024,
     timeoutInMilliseconds: 120000,
     chromiumOptions: { gl: "angle" },
     onProgress: ({ progress }) => {

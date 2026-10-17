@@ -23,21 +23,31 @@ export const BUSINESS = {
   ],
   bag: { title: "250 g Coffee Bag", priceUsd: 14 },
   tasting: { title: "Tasting Session", priceUsdc: "5.00" },
+  // added later from the owner's chat (rec/owner2.mp4)
+  subscription: { title: "Monthly Subscription Box", priceUsd: 30 },
+  // the first sale, bought by a fresh chat (rec/buyer.mp4) and listed on awning.sh/live
+  sale: {
+    amountUsdc: "5.00",
+    tx: "0x893b3fa685c61b25aa863309b4ff3f0a01d9b8e37be89890573cd23f4f9e7651",
+    at: "2026-10-17T18:33:03.218Z",
+    bookingCode: "RID-7R4G4U",
+  },
 };
 
 export const short = (addr: string, a = 6, b = 5) => `${addr.slice(0, a)}…${addr.slice(-b)}`;
 
 /**
- * The prompts. P1 is what the founder sent in rec/owner1.mp4, word for word (the wallet address is
- * shortened for display only). P3-P6 are launch/DEMO-SCRIPT.md's, for the takes still to come.
+ * The prompts, word for word as sent in the founder's takes (the wallet address in P1 is shortened
+ * for display only). P2 and P4 were not needed: P1 asked for Pro on ridgeroast.shop, and the buyer's
+ * chat proposed the payment after P3.
  */
 export const PROMPTS = {
   P1: `Open a business on Awning through PayBox: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags at $14 and a $5 tasting session. Sales go to my wallet ${short(BUSINESS.wallet)}, open it with Pro at ridgeroast.shop, not the free version.`,
   P2: "Open it on ridgeroast.shop.",
-  P3: "Find a coffee tasting in Accra and book one for Saturday morning.",
+  P3: "Using PayBox, find a coffee tasting in Accra on Awning and book one for Saturday morning.",
   P4: "Yes, book it.",
-  P5: "Add a monthly subscription box to Ridge Roast for $30.",
-  P6: "How are Ridge Roast's sales?",
+  P5: "Add a monthly subscription box to Ridge Roast on Awning for $30.",
+  P6: "How are Ridge Roast's sales on Awning?",
 } as const;
 
 /** The opening saga's steps, in the order the paid open response lists them (web/README.md). */

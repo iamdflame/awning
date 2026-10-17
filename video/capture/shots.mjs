@@ -140,4 +140,38 @@ export const draft = {
   stills: [{ at: 0.5, name: "draft-top" }],
 };
 
-export const SHOTS = [landingHero, forAgents, directory, directoryResults, live, liveReal, storefront, draft];
+/** The sale's transaction on BaseScan: 5 USDC from the buyer's wallet to the owner's sales wallet,
+ *  Status: Success. The cookie banner is dismissed and the page's third-party ads are hidden (nothing
+ *  of the transaction is touched). */
+export const basescan = {
+  id: "basescan",
+  where: "live",
+  still: true, // a plain page load and one DSF 2 screenshot: BaseScan's bot check rejects a page on a virtual clock
+  url: "https://basescan.org/tx/0x893b3fa685c61b25aa863309b4ff3f0a01d9b8e37be89890573cd23f4f9e7651",
+  displayUrl: "basescan.org/tx/0x893b3fa6…9e7651",
+  duration: 5,
+  settle: 3500,
+  setup: async (page) => {
+    await page.click("text=Got it!", { timeout: 4000 }).catch(() => {});
+    // third-party ads only (gambling banners and text ads); nothing of the transaction is touched
+    await page.addStyleTag({ content: ".sevioads, [id^='sevio-ad'], .search-panel-ads, .coinzilla, iframe { display: none !important; }" }).catch(() => {});
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll(".text-dt")) {
+        if (/Sponsored/.test(el.textContent || "")) el.closest(".row")?.style.setProperty("display", "none", "important");
+      }
+      for (const el of document.querySelectorAll(".noindex-section")) el.closest(".text-muted, div")?.style.setProperty("display", "none", "important");
+    });
+  },
+  points: (page) =>
+    page.evaluate(() => {
+      const el = [...document.querySelectorAll("span, div")].find((e) => (e.textContent || "").trim() === "Success" && e.children.length <= 2);
+      if (!el) return { ok: { x: 480, y: 430 } };
+      const r = el.getBoundingClientRect();
+      return { ok: { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } };
+    }),
+  cursor: [[0, 1300, 700], [1.6, 1300, 700], [3.2, "ok", "out"], [5, "ok"]],
+  scroll: [[0, 0], [5, 0]],
+  stills: [{ at: 4.8, name: "basescan" }],
+};
+
+export const SHOTS = [landingHero, forAgents, directory, directoryResults, live, liveReal, storefront, draft, basescan];

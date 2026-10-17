@@ -6,7 +6,7 @@ import { Captions } from "./components/Captions";
 import { Stamp } from "./components/Kinetic";
 import { TwoChats } from "./components/AgentFrames";
 import { ProductClip } from "./components/ProductClip";
-import { RecordingBeat } from "./components/Recording";
+import { RecordingBeat, beatIsReal, beatOf, frameOfSource } from "./components/Recording";
 import { CAPTION_SUBS, resolveAssets, resolveTakes } from "./data";
 import { Film, type FilmProps } from "./Main";
 import { Ground, Sfx, type SceneProps } from "./scenes/common";
@@ -24,61 +24,66 @@ const TOTAL = 30 * FPS;
 const C3Buy: React.FC<SceneProps> = ({ timing, assets }) => {
   const f = useCurrentFrame();
   const n = timing.frames;
-  const a = Math.round(n * 0.34);
-  const b = Math.round(n * 0.66);
   const sale = saleFacts(assets);
   const FW = 1180;
   const FH = Math.round((FW * 9) / 16);
-  const out = interpolate(f, [a - 4, a + 12], [0, 1], { ...clamp, easing: EASE.inOut });
-  const liveIn = interpolate(f, [b, b + 14], [0, 1], { ...clamp, easing: EASE.out });
+  // the fresh chat's payment (its "Payment sent" moment when the take exists), its booking, then /live
+  const b4 = beatOf("buyer", "p4-buy");
+  const real = beatIsReal("buyer", "p4-buy", assets.rec.buyer);
+  const recApprove = real && b4.approve?.at != null ? frameOfSource(b4, b4.approve.at, 30) : null;
+  const approveAt = recApprove ?? Math.round(n * 0.24);
+  const a = approveAt + 20; // the receipt prints once the payment is sent
+  const b = Math.round(n * 0.7); // then the public receipt on awning.sh/live
+  const ticketOut = interpolate(f, [a - 6, a + 4], [0, 1], { ...clamp, easing: EASE.inOut });
+  const liveIn = interpolate(f, [b, b + 12], [0, 1], { ...clamp, easing: EASE.out });
   const caps: Caption[] = [
-    { from: 4, to: a - 2, text: "A fresh chat finds it on its own.", words: [] },
+    { from: 4, to: a - 2, text: "A fresh chat finds it and pays.", words: [] },
     { from: a, to: b - 2, text: `${sale.amount} USDC, straight to the owner.`, words: [] },
     { from: b, to: n - 4, text: "Its first customer was an AI agent.", words: [] },
   ].map((c) => ({ ...c, words: c.text.split(" ").map((w) => ({ w, from: c.from, to: c.to })) }));
   return (
     <Ground>
-      <Sfx src={assets.sfx.chime} at={Math.round(a * 0.7)} volume={0.3} />
-      <Sfx src={assets.sfx.print} at={a + 6} volume={0.26} />
-      <Sfx src={assets.sfx.print} at={a + 14} volume={0.26} />
-      <Sfx src={assets.sfx.pop} at={a + 26} volume={0.3} />
-      <div style={{ position: "absolute", left: 70, top: 34, opacity: 1 - out }}>
+      {recApprove == null ? <Sfx src={assets.sfx.chime} at={approveAt} volume={0.3} /> : null}
+      <Sfx src={assets.sfx.print} at={a + 4} volume={0.26} />
+      <Sfx src={assets.sfx.print} at={a + 12} volume={0.26} />
+      <Sfx src={assets.sfx.pop} at={a + 24} volume={0.3} />
+      <div style={{ position: "absolute", left: 70, top: 34, opacity: 1 - liveIn }}>
         <TwoChats p={interpolate(f, [2, 14], [0, 1], { ...clamp, easing: EASE.out })} />
       </div>
-      <div style={{ position: "absolute", left: 70, top: 108, transform: `translateX(${out * -1400}px)` }}>
-        <RecordingBeat who="buyer" beat="p4-buy" file={assets.rec.buyer} width={FW} height={FH} slot={a} chime={assets.sfx.chime} />
+      <div style={{ position: "absolute", left: 70, top: 108 }}>
+        <RecordingBeat who="buyer" beat="p4-buy" file={assets.rec.buyer} width={FW} height={FH} slot={b} chime={assets.sfx.chime} />
+        {f >= b ? (
+          <div style={{ position: "absolute", left: 0, top: 0, opacity: liveIn }}>
+            <Sequence from={b} layout="none">
+              <ProductClip shot={assets.capture.shots["live"]} width={FW} height={FH} dark startSec={assets.capture.shots["live"]?.source === "live" ? 1.2 : 2.4} cam={[{ at: 0, x: 0.62, y: 0.4, z: 1.3 }, { at: 40, x: 0.66, y: 0.33, z: 2.0 }]} label="awning.sh/live" />
+            </Sequence>
+          </div>
+        ) : null}
       </div>
-      <div style={{ position: "absolute", left: 1330, top: 170, opacity: (1 - out) * interpolate(f, [6, 16], [0, 1], clamp) }}>
-        <Ticket width={470} scale={0.9} rotate={2} kicker={["PAYBOX", "USDC · BASE"]} title={<>{BUSINESS.tasting.title}, {BUSINESS.name}</>} amount={sale.amount} note={<>USDC to<br />the owner's wallet</>} />
-        {f >= Math.round(a * 0.7) ? (
-          <div style={{ position: "absolute", left: 170, top: 250 }}>
-            <Stamp at={Math.round(a * 0.7)} size={34} rotate={-8} color={C.g600}>
+      <div style={{ position: "absolute", left: 1330, top: 150, opacity: interpolate(f, [4, 14], [0, 1], clamp) * (1 - ticketOut), transform: `translate(${ticketOut * 60}px, ${-ticketOut * 40}px)` }}>
+        <Ticket width={500} scale={0.94} rotate={2} kicker={["PAYBOX", "USDC · BASE"]} title={<>{BUSINESS.tasting.title}, {BUSINESS.name}</>} amount={sale.amount} note={<>USDC to<br />the owner's wallet</>} />
+        {f >= approveAt ? (
+          <div style={{ position: "absolute", left: 180, top: 268 }}>
+            <Stamp at={approveAt} size={36} rotate={-8} color={C.g600}>
               Approved
             </Stamp>
           </div>
         ) : null}
       </div>
       {f >= a - 4 ? (
-        <div style={{ position: "absolute", left: interpolate(liveIn, [0, 1], [640, 1250]), top: interpolate(liveIn, [0, 1], [150, 170]), transform: `scale(${interpolate(liveIn, [0, 1], [1, 0.82])})`, transformOrigin: "top left", zIndex: 5 }}>
+        <div style={{ position: "absolute", left: 1296, top: 136, zIndex: 5, transform: "scale(0.86)", transformOrigin: "top left" }}>
           <Receipt
             width={640}
-            size={23}
-            rotate={-1.2}
+            size={24}
+            rotate={-1.4}
             head={[BUSINESS.name.toUpperCase(), sale.mock ? "BUYER TAKE PENDING" : "SOLD"]}
             lines={[
-              { l: BUSINESS.tasting.title, r: `1 × ${sale.amount}`, at: a + 6 },
-              { l: "paid by", r: "an AI agent", at: a + 12, tone: "agent" },
-              { l: "to", r: sale.walletShort, at: a + 18 },
+              { l: BUSINESS.tasting.title, r: `1 × ${sale.amount}`, at: a + 4 },
+              { l: "paid by", r: "an AI agent", at: a + 10, tone: "agent" },
+              { l: "to", r: sale.walletShort, at: a + 16 },
             ]}
-            total={{ amount: `+${sale.amount}`, label: <>USDC FROM AN AGENT<br />TO THE OWNER'S WALLET</>, at: a + 26 }}
+            total={{ amount: `+${sale.amount}`, label: <>USDC FROM AN AGENT<br />TO THE OWNER'S WALLET</>, at: a + 24 }}
           />
-        </div>
-      ) : null}
-      {f >= b ? (
-        <div style={{ position: "absolute", left: 70, top: 108, opacity: liveIn }}>
-          <Sequence from={b} layout="none">
-            <ProductClip shot={assets.capture.shots["live"]} width={FW} height={FH} startSec={assets.capture.shots["live"]?.source === "live" ? 0 : 2.4} cam={[{ at: 0, x: 0.5, y: 0.5, z: 1 }, { at: 40, x: 0.66, y: 0.36, z: 1.5 }]} label="awning.sh/live" />
-          </Sequence>
         </div>
       ) : null}
       <Captions captions={caps} />

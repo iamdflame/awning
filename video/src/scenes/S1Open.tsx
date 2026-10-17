@@ -59,7 +59,7 @@ export const S1Open: React.FC<SceneProps> = ({ timing, take, assets }) => {
       {/* the real storefront, waiting behind the hoarding */}
       <div style={{ position: "absolute", left: frameX, top: frameY, opacity: up > 0 ? 1 : 0 }}>
         <Sequence from={lift} layout="none">
-          <ProductClip shot={shot} width={frameW} height={frameH} url={shot?.source === "live" ? shot.displayUrl : BUSINESS.domain} cam={[{ at: 0, x: 0.5, y: 0.5, z: 1.06 }, { at: 60, x: 0.5, y: 0.5, z: 1, ease: "out" }]} />
+          <ProductClip shot={shot} width={frameW} height={frameH} url={shot?.source === "live" ? shot.displayUrl : BUSINESS.domain} holdAt={2.6} cam={[{ at: 0, x: 0.5, y: 0.46, z: 1.3 }, { at: 70, x: 0.5, y: 0.47, z: 1.2, ease: "out" }]} />
         </Sequence>
       </div>
 

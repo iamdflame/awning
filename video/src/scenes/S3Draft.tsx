@@ -39,7 +39,11 @@ export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const previewReal = beatIsReal("owner", "preview", ownerFile);
   const draft = assets.capture.shots["draft"];
 
-  const offers = shop.offers.slice(0, 3);
+  // the plan's own offers (the subscription box comes later, from the owner's chat)
+  const offers = [
+    { title: BUSINESS.bag.title, price: `${BUSINESS.bag.priceUsd}` },
+    { title: BUSINESS.tasting.title, price: `${Number(BUSINESS.tasting.priceUsdc)}` },
+  ];
   // the plan's three real domain quotes; the one the owner chose prints in green
   const lines: ReceiptLine[] = [
     { l: "name", r: shop.name, at: tNames, tone: "strong" },
