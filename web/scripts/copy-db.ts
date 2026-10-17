@@ -35,7 +35,8 @@ for (const [name, table] of tables) {
     const res = await to.insert(table as never).values(chunk as never).onConflictDoNothing().returning();
     copied += (res as unknown[]).length;
   }
-  const [{ n }] = (await to.execute(sql.raw(`select count(*)::int as n from ${name}`))) as unknown as { n: number }[];
+  const counted = (await to.execute(sql.raw(`select count(*)::int as n from ${name}`))) as unknown as { n: number }[];
+  const n = counted[0]?.n ?? 0;
   console.log(`${name.padEnd(16)} source ${String(rows.length).padStart(4)}  copied ${String(copied).padStart(4)}  target now ${n}`);
 }
 await client.end();
