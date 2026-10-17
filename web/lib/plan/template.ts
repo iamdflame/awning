@@ -114,7 +114,7 @@ export function detectPricedOffers(sentence: string): DraftOffer[] {
     seen.add(key);
     found.push({ title, description: `${title}, as offered by the owner.`, priceUsd: Math.round(priceUsd * 100) / 100, kind: inferKind(title) });
   };
-  const after = /\$\s?(\d{1,5}(?:\.\d{1,2})?)\s*(?:usd|usdc)?\s+((?:[a-zA-Z][\w'’&-]*\s?){1,6}?)(?=\s*(?:[,.;!?)]|\band\b|\bor\b|\bwith\b|\bfor\b|$))/gi;
+  const after = /\$\s?(\d{1,5}(?:\.\d{1,2})?)\s*(?:usd|usdc)?\s+(?!(?:and|or|for|with|per|each|a\s+month|an?\s+hour)\b)((?:[a-zA-Z][\w'’&-]*\s?){1,6}?)(?=\s*(?:[,.;!?)]|\band\b|\bor\b|\bwith\b|\bfor\b|$))/gi;
   for (const m of sentence.matchAll(after)) push(m[1]!, m[2]!);
   const before = /\b((?:[a-zA-Z][\w'’&-]*\s){1,5}?)(?:for|at)\s+\$\s?(\d{1,5}(?:\.\d{1,2})?)/gi;
   for (const m of sentence.matchAll(before)) {
