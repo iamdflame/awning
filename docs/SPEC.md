@@ -11,7 +11,7 @@ An owner tells their AI agent what they sell, for example *"Ridge Roast, small-b
 1. drafts the business: name, tagline, description, category, colour palette and 3 to 5 priced offers;
 2. checks real domain availability and registrar prices;
 3. serves a private draft storefront the owner can look at;
-4. opens it, either **Free** (a storefront at `<slug>.awning.sh`) or **Pro** (a registered custom domain, a phone number and an AI receptionist that answers it);
+4. opens it, either **Free** (a storefront at `<slug>.awning.sh`) or **Pro** (a registered custom domain, plus a phone number with an AI receptionist that answers it when the server has a real phone provider);
 5. lists it in the public Awning directory, where any PayBox agent can find it and buy from it with USDC on Base. Every sale is paid **straight to the owner's own wallet**.
 
 Awning never holds sales money. The only payment Awning receives is the Pro opening fee.
@@ -129,7 +129,7 @@ stateDiagram-v2
 | Package | Price | Includes |
 |---|---|---|
 | **Free** | $0 | Storefront at `<slug>.awning.sh`, listing in the Awning directory, x402 checkout paid straight to the owner's wallet |
-| **Pro** | the domain's first-year registrar price + **$9.00** | Everything in Free, the custom domain (first year), a local phone number and an AI receptionist (first month) |
+| **Pro** | the domain's first-year registrar price + **$9.00** | Everything in Free and the custom domain (first year); a local phone number and an AI receptionist (first month) when telephony is configured. The plan's Pro package lists exactly what is included (`phoneLine`). |
 
 - The domain part is passed through at the registrar's price with no markup: `total = registrar price + 9_000_000` atomic USDC ([`web/lib/money.ts`](../web/lib/money.ts), `proTotalAtomic`).
 - The price is fixed when the plan is created and is exactly what `/x402/open` charges. If the registrar's price changes before payment, the opening fails before settlement and nothing is charged.
@@ -184,7 +184,7 @@ Every provider sits behind an adapter ([`web/lib/adapters/`](../web/lib/adapters
 
 | Job | Real provider (code exists) | Without keys |
 |---|---|---|
-| Draft the business | Anthropic Messages API (`AWNING_LLM_MODEL`, default `claude-sonnet-5-5`, forced tool call) when `ANTHROPIC_API_KEY` is set; otherwise the Vercel AI Gateway (`AWNING_GATEWAY_LLM_MODEL`, default `google/gemini-2.5-flash`, strict JSON schema) when gateway credentials exist (always on Vercel) | Deterministic template drafter ([`web/lib/plan/template.ts`](../web/lib/plan/template.ts)); same sentence → same draft |
+| Draft the business | Anthropic Messages API (`AWNING_LLM_MODEL`, default `claude-sonnet-5-5`, forced tool call) when `ANTHROPIC_API_KEY` is set; otherwise OpenRouter (`OPENROUTER_API_KEY`, `AWNING_OPENROUTER_MODEL`, default `anthropic/claude-haiku-5.5`, reasoning off, strict JSON schema; measured 2.7–4.9 s per draft); otherwise the Vercel AI Gateway (`AWNING_GATEWAY_LLM_MODEL`, default `google/gemini-2.5-flash`, strict JSON schema) when gateway credentials exist (always on Vercel) | Deterministic template drafter ([`web/lib/plan/template.ts`](../web/lib/plan/template.ts)); same sentence → same draft |
 | Storefront photography | Vercel AI Gateway images (`AWNING_IMAGE_MODEL`, default `bfl/flux-2-klein-4b`): two illustrative photos per business (hero and detail) from a category scene and the palette, no text and no faces, generated after the plan response, stored as WebP and served at `/img/:id`. The storefront page on `main` does not display them yet | No photos; storefronts keep their drawn art |
 | Domain availability, price, registration, DNS | Porkbun API v3; registration paid from account credit or, with `PORKBUN_PAY_WITH=usdc`, in USDC over x402 from the treasury | Deterministic registrar: about one name in five is "taken", prices from the 2026-10-17 snapshot, nothing registered |
 | Custom-domain hosting | Vercel Domains API (apex + `www` redirect) | Names recorded in memory |
@@ -194,7 +194,7 @@ Every provider sits behind an adapter ([`web/lib/adapters/`](../web/lib/adapters
 | Payment verify and settle | Any x402 facilitator; default PayAI (`https://facilitator.payai.network`) | `AWNING_FACILITATOR_URL=mock` verifies signatures locally and settles nothing; refused when `VERCEL_ENV` or `AWNING_ENV` is `production` |
 | Refunds after settlement | viem USDC transfer from the treasury key, used only when `AWNING_TREASURY_PRIVATE_KEY` controls `AWNING_TREASURY_ADDRESS` | With real payments: refunds unavailable; a refund attempt answers `refunded: false` and alerts the operator, never a simulated success. With the mock facilitator: simulated |
 
-**Real money never buys simulated provisioning.** With a real facilitator, Pro is sold only when the registrar, hosting, telephony and receptionist adapters are all real and the refunder can actually refund. Otherwise the plan's Pro package says `available: false` with the reason, and `/x402/open` answers `503 pro_unavailable` without a payment challenge ([`web/lib/services/readiness.ts`](../web/lib/services/readiness.ts)). Free openings and sales work in every configuration. A response produced with mocks lists them in `simulated`.
+**Real money never buys simulated provisioning.** With a real facilitator, Pro is sold only when the registrar and hosting adapters are real and the refunder can actually refund. The phone line and receptionist are included only when telephony and the receptionist are real too; otherwise the saga skips those steps and the Pro package does not list them (`phoneLine: false`). Otherwise the plan's Pro package says `available: false` with the reason, and `/x402/open` answers `503 pro_unavailable` without a payment challenge ([`web/lib/services/readiness.ts`](../web/lib/services/readiness.ts)). Free openings and sales work in every configuration. A response produced with mocks lists them in `simulated`.
 
 `GET /v1/health` reports both: `checks.refunds` (`ok` or `unavailable`) and `checks.pro` (`available`, `available (simulated payments)` or `unavailable (<missing adapters>)`).
 

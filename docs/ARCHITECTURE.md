@@ -26,7 +26,7 @@ flowchart LR
   X4 -- "/verify, /settle" --> FA["x402 facilitator<br/>PayAI by default"]
   FA -- "transferWithAuthorization" --> CH[("USDC on Base")]
   X4 -- "authorizationState, refunds" --> CH
-  API -- "draft" --> AN["Anthropic, or Vercel AI Gateway"]
+  API -- "draft" --> AN["Claude: Anthropic or OpenRouter (else Vercel AI Gateway)"]
   API -- "photos, after the response" --> AG["Vercel AI Gateway images"]
   API -- "check prices" --> PK[Porkbun]
   API -- "search numbers" --> TW[Twilio]
@@ -100,7 +100,7 @@ sequenceDiagram
   par in parallel
     A->>R: checkDomain(template name candidates), 8 s
     A->>T: search local numbers, 5 s
-    A->>L: LLM draft (Anthropic or AI Gateway), AWNING_LLM_TIMEOUT_MS = 4.5 s
+    A->>L: LLM draft (Anthropic, OpenRouter or AI Gateway), AWNING_LLM_TIMEOUT_MS = 5 s
   end
   alt LLM renamed the business
     A->>R: checkDomain(new candidates), max(1.2 s, 6.5 s − elapsed)
@@ -115,7 +115,7 @@ sequenceDiagram
 
 What a plan stores in `plans.prepared`: the receptionist name, system prompt and first message; the DNS records (`A @ 76.76.21.21`, `CNAME www cname.vercel-dns.com`, overridable); up to three phone number candidates and the country; and whether the draft came from the LLM or the template. `plans.domains` stores, per domain, the registrar price in cents and atomic USDC and the Pro total in atomic USDC.
 
-The LLM (Anthropic's Messages API with a forced tool call, or the Vercel AI Gateway with a strict JSON schema and reasoning off; [`web/lib/adapters/drafter.ts`](../web/lib/adapters/drafter.ts)) proposes and fixed rules decide (`finalizeDraft`): lengths are clipped, the category must come from the catalogue, the palette must reach contrast 7:1 (ink on paper) and 3:1 (paper on primary) or the template palette is used, prices are rounded to cents and clamped to $1–$10,000, duplicate titles are dropped, prices the owner stated are added if missing, and offers are padded to at least 3 and cut to 5.
+The LLM (Anthropic's Messages API with a forced tool call, or Claude Haiku 5.5 through OpenRouter, or the Vercel AI Gateway, both with a strict JSON schema and reasoning off; [`web/lib/adapters/drafter.ts`](../web/lib/adapters/drafter.ts)) proposes and fixed rules decide (`finalizeDraft`): lengths are clipped, the category must come from the catalogue, the palette must reach contrast 7:1 (ink on paper) and 3:1 (paper on primary) or the template palette is used, prices are rounded to cents and clamped to $1–$10,000, duplicate titles are dropped, prices the owner stated are added if missing, and offers are padded to at least 3 and cut to 5.
 
 ## The opening orchestrator
 
@@ -278,7 +278,7 @@ Migrations are generated with drizzle-kit into `web/drizzle/` and applied automa
 | Hosted plugin operation | 10 s | PayBox |
 | Plugin → API, every tool except `awning_plan` | 4 s per request (the paid tools make two in parallel) | `FETCH_TIMEOUT_MS`, `plugin/src/awning.ts` |
 | Plugin → `POST /v1/plan` | 8 s | `PLAN_TIMEOUT_MS` |
-| `POST /v1/plan`, server side | target under about 6.5 s: LLM 4.5 s (`AWNING_LLM_TIMEOUT_MS`), second domain check `max(1.2 s, 6.5 s − elapsed)`, phone search 5 s | `web/lib/services/plans.ts` |
+| `POST /v1/plan`, server side | target under about 6.8 s: LLM 5 s (`AWNING_LLM_TIMEOUT_MS`), second domain check `max(1.2 s, 6.5 s − elapsed)`, phone search 5 s | `web/lib/services/plans.ts` |
 | First domain check inside `/v1/plan` | 5 s | `checkFor(…, 5000)` |
 | `/v1/plan` function | 30 s | `maxDuration` |
 | `/x402/*` functions | 90 s | `maxDuration` |
