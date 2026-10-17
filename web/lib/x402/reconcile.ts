@@ -25,8 +25,8 @@ import type { Authorization } from "./seller";
 
 /** Longer than any paid request can live (route maxDuration is 90 s). */
 export const STALE_AFTER_MS = 3 * 60_000;
-/** x402 authorizations here are valid for at most 5 minutes; after this, an unused one can never settle. */
-const NEVER_SETTLES_AFTER_MS = 15 * 60_000;
+/** x402 authorizations here are valid for at most 15 minutes (MAX_TIMEOUT_SECONDS); after this, an unused one can never settle. */
+const NEVER_SETTLES_AFTER_MS = 30 * 60_000;
 
 export type ReconcileOutcome = { key: string; from: PaymentRow["status"]; to: PaymentRow["status"] | "unchanged"; note: string };
 

@@ -65,7 +65,7 @@ describe("x402 protocol compatibility and concurrency", () => {
 
     const plan2 = await createPlan("A candle shop called Wick & Wax");
     const sig2 = await signPayment(await openPaid(plan2.planId, { domain: plan2.recommendedDomain }), newBuyer());
-    await d.update(schema.plans).set({ expiresAt: new Date(Date.now() - 10 * 60_000) }).where(eq(schema.plans.id, plan2.planId));
+    await d.update(schema.plans).set({ expiresAt: new Date(Date.now() - 20 * 60_000) }).where(eq(schema.plans.id, plan2.planId)); // past the 15-minute grace
     const late = await openPaid(plan2.planId, { domain: plan2.recommendedDomain }, { "PAYMENT-SIGNATURE": sig2 });
     expect(late.status).toBe(410);
     expect(world.facilitator.settleCalls).toBe(1);
