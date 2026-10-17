@@ -1,6 +1,6 @@
 # Recording runbook: the two agent takes
 
-The film needs screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a different agent, Claude Code in a terminal, buys from it). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
+The film needs screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a fresh chat, with no knowledge of the shop, finds it and buys). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
 
 ## Before you start (10 minutes)
 
@@ -38,16 +38,18 @@ Start recording, then:
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
 
-## Buyer take → `buyer.mp4` (Claude Code in its own VS Code window, same PayBox account)
+## Buyer take → `buyer.mp4` (Claude.ai, a fresh chat)
 
-The buyer VS Code window maximized, the Claude Code panel wide (drag it to fill most of the window), editor zoom up (Ctrl + = twice), a new conversation. Start recording, then:
+The buyer is a **new Claude.ai chat** that knows nothing about the one that opened the shop, so it has to find Ridge Roast on its own. (Claude Code with the PayBox CLI can request the purchase but CLI 2.2.0 cannot sign plugin payments, so the approval would have to come from Claude.ai anyway.)
 
-1. Type and send:
-   > Using the PayBox CLI, find a coffee tasting in Accra on Awning and book one for Saturday morning.
+Start recording, then:
+
+1. New chat. Type and send:
+   > Using PayBox, find a coffee tasting in Accra on Awning and book one for Saturday morning.
 2. When it shows Ridge Roast and the $5 tasting, type and send:
    > Yes, book it.
-3. The PayBox approval shows **5.00 USDC** to the sales wallet: hold 2 seconds, **approve** (paying from your PayBox wallet).
-4. Wait for the confirmation with the order code. Hold 3 seconds. Stop recording.
+3. If the PayBox panel doesn't appear by itself, type *"Reopen the PayBox signing window so I can approve it."* The panel shows **5.00 USDC** to the sales wallet: hold 2 seconds, confirm.
+4. Type *"Done, check the request."* Wait for the confirmation with the order code. Hold 3 seconds. Stop recording.
 
 ## Owner take 2 → `owner-2.mp4` (Claude, same chat as before)
 
