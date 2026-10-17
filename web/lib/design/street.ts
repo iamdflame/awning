@@ -175,8 +175,9 @@ export function buildStreet(real: RealShop[], now: Date, need = STREET_LENGTH): 
   const shops = real.slice(0, 12).map((r, i) => shopFromReal(r, i, now));
   if (shops.length >= need) return shops;
   // never an example that shares a name or a slug with a real shop on the street
-  const taken = new Set(real.flatMap((r) => [r.name.trim().toLowerCase(), `slug:${r.slug}`]));
-  const clash = (e: ShopView) => taken.has(e.name.trim().toLowerCase()) || taken.has(`slug:${e.key.replace(/^example:/, "")}`);
+  const norm = (s: string) => s.toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const taken = new Set(real.flatMap((r) => [norm(r.name), `slug:${r.slug}`]));
+  const clash = (e: ShopView) => taken.has(norm(e.name)) || taken.has(norm(e.tagTitle.replace(/^Example: /, ""))) || taken.has(`slug:${e.key.replace(/^example:/, "")}`);
   return [...shops, ...examples().filter((e) => !clash(e)).slice(0, need - shops.length)];
 }
 

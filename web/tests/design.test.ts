@@ -102,6 +102,8 @@ describe("the Opened today street", () => {
   it("never shows an example with the same name as a real shop, and only real shops when there are enough", () => {
     const now = new Date();
     expect(buildStreet([real("Ridge Roast", "ridge-roast")], now).filter((s) => s.name === "Ridge Roast")).toHaveLength(1);
+    expect(buildStreet([real("Mama Efua's", "mama-efuas-kumasi")], now).filter((s) => /mama efua/i.test(s.name))).toHaveLength(1); // ’ vs '
+    expect(buildStreet([real("Night Owl Records", "night-owl")], now).some((s) => s.example && s.name === "NIGHT OWL")).toBe(false);
     const many = Array.from({ length: 9 }, (_, i) => real(`Shop ${i}`, `shop-${i}`));
     expect(buildStreet(many, now).every((s) => !s.example)).toBe(true);
   });
