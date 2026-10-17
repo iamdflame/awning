@@ -2,7 +2,7 @@
 
 Awning is a PayBox plugin that turns one sentence into a real business that people and AI agents can buy from the minute it opens.
 
-This script films only what is live today: drafting, a free or custom-domain opening, an agent purchase paid to the owner's wallet, owner tools, and the payment safeguards. Length 2:00 at most. The wow lands by 0:20 (the shop is live on its own domain) and the proof by 0:45 (a different agent pays it). The phone line is an optional insert for later, once telephony is connected.
+This script films only what is live today: drafting, a free or custom-domain opening, an agent purchase paid to the owner's wallet, owner tools, and the payment safeguards. Length 2:00 at most. The wow lands by 0:20 (the shop is live on its own domain) and the proof by 0:45 (a fresh chat finds the shop and pays). The phone line is an optional insert for later, once telephony is connected.
 
 ## Setup before recording
 
@@ -34,7 +34,7 @@ This script films only what is live today: drafting, a free or custom-domain ope
 | 0:11–0:14 | Click the preview link: the draft storefront with its "Preview, not open yet" ribbon, offers and generated photo. | A private preview. | |
 | 0:14–0:18 | Back in Claude, type **P2**. `awning_open` returns a proposal; the PayBox approval window shows the amount in USDC on Base. Approve. | One approval. | "One approval in PayBox." |
 | 0:18–0:26 | The paid response: "live at https://ridgeroast.shop". Open it with the address bar in view. Scroll from the menu to the "Buy with your AI agent" slip. | A real domain. Registered, paid, live. | "That's a real domain, registered and live." |
-| 0:26–0:32 | Switch to Claude Code in a terminal. Type **P3**. `awning_find` returns Ridge Roast and the tasting price. | A different agent. | "Now a different agent goes shopping." |
+| 0:26–0:32 | A fresh Claude.ai chat. Type **P3**. `awning_find` returns Ridge Roast and the tasting price. | A fresh chat finds it on its own. | "Now, in a fresh chat, an agent goes shopping." |
 | 0:32–0:38 | Type **P4**. `awning_buy` returns a proposal; the PayBox window shows 5.00 USDC and the owner's wallet. Approve. The answer shows the booking code. | 5.00 USDC, straight to the owner. | |
 | 0:38–0:45 | `awning.sh/live`: the new SOLD line, +5.00. Click its transaction: BaseScan shows the USDC transfer into the owner's wallet. | Its first customer was an AI agent. | "Its first customer was an AI agent, and the money went straight to the owner." |
 | 0:45–0:55 | Back in Claude as the owner. Type **P5**. `awning_add_offer` answers; refresh the storefront and the new row is there. | The owner runs it from the chat. | "The owner runs the shop from the same chat." |
@@ -74,7 +74,7 @@ To keep the total at 2:00, shorten 0:45–1:15 by 10 seconds (drop the `/for-age
 3. A private preview.
 4. One approval.
 5. A real domain. Registered, paid, live.
-6. A different agent.
+6. A fresh chat finds it on its own.
 7. 5.00 USDC, straight to the owner.
 8. Its first customer was an AI agent.
 9. The owner runs it from the chat.

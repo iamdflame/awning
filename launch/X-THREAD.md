@@ -8,12 +8,12 @@ These are drafts written as "I", for you to post from your own account. Read eac
 
 Use version A if the video opens the business on its own domain, version B if it opens on the free `awning.sh` subdomain. The post has to match what the video shows.
 
-**A** (291 characters)
+**A** (271 characters as X counts them)
 
 ```
 One sentence to my AI agent opened a real business.
 
-"Ridge Roast, small-batch coffee from Accra." One PayBox approval later it was live on its own domain. Then a fresh chat found it on its own and booked a $5 tasting, paid straight to the owner's wallet.
+"Ridge Roast, coffee from Accra." One PayBox approval and it was live on its own domain. Then a fresh chat found it and booked a $5 tasting, paid to the owner's wallet.
 
 Awning, a PayBox plugin: awning.sh
 ```
