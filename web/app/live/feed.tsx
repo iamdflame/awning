@@ -4,27 +4,36 @@ import { useEffect, useState } from "react";
 
 export type LiveEvent = { type: "opened" | "order" | "call"; at: string; slug: string; name: string; amountUsd?: number; tx?: string };
 
-const LABEL: Record<LiveEvent["type"], string> = { opened: "opened", order: "sold", call: "took a call" };
+const LABEL: Record<LiveEvent["type"], string> = { opened: "OPENED", order: "SOLD", call: "CALL" };
+
+/** "10:02" in UTC, identical on the server and in the browser. */
+function clock(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "--:--" : `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+}
 
 function ago(iso: string, now: number): string {
   const s = Math.max(0, Math.round((now - new Date(iso).getTime()) / 1000));
   if (s < 60) return `${s}s ago`;
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return new Date(iso).toLocaleDateString();
+  return `${Math.floor(s / 86400)}d ago`;
 }
 
-/** Polls /v1/live every 3 s. */
-export function LiveFeed({ initial }: { initial: LiveEvent[] }) {
+const TX = /^0x[0-9a-f]{64}$/i;
+
+/** The feed is a receipt that keeps printing: polls GET /v1/live every 3 s. */
+export function LiveFeed({ initial, storeUrl }: { initial: LiveEvent[]; storeUrl: Record<string, string> }) {
   const [events, setEvents] = useState(initial);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null); // relative times only after mount (no hydration mismatch)
   const [stale, setStale] = useState(false);
 
   useEffect(() => {
     let alive = true;
+    setNow(Date.now());
     const tick = async () => {
       try {
-        const res = await fetch("/v1/live", { cache: "no-store" });
+        const res = await fetch("/v1/live?limit=50", { cache: "no-store" });
         if (!res.ok) throw new Error(String(res.status));
         const body = (await res.json()) as { events: LiveEvent[] };
         if (alive) {
@@ -43,28 +52,45 @@ export function LiveFeed({ initial }: { initial: LiveEvent[] }) {
     };
   }, []);
 
-  if (!events.length) return <p className="muted">Nothing yet. The first business that opens will appear here within 3 seconds.</p>;
   return (
-    <>
-      {stale ? <p className="muted">Reconnecting…</p> : null}
-      <ul className="feed">
-        {events.map((e, i) => (
-          <li key={`${e.at}-${e.slug}-${i}`}>
-            <span className="pill">{e.type}</span>
-            <strong>{e.name}</strong>
-            <span>{LABEL[e.type]}</span>
-            {e.amountUsd != null && e.amountUsd > 0 ? <span className="mono">{e.amountUsd.toFixed(2)} USDC</span> : null}
-            {e.tx && /^0x[0-9a-f]{64}$/i.test(e.tx) ? (
-              <a className="mono" href={`https://basescan.org/tx/${e.tx}`} target="_blank" rel="noreferrer">
-                tx {e.tx.slice(0, 10)}…
-              </a>
-            ) : null}
-            <span className="muted" style={{ marginLeft: "auto" }}>
-              {ago(e.at, now)}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </>
+    <div className="lv-roll">
+      <div className="lv-paper" role="log" aria-live="polite" aria-label="Openings and sales, newest first">
+        <div className="lv-head">
+          <span>AWNING · LIVE</span>
+          <span>{stale ? "RECONNECTING…" : "EVERY 3 S · UTC"}</span>
+        </div>
+        {events.length === 0 ? (
+          <p className="lv-empty">
+            Nothing yet. The first business that opens prints here within 3 seconds.
+            <a href="/#open">Open yours</a>
+          </p>
+        ) : (
+          <ol className="lv-lines">
+            {events.map((e, i) => {
+              const href = storeUrl[e.slug];
+              return (
+                <li key={`${e.at}-${e.slug}-${e.type}-${i}`} className={`lv-${e.type}`}>
+                  <time dateTime={e.at} title={now ? ago(e.at, now) : undefined}>
+                    {clock(e.at)}
+                  </time>
+                  <span className="lv-type">{LABEL[e.type] ?? e.type.toUpperCase()}</span>
+                  <span className="lv-name">{href ? <a href={href}>{e.name}</a> : e.name}</span>
+                  <span className="lv-amt">{e.type === "order" && e.amountUsd != null ? `+${e.amountUsd.toFixed(2)}` : e.type === "opened" ? "open" : ""}</span>
+                  <span className="lv-tx">
+                    {e.tx && TX.test(e.tx) ? (
+                      <a href={`https://basescan.org/tx/${e.tx}`} target="_blank" rel="noreferrer">
+                        {e.tx.slice(0, 6)}…{e.tx.slice(-4)} on BaseScan
+                      </a>
+                    ) : now ? (
+                      <span className="lv-ago">{ago(e.at, now)}</span>
+                    ) : null}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    </div>
   );
 }

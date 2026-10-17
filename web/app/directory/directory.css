@@ -1,0 +1,44 @@
+/* /directory: every live business as a small shopfront card in its own colors. */
+.dir-top{padding:clamp(32px,5vw,72px) 0 clamp(32px,4vw,56px);background:var(--bg)}
+.dir-top-grid{display:grid;grid-template-columns:7fr 5fr;gap:clamp(24px,4vw,64px);align-items:end}
+.dir-h1{font-size:var(--step-display)}
+.dir-top .lede{margin-top:24px;max-width:34em}
+.dir-search label{display:block;margin:0 0 10px;font-weight:600;font-size:15px}
+.dir-search div{display:flex;gap:8px;padding:6px;border-radius:var(--r-pill);background:var(--surface);box-shadow:var(--shadow-2),inset 0 0 0 1.5px oklch(0.21 0.035 160/.12)}
+.dir-search input{flex:1;min-width:0;height:48px;padding:0 18px;border:0;background:transparent;font:400 17px/1 var(--font-text);color:var(--ink);outline:0}
+.dir-search input:focus-visible{outline:0}
+.dir-search div:focus-within{box-shadow:var(--shadow-2),0 0 0 3px var(--focus)}
+.dir-search .btn{--h:48px}
+.dir-clear{display:inline-block;margin-top:12px;font-size:15px;font-weight:600}
+
+.dir-list{padding:0 0 var(--section);background:var(--bg)}
+.dir-count{margin:0 0 20px;color:var(--muted);font-size:15px}
+.dir-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:clamp(16px,2vw,28px)}
+.dir-card{--sw:26px;position:relative;display:flex;flex-direction:column;height:100%;border-radius:10px 10px 18px 18px;background:var(--ground);color:var(--ink);text-decoration:none;box-shadow:var(--shadow-2);transition:transform var(--dur-ui) var(--ease-out),box-shadow var(--dur-ui)}
+.dir-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-3)}
+.dir-canopy{display:block;height:34px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,rgb(0 0 0/.2),rgb(0 0 0/0) 45%),repeating-linear-gradient(90deg,var(--stripeA) 0 var(--sw),var(--stripeB) var(--sw) calc(var(--sw)*2));
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,radial-gradient(circle at 50% 0,#000 12.5px,#0000 13px) bottom left/26px 13px repeat-x;mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,radial-gradient(circle at 50% 0,#000 12.5px,#0000 13px) bottom left/26px 13px repeat-x}
+.c-flat .dir-canopy{height:24px;-webkit-mask:none;mask:none;box-shadow:inset 0 -4px 0 var(--ink)}
+.c-tile .dir-canopy{height:24px;-webkit-mask:none;mask:none;background:repeating-linear-gradient(90deg,var(--stripeA) 0 6px,var(--stripeB) 6px 24px);box-shadow:inset 0 -4px 0 var(--ink),inset 0 4px 0 rgb(0 0 0/.12)}
+.dir-body{flex:1;display:flex;flex-direction:column;gap:8px;padding:18px 22px 20px}
+.dir-meta{font-size:13.5px;font-weight:600;opacity:.75}
+.dir-name{font-family:var(--disp),var(--font-display);font-weight:var(--dw,400);font-size:34px;line-height:1;letter-spacing:-.005em;overflow-wrap:anywhere}
+.dir-name.up{text-transform:uppercase;font-size:40px;line-height:.9}
+.dir-tag{font-size:15px;line-height:1.4;opacity:.88}
+.dir-offers{display:grid;gap:0;margin-top:6px;border-top:1.5px dashed color-mix(in oklab,var(--ink) 28%,transparent)}
+.dir-offer{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1.5px dashed color-mix(in oklab,var(--ink) 18%,transparent);font-size:14.5px}
+.dir-offer b{font-family:var(--disp),var(--font-display);font-weight:var(--dw,400);font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dir-foot{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;gap:12px;font-size:13px;opacity:.75;overflow-wrap:anywhere}
+
+.dir-empty{display:grid;grid-template-columns:280px 1fr;gap:clamp(24px,4vw,56px);align-items:center;padding:clamp(24px,4vw,48px) 0}
+.dir-empty h2{margin:0 0 14px;font:800 var(--step-h3)/1.15 var(--font-display);font-stretch:112%;letter-spacing:-.015em}
+.dir-empty .lede{margin-bottom:24px}
+.dir-lot{height:300px;display:grid;place-items:center;border:3px dashed var(--c-500);border-bottom:0;border-radius:6px 6px 0 0;background:repeating-linear-gradient(135deg,oklch(0.31 0.075 160/.06) 0 10px,transparent 10px 22px)}
+.dir-lot span{padding:16px 18px;border-radius:6px;background:var(--g-800);box-shadow:inset 0 0 0 4px var(--g-900);color:var(--sun);font:700 22px/1.1 var(--font-display);font-stretch:112%}
+
+@media (max-width: 980px){
+  .dir-top-grid{grid-template-columns:1fr}
+  .dir-empty{grid-template-columns:1fr}
+  .dir-lot{height:200px}
+  .dir-grid{grid-template-columns:1fr}
+}
