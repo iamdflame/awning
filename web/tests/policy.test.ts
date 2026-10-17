@@ -157,6 +157,8 @@ describe("reports, automatic hold and operator review", () => {
     const live = await readJson(await liveGET(new Request(`${API}/v1/live`)));
     expect(live.events.map((e: any) => e.type)).not.toContain("report");
     expect(live.events.map((e: any) => e.type)).not.toContain("moderation");
+    // A suspended business leaves the public feed entirely (its opening too).
+    expect(live.events.map((e: any) => e.slug)).not.toContain(slug);
 
     process.env.AWNING_ADMIN_KEY = "test-admin-key-0123456789";
     const denied = await adminPOST(post(`/v1/admin/businesses/${slug}/status`, { action: "restore", reason: "reviewed" }, { "x-awning-admin-key": "wrong" }), {

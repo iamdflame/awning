@@ -34,7 +34,7 @@ export function fulfillmentFor(b: BusinessRow, offer: OfferRow, orderId: string,
   const what = qty > 1 ? `${qty} × ${offer.title}` : offer.title;
   switch (offer.kind) {
     case "product":
-      return { kind: "product", code, url, message: `Order ${code} confirmed: ${what}. ${b.name} has been notified and will contact you${contact} to arrange pickup or delivery.${reach}` };
+      return { kind: "product", code, url, message: `Order ${code} confirmed: ${what}. The order is in ${b.name}'s orders; they will contact you${contact} to arrange pickup or delivery.${reach}` };
     case "service":
       return { kind: "service", code, url, message: `Order ${code} confirmed: ${what}. ${b.name} will contact you${contact} to get started.${reach}` };
     case "booking":

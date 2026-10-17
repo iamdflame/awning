@@ -1,4 +1,4 @@
-import { desc, eq, inArray, max } from "drizzle-orm";
+import { and, desc, eq, inArray, max, notInArray } from "drizzle-orm";
 import { db, schema } from "../db/client";
 import { PUBLIC_EVENT_TYPES, type EventType } from "../db/schema";
 import { newId } from "../ids";
@@ -22,7 +22,13 @@ export async function recentEvents(limit = 50) {
   const rows = await d
     .select()
     .from(schema.events)
-    .where(inArray(schema.events.type, [...PUBLIC_EVENT_TYPES]))
+    // Suspended businesses leave the public feed along with the directory.
+    .where(
+      and(
+        inArray(schema.events.type, [...PUBLIC_EVENT_TYPES]),
+        notInArray(schema.events.slug, d.select({ slug: schema.businesses.slug }).from(schema.businesses).where(eq(schema.businesses.status, "suspended"))),
+      ),
+    )
     .orderBy(desc(schema.events.at), desc(schema.events.id)).limit(Math.min(Math.max(limit, 1), 200));
   return rows.map(eventView);
 }
