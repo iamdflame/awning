@@ -12,6 +12,7 @@ Last updated 2026-10-17. "Now" is what exists on `main`. "Next" is the work requ
 - **Storefronts** by Host header, `/live` feed, `/directory`, TwiML receptionist fallback, owner SMS on orders.
 - **Trust and safety**: acceptable-use and brand-impersonation screening of sentences, drafts and offers; per-wallet quotas; public reports (`/report`) with automatic hold after three distinct reporters; operator suspend and restore; receptionist safety rules.
 - **Drafting through the Vercel AI Gateway** when there is no Anthropic key, and **storefront photography** (two illustrative photos per business, generated after the plan response and served at `/img/:id`).
+- **Payment hardening**: refunds never simulated with real payments (the treasury key must control the treasury address, and Pro needs a working refunder); a reconciler that settles the truth for interrupted payments from the chain (after health checks, daily Vercel cron, 10-minute GitHub workflow); owner tokens re-issued by `open-free` only to a retry within 10 minutes; `/s/*` blocked on business hosts; no internal error text in public answers; buyer notes stored as one plain line; CORS on every x402 response; budgets that fit (first domain check 5 s, saga 14 s, x402 functions 90 s).
 - **Mocks** for every provider, and a rule that real money never buys simulated Pro.
 
 Known gaps on `main` are listed in [THREAT_MODEL.md](THREAT_MODEL.md#known-gaps).
@@ -20,10 +21,10 @@ Known gaps on `main` are listed in [THREAT_MODEL.md](THREAT_MODEL.md#known-gaps)
 
 Safety and correctness first:
 
-1. **Finish suspension**: show suspended businesses as unavailable on the storefront, pause the phone line and receptionist, hide their offers everywhere; alert the operator on every automatic hold; prove wallet control before quotas count it.
-2. **Refund honesty**: require a real refunder before Pro is sold with a real facilitator.
-3. **Owner token**: stop `/v1/open-free` from returning tokens for businesses it did not just open; add rotation.
-4. **Bounded paid open**: fit verify + saga + settle inside the function limit, or move provisioning after the response with a status the agent can poll; a reconciler for `unconfirmed` and stale `working` payments and leaked provider resources.
+1. **Finish suspension**: show suspended businesses as unavailable on the storefront page; alert the operator on every automatic hold; prove wallet control before quotas count it.
+2. **Owner token rotation**: an endpoint that bumps `owner_token_version`.
+3. **Automatic cleanup** of provider resources left by an interrupted paid open (today the reconciler logs them for the operator).
+4. **Operator alerts**: route `OPERATOR:` log lines (refund required, order not recorded, delivered without settlement) to a pager.
 5. **Plugin/API alignment**: match `awning_add_offer` limits to the API (60-character titles, 200-character descriptions, whole cents, $10,000), handle a Pro package that is unavailable or has no price, pass `ownerPhone` so owners get SMS, allow Free → Pro upgrades in `awning_open`.
 
 Then the business:

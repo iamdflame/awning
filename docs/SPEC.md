@@ -47,7 +47,7 @@ Tool names are the plugin's ([PLUGIN.md](PLUGIN.md)); endpoints are the API's ([
 3. The agent shows the name, offers, the preview link (`https://<slug>.awning.sh`, marked "Preview — not open yet" and `noindex`) and the prices, then asks how to open.
 4. The owner picks Free. The agent calls `awning_open_free` → `POST /v1/open-free`.
 5. The business becomes `live` on `https://<slug>.awning.sh`, appears in the directory and in `GET /v1/businesses`, and an `opened` event appears on `/live`.
-6. The response carries the **owner token**. The agent gives it to the owner to keep.
+6. The response carries the **owner token**. The agent gives it to the owner to keep. A repeated call within 10 minutes of a free opening returns the same token again; after that, `POST /v1/open-free` answers `ownerToken: null` and never re-issues it (and never for a Pro business).
 
 ### Owner: plan, then open Pro
 
@@ -105,7 +105,7 @@ Stored values are `quoted`, `opening` and `opened` with `open_package` `free` or
 |---|---|---|
 | `draft` | Created by a plan. Not listed, not buyable (`409 business_not_open`). | Its preview URL, with a "Preview — not open yet" ribbon and `noindex`; `GET /v1/businesses/:slug` |
 | `live` | Opened (Free or Pro). Listed and buyable. | Storefront, directory, `/v1/businesses`, `/live` |
-| `suspended` | Paused after reports or by an operator. Checkout, opening and new offers refused (`403 business_suspended`); removed from the directory; `GET /v1/businesses/:slug` answers `410 business_unavailable`; its photos are not served. An operator can restore it to `live` (or `draft` if it never opened). | Storefront page only (see [THREAT_MODEL.md](THREAT_MODEL.md#known-gaps)) |
+| `suspended` | Paused after reports or by an operator. Checkout, opening and new offers refused (`403 business_suspended`); removed from the directory; `GET /v1/businesses/:slug` and its offers answer `410 business_unavailable`; its photos are not served; its phone number is detached from the AI receptionist (re-attached on restore). An operator can restore it to `live` (or `draft` if it never opened). | Storefront page only (see [THREAT_MODEL.md](THREAT_MODEL.md#known-gaps)) |
 
 `package` is empty for a draft, then `free` or `pro`. A Free business can become Pro with the same plan.
 
@@ -122,7 +122,7 @@ stateDiagram-v2
 
 ### Payment
 
-`working` (verified, work in progress, not settled) → `settled` | `unconfirmed` (work done, but neither the facilitator nor the chain gave a clear answer) | `failed` (money did not move) | `superseded` (a valid payment for something already done; not settled) | `refunded` (settled, then refunded from the treasury). See [ARCHITECTURE.md](ARCHITECTURE.md#x402-seller).
+`working` (verified, work in progress, not settled) → `settled` | `unconfirmed` (work done, but neither the facilitator nor the chain gave a clear answer) | `failed` (money did not move) | `superseded` (a valid payment for something already done; not settled) | `refunded` (settled, then refunded from the treasury). A payment left in `working` or `unconfirmed` is finished by the reconciler from the on-chain state. See [ARCHITECTURE.md](ARCHITECTURE.md#x402-seller) and [the reconciler](ARCHITECTURE.md#reconciler).
 
 ## Pricing
 
@@ -161,8 +161,10 @@ Example Pro totals at Porkbun's list prices ([porkbun.com/products/domains](http
 | Plan lifetime | 1800 s (`AWNING_PLAN_TTL_SECONDS`) | `web/lib/env.ts` |
 | x402 authorization window | 300 s (`maxTimeoutSeconds`) | [`web/lib/x402/constants.ts`](../web/lib/x402/constants.ts) |
 | Plans per owner wallet | 12 per rolling hour (`AWNING_PLAN_LIMIT_PER_HOUR`) | [`web/lib/policy/safety.ts`](../web/lib/policy/safety.ts) |
+| Plans, all wallets | 300 per rolling hour (`AWNING_GLOBAL_PLANS_PER_HOUR`) | `web/lib/policy/safety.ts` |
 | Free openings per owner wallet | 3 per rolling 24 hours (`AWNING_FREE_OPENS_PER_DAY`) | `web/lib/policy/safety.ts` |
-| Reports per reporter | 5 per day; 3 distinct reporters in 24 hours suspend the business | `web/lib/policy/safety.ts` |
+| Free openings, all wallets | 60 per rolling hour (`AWNING_GLOBAL_FREE_OPENS_PER_HOUR`) | `web/lib/policy/safety.ts` |
+| Reports per reporter network | 5 per day; reports from 3 distinct networks (IPv4 /24, IPv6 /48) in 24 hours suspend the business | `web/lib/policy/safety.ts` |
 | Generated photos | 30 per rolling hour per deployment (`AWNING_IMAGE_MAX_PER_HOUR`), two per business | [`web/lib/adapters/gateway.ts`](../web/lib/adapters/gateway.ts) |
 
 ## Trust and safety
@@ -171,9 +173,9 @@ On `main` since 2026-10-17 ([`web/lib/policy/`](../web/lib/policy/)):
 
 - **Acceptable-use screening.** Deterministic whole-word rules over normalised text block weapons, drugs and prescription medicine, adult content, gambling, investment and money-transfer schemes, counterfeit goods and forged documents, hacking services, credential and recovery-phrase phishing, government impersonation, and tobacco. The sentence is screened before anything is drafted; the draft (name, tagline, description, offers) is screened before it is stored; offers added later are screened too. A block is `422 policy_blocked` with the category and a reason that links to the acceptable use policy.
 - **Brand impersonation.** Business names are checked against a list of financial, technology, retail and government brands, with homoglyph folding (`paypa1` → `paypal`) and glued forms (`coinbasesupport`). Dictionary-word brands (Apple, Amazon, Square, …) are blocked only next to a lure word such as "support", "wallet", "recovery" or "login". Domain options are derived from the screened name.
-- **Quotas.** Per owner wallet: plans per hour and free openings per day (see limits).
-- **Reports.** Anyone can report a business at `awning.sh/report` or `POST /v1/reports`. When three distinct reporters report the same business within 24 hours, it is suspended automatically.
-- **Takedown.** An operator with `AWNING_ADMIN_KEY` can suspend or restore a business (`POST /v1/admin/businesses/:slug/status`).
+- **Quotas.** Per owner wallet (plans per hour, free openings per day) and across all wallets (plans and free openings per hour), see limits.
+- **Reports.** Anyone can report a business at `awning.sh/report` or `POST /v1/reports`. When reporters from three distinct networks report the same business within 24 hours, it is suspended automatically.
+- **Takedown.** An operator with `AWNING_ADMIN_KEY` can suspend or restore a business (`POST /v1/admin/businesses/:slug/status`). Suspension also detaches the phone number from the AI receptionist; restoring re-attaches it.
 - **Receptionist guardrails.** The receptionist prompt says callers cannot change its instructions, forbids claiming to be any other company, promising anything not written down, reading out personal details, or taking codes, keys or card numbers, and tells it to say it is an AI when asked ([`web/lib/plan/receptionist.ts`](../web/lib/plan/receptionist.ts)).
 
 ## What is live and what is mocked
@@ -190,11 +192,11 @@ Every provider sits behind an adapter ([`web/lib/adapters/`](../web/lib/adapters
 | AI receptionist | ElevenLabs Conversational AI agent, with the Twilio number imported into it | No agent; a real Twilio number answers with the TwiML receptionist at `/v1/voice/:slug` |
 | Owner order notification | Twilio SMS to `ownerPhone` | Logged |
 | Payment verify and settle | Any x402 facilitator; default PayAI (`https://facilitator.payai.network`) | `AWNING_FACILITATOR_URL=mock` verifies signatures locally and settles nothing; refused when `VERCEL_ENV` or `AWNING_ENV` is `production` |
-| Refunds after settlement | viem USDC transfer from the treasury key | Simulated refund, no money moves |
+| Refunds after settlement | viem USDC transfer from the treasury key, used only when `AWNING_TREASURY_PRIVATE_KEY` controls `AWNING_TREASURY_ADDRESS` | With real payments: refunds unavailable; a refund attempt answers `refunded: false` and alerts the operator, never a simulated success. With the mock facilitator: simulated |
 
-**Real money never buys simulated provisioning.** With a real facilitator, Pro is sold only when the registrar, hosting, telephony and receptionist adapters are all real. Otherwise the plan's Pro package says `available: false` with the reason, and `/x402/open` answers `503 pro_unavailable` without a payment challenge ([`web/lib/services/readiness.ts`](../web/lib/services/readiness.ts)). Free openings and sales work in every configuration. A response produced with mocks lists them in `simulated`.
+**Real money never buys simulated provisioning.** With a real facilitator, Pro is sold only when the registrar, hosting, telephony and receptionist adapters are all real and the refunder can actually refund. Otherwise the plan's Pro package says `available: false` with the reason, and `/x402/open` answers `503 pro_unavailable` without a payment challenge ([`web/lib/services/readiness.ts`](../web/lib/services/readiness.ts)). Free openings and sales work in every configuration. A response produced with mocks lists them in `simulated`.
 
-The refund adapter is not part of that check. With a real facilitator and no `AWNING_TREASURY_PRIVATE_KEY`, a refund after settlement is simulated but still reported as `refunded: true`. This is a known bug ([THREAT_MODEL.md](THREAT_MODEL.md#known-gaps)).
+`GET /v1/health` reports both: `checks.refunds` (`ok` or `unavailable`) and `checks.pro` (`available`, `available (simulated payments)` or `unavailable (<missing adapters>)`).
 
 ## Not built (planned)
 
@@ -204,4 +206,4 @@ The refund adapter is not part of that check. With a real facilitator and no `AW
 - Owner token rotation (`owner_token_version` exists; no endpoint changes it).
 - Upgrading a Free business to Pro through the plugin (the API supports it; `awning_open` refuses businesses that are not drafts).
 - An owner dashboard, a status page, Solana payments.
-- A storefront view for suspended businesses, and pausing the phone line and receptionist on suspension.
+- A storefront view for suspended businesses (in progress); at `fdfb2ac` the page still renders them as a preview, though checkout is refused.

@@ -1,6 +1,6 @@
 # Awning API reference
 
-Status: matches the code on `main` as of 2026-10-17 (`web/app/v1/**`, `web/app/x402/**`). Version string: `0.1.0` (`web/lib/env.ts`).
+Status: matches the code on `main` as of 2026-10-17 (`web/app/v1/**`, `web/app/x402/**`). Version string: `1.0.0` (`web/lib/env.ts`).
 
 ## Basics
 
@@ -44,7 +44,7 @@ Some errors add fields (named per endpoint below). Common ones:
 | 500 | `internal_error` | unexpected error; `message` contains an id like `err_m1x2y3` for the logs |
 | 503 | `misconfigured` | a required server secret is missing |
 
-Limits are per owner wallet (12 plans per hour, 3 free openings per day; `AWNING_PLAN_LIMIT_PER_HOUR`, `AWNING_FREE_OPENS_PER_DAY`) and per reporter (5 reports per day). There is no per-IP rate limiting.
+Limits are per owner wallet (12 plans per hour, 3 free openings per day; `AWNING_PLAN_LIMIT_PER_HOUR`, `AWNING_FREE_OPENS_PER_DAY`), across all wallets (300 plans and 60 free openings per hour; `AWNING_GLOBAL_PLANS_PER_HOUR`, `AWNING_GLOBAL_FREE_OPENS_PER_HOUR`) and per reporter network (5 reports per day). There is no per-IP rate limiting of reads.
 
 ---
 
@@ -61,10 +61,10 @@ curl -s https://api.awning.sh/v1/health
 ```json
 {
   "ok": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "lastOpenAt": "2026-10-17T14:02:11.000Z",
   "lastOrderAt": null,
-  "checks": { "db": "ok (postgres)", "treasury": "ok", "pluginKey": "ok" },
+  "checks": { "db": "ok (postgres)", "treasury": "ok", "pluginKey": "ok", "refunds": "ok", "pro": "available" },
   "facilitator": "https://facilitator.payai.network",
   "adapters": {
     "registrar": "porkbun",
@@ -79,7 +79,17 @@ curl -s https://api.awning.sh/v1/health
 }
 ```
 
-A mock adapter shows as `"mock (mock-registrar)"`. `ok` is false when the database fails, the treasury address is missing, or the facilitator cannot be built. A missing plugin key shows in `checks` but does not make `ok` false.
+A mock adapter shows as `"mock (mock-registrar)"`; refunds that cannot be made show as `"refunder": "mock (unavailable)"`. `ok` is false when the database fails, the treasury address is missing, the facilitator cannot be built, or (in production) the plugin key is missing.
+
+| Check | Values |
+|---|---|
+| `db` | `ok (postgres)`, `ok (pglite)`, `ok (pglite-memory)`, or `error` (the detail is logged, not returned) |
+| `treasury` | `ok` or `missing AWNING_TREASURY_ADDRESS` |
+| `pluginKey` | `ok` or `missing AWNING_PLUGIN_KEY` |
+| `refunds` | `ok` when the treasury key controls the treasury address, else `unavailable` |
+| `pro` | `available`, `available (simulated payments)`, or `unavailable (<adapters>)` |
+
+`facilitator` is the facilitator URL, `mock (no settlement)`, or `error`. After a health check that reached the database, the server runs the payment reconciler for up to 10 stale payments in the background.
 
 ## `POST /v1/plan`
 
@@ -186,7 +196,19 @@ curl -s -X POST https://api.awning.sh/v1/open-free \
 }
 ```
 
-If the business is already live, the answer is `200` with the same owner token, `"alreadyOpen": true` and `"steps": []`. The plan's expiry is not checked.
+If the business is already live, the answer is `200` with `"alreadyOpen": true` and `"steps": []`. The owner token is returned again only to a retry within 10 minutes of a free opening. Otherwise, and always for a Pro business, `ownerToken` is `null`:
+
+```json
+{
+  "business": { "slug": "ridge-roast", "…": "…" },
+  "ownerToken": null,
+  "alreadyOpen": true,
+  "steps": [],
+  "message": "Ridge Roast is already open. Its owner token was returned when it opened and is not shown again."
+}
+```
+
+The plan's expiry is not checked.
 
 Errors: `404 plan_not_found`, `403 business_suspended`, `429 rate_limited` (3 free openings per wallet per day), `409 open_in_progress` (a Pro opening is running), `409 plan_not_openable`.
 
@@ -275,7 +297,7 @@ Public, CORS `*`.
 curl -s https://api.awning.sh/v1/businesses/ridge-roast/offers
 ```
 
-`200`: `{ "offers": [{ "sku", "title", "description", "priceUsd", "kind" }] }`. Errors: `404 business_not_found`.
+`200`: `{ "offers": [{ "sku", "title", "description", "priceUsd", "kind" }] }`. Errors: `404 business_not_found`, `410 business_unavailable` (suspended).
 
 ## `POST /v1/businesses/:slug/offers`
 
@@ -372,7 +394,7 @@ curl -s 'https://api.awning.sh/v1/live?limit=10'
 
 ## `POST /v1/reports`
 
-Public, CORS `*`. Reports a business. No account needed. The reporter is identified only by an HMAC of their IP address and the UTC day; the IP is not stored.
+Public, CORS `*`. Reports a business. No account needed. The reporter is identified only by an HMAC of their network (IPv4 /24, IPv6 /48) and the UTC day; the IP is not stored. Several reports from one network count as one reporter.
 
 | Field | Type | Rules |
 |---|---|---|
@@ -393,7 +415,7 @@ curl -s -X POST https://api.awning.sh/v1/reports -H 'content-type: application/j
   "message": "Thanks. A person reviews every report; checkout pauses automatically once 3 people report the same business." }
 ```
 
-When three distinct reporters report the same business within 24 hours, it is suspended and `held` is `true`. Errors: `404 business_not_found`, `429 rate_limited` (5 reports per reporter per day), `400 invalid_request`.
+When reporters from three distinct networks report the same business within 24 hours, it is suspended and `held` is `true`. Errors: `404 business_not_found`, `429 rate_limited` (5 reports per reporter per day), `400 invalid_request`.
 
 ## `POST /v1/admin/businesses/:slug/status`
 
@@ -407,11 +429,27 @@ curl -s -X POST https://api.awning.sh/v1/admin/businesses/ridge-roast/status \
   -d '{"action":"suspend","reason":"phishing report confirmed"}'
 ```
 
-`200`: `{ "slug": "ridge-roast", "status": "suspended" }`. Restoring returns the business to `live` if it had opened, otherwise to `draft`. Each action is recorded as an internal `moderation` event. Errors: `401 unauthorized`, `404 business_not_found`, `400 invalid_request`.
+`200`: `{ "slug": "ridge-roast", "status": "suspended" }`. Restoring returns the business to `live` if it had opened, otherwise to `draft`. Each action is recorded as an internal `moderation` event. Suspending detaches the business's phone number from its AI receptionist; restoring re-attaches it (best effort: a provider error is logged and does not block the action). Errors: `401 unauthorized`, `404 business_not_found`, `400 invalid_request`.
 
 ## `GET /img/:id`
 
 Public. A generated storefront photo (`image/webp`, 1024×768), `cache-control: public, max-age=31536000, immutable`, `etag`. `404` for unknown ids and for photos of suspended businesses (CDN copies cached earlier can outlive a suspension). An optional `.webp` suffix is accepted.
+
+## `GET /v1/cron/reconcile`
+
+Cron only: `Authorization: Bearer <CRON_SECRET>`. Disabled (`503 misconfigured`) when `CRON_SECRET` is not set. Finishes payments that a request left in `working` or `unconfirmed` for more than 3 minutes, using the on-chain `authorizationState` ([ARCHITECTURE.md](ARCHITECTURE.md#reconciler) has the state table). Called daily by Vercel cron and every 10 minutes by the `reconcile payments` GitHub workflow. `maxDuration` 60 s.
+
+```bash
+curl -s https://api.awning.sh/v1/cron/reconcile -H "Authorization: Bearer $CRON_SECRET"
+```
+
+`200`:
+
+```json
+{ "reconciled": 1, "outcomes": [{ "key": "eip155:8453:0x8335…:0x…:0x…", "from": "working", "to": "failed", "note": "money did not move" }] }
+```
+
+Errors: `401 unauthorized`, `503 misconfigured`.
 
 ## `POST /v1/voice/:slug`
 
@@ -421,7 +459,9 @@ Twilio's voice webhook (form-encoded), used when no ElevenLabs agent is attached
 
 ## x402 endpoints
 
-Both endpoints follow the same flow. PayBox drives it: it fetches the unpaid 402, compares it with the proposal, asks the user to approve, then sends the paid retry with the signed payment.
+Both endpoints follow the same flow. PayBox drives it: it fetches the unpaid 402, compares it with the proposal, asks the user to approve, then sends the paid retry with the signed payment. `maxDuration` is 90 s.
+
+CORS: every x402 response (402, errors, replays, paid answers) carries `access-control-allow-origin: *` and `access-control-expose-headers: PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-PAYMENT-RESPONSE`. `OPTIONS` answers `204` with `access-control-allow-methods: GET, POST, OPTIONS`, `access-control-allow-headers: content-type, payment-signature, x-payment` and `access-control-max-age: 86400`.
 
 ### `POST /x402/open/:planId`
 
@@ -474,9 +514,10 @@ Paid outcomes:
 | 409 | `{error: "open_in_progress", charged: false, refunded: false}`, `retry-after: 3`; the payment key is released | no |
 | 409 | `{error: "payment_in_progress", charged: false}`, `retry-after: 3` | not by this request |
 | 500 | `{error: "work_failed", charged: false, refunded: false}` | no |
-| 502 | `{error: "provisioning_failed", message, reason, failedStep, charged: false, refunded: false, steps}` | no |
-| 502 | `{refunded: true, refundTx, reason, charged: true, paidUsd, tx}` | yes, then refunded |
-| 502 | `{refunded: false, reason, refundError, charged: true, paidUsd, tx, message: "Refund pending: …"}` | yes; refund pending |
+| 502 | `{error: "provisioning_failed", message, failedStep, charged: false, refunded: false, steps}`; `message` names the failed step, never the provider's error | no |
+| 502 | `{refunded: true, refundTx, reason, charged: true, paidUsd, tx}`; `reason` is the fixed sentence "Your payment settled but the result could not be recorded." | yes, then refunded |
+| 502 | `{refunded: false, reason, charged: true, paidUsd, tx, message}`: the automatic refund could not be sent (or refunds are unavailable) and the operator has been alerted | yes; refund pending |
+| 503 | `{error: "work_interrupted", charged: false, refunded: false}`: a replay after the reconciler found that an interrupted request never took the payment | no |
 
 ### `POST /x402/b/:slug/:sku`
 
@@ -484,7 +525,7 @@ Buys `qty` of an offer. Paid straight to the owner's wallet.
 
 | | |
 |---|---|
-| Body | `{ "qty"?: 1–100, "buyerNote"?: string (≤500), "buyerContact"?: string (≤200) }`. `?qty=` also works; if both are given they must agree |
+| Body | `{ "qty"?: 1–100, "buyerNote"?: string (≤500), "buyerContact"?: string (≤200) }`. `?qty=` also works; if both are given they must agree. Note and contact are stored as one plain line: control characters and line breaks become spaces |
 | Amount | offer price × qty |
 | `payTo` | the owner's wallet |
 | `GET` | returns the same 402 (`?qty=` sets the quantity) |
@@ -510,6 +551,7 @@ Paid outcomes:
 | 409 | `payment_in_progress` |
 | 500 | `work_failed`, `charged: false` |
 | 502 | `{error: "delivery_failed", message, charged: true, refunded: false, tx}`: the payment settled to the owner but the order could not be recorded |
+| 503 | `{error: "work_interrupted", charged: false}`: replay after the reconciler found an interrupted request never took the payment |
 
 `fulfillment.message` depends on the offer kind (product, service, booking, digital, subscription) and includes the confirmation code, for example *"Booking RID-7K2Q9M confirmed: Tasting session. Ridge Roast will confirm the time with you. Quote RID-7K2Q9M when you arrive."* Subscriptions say renewals are separate payments and nothing is charged automatically.
 

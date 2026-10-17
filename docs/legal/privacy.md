@@ -30,7 +30,7 @@ This policy explains what personal data Awning ("we") collects when you open a b
 **When you report a business**
 
 - The business, your reason, the details you write and, if you give it, your contact.
-- A daily identifier computed from your IP address with a one-way function, used to limit reports per person. We do not store the IP address itself.
+- A daily identifier computed with a one-way function from your network (the first three parts of an IPv4 address, or the first three groups of an IPv6 address), used to limit reports per person. We do not store the IP address itself.
 
 **When you visit a site**
 

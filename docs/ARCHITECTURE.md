@@ -43,7 +43,8 @@ flowchart LR
 |---|---|---|
 | Plugin | `plugin/src/*.ts`, bundled to `plugin/dist/plugin.mjs` | In the PayBox sandbox, one fresh process per call |
 | JSON API | `web/app/v1/**` | Vercel functions |
-| x402 seller | `web/app/x402/**`, `web/lib/x402/*` | Vercel functions, `maxDuration = 30` |
+| x402 seller | `web/app/x402/**`, `web/lib/x402/*` | Vercel functions, `maxDuration = 90` |
+| Payment reconciler | `web/lib/x402/reconcile.ts`, `web/app/v1/cron/reconcile/route.ts` | After health checks, a daily Vercel cron, a 10-minute GitHub workflow |
 | Opening orchestrator | `web/lib/orchestrator/machine.ts`, steps in `web/lib/services/open.ts` | Inside the paid `/x402/open` request |
 | Provider adapters | `web/lib/adapters/*` | Called from services; mock when keys are missing |
 | Trust and safety | `web/lib/policy/*` (screening, quotas, reports, takedown) | Inside `/v1/plan`, `/v1/open-free`, offer creation, the x402 quotes, `/v1/reports`, `/v1/admin/*` |
@@ -74,9 +75,10 @@ All routes are Next.js route handlers wrapped by `handler()` ([`web/lib/api.ts`]
 |---|---|---|
 | Public | none; CORS `*` on GETs | `GET /v1/health`, `/v1/businesses`, `/v1/businesses/:slug`, `/v1/businesses/:slug/offers`, `/v1/live`, `/img/:id`; `POST /v1/reports` |
 | Operator | `x-awning-admin-key` equals `AWNING_ADMIN_KEY` (constant-time); unset key → `503` | `POST /v1/admin/businesses/:slug/status` |
+| Cron | `Authorization: Bearer <CRON_SECRET>` (constant-time); unset secret → `503` | `GET /v1/cron/reconcile` |
 | Plugin | `x-awning-plugin-key` equals `AWNING_PLUGIN_KEY` (constant-time). Unset key: allowed in development, `503 misconfigured` in production | `POST /v1/plan`, `GET /v1/plans/:planId`, `POST /v1/open-free` |
 | Plugin + owner | plugin key, and `x-awning-owner-token` for that business | `POST /v1/businesses/:slug/offers`, `GET /v1/orders` |
-| x402 | none (PayBox cannot send custom headers on payment requests); the payment is the authorization | `/x402/open/:planId`, `/x402/b/:slug/:sku` |
+| x402 | none (PayBox cannot send custom headers on payment requests); the payment is the authorization. Every response, and an `OPTIONS` preflight, carries CORS headers | `/x402/open/:planId`, `/x402/b/:slug/:sku` |
 | Twilio | `X-Twilio-Signature` HMAC-SHA1 when `TWILIO_AUTH_TOKEN` is set | `POST /v1/voice/:slug` |
 
 Endpoint reference: [API.md](API.md).
@@ -145,7 +147,7 @@ A Pro opening is a saga that runs inside the paid x402 request, between payment 
 
 **Compensation.** When a step fails, the completed steps are undone in reverse order, each with an 8 s timeout. An undo that fails marks its step `compensation_failed` and logs an error; the resource stays and needs manual cleanup. The same undo runs if settlement fails, or if the commit fails after settlement. The plan returns to `quoted` (or `opened` + `free` for an upgrade) with `last_error` set. A registered domain is not undone; it stays in Awning's registrar account, and the next opening attempt for that plan reuses it.
 
-**Deadline.** `env.openDeadlineMs()` defaults to **20000** ms in [`web/lib/env.ts`](../web/lib/env.ts); `.env.example` and `web/README.md` say 14000. See [latency budgets](#latency-budgets).
+**Deadline.** `AWNING_OPEN_DEADLINE_MS`, default 14000 ms ([`web/lib/env.ts`](../web/lib/env.ts)). See [latency budgets](#latency-budgets).
 
 ## x402 seller
 
@@ -188,7 +190,7 @@ sequenceDiagram
 
 **Paid request**, in order:
 
-1. **Replay first.** Before the quote is recomputed, a payment key with a stored response gets that response again, so a later change (plan expired, offer removed, Pro no longer configured) cannot turn a completed payment into an error. A key without a stored response gets `409 payment_in_progress`.
+1. **Replay first.** Before the quote is recomputed, a payment key with a stored response gets that response again, so a later change (plan expired, offer removed, Pro no longer configured) cannot turn a completed payment into an error. A key without a stored response gets `409 payment_in_progress` until the request finishes or, if it was interrupted, until the [reconciler](#reconciler) stores a definitive answer.
 2. **Exact match.** For v2, the declared `accepted` terms must equal the live quote (scheme `exact`, network `eip155:8453`, asset USDC, amount, payTo). For both versions the signed authorization's `to` and `value` must equal payTo and the amount, `validBefore` must be more than 3 s away, `validAfter` at most 5 s ahead, and the nonce 32 bytes. Any mismatch returns a fresh 402 whose `error` names the reason (`amount_mismatch`, `payto_mismatch`, `wrong_network`, …).
 3. **Verify** with the facilitator against the server's own requirements, never the client's. Invalid → 402 with the facilitator's reason.
 4. **Claim** the key: insert into `payments` with status `working`. If the insert conflicts, another request owns it: `409 payment_in_progress`.
@@ -196,13 +198,38 @@ sequenceDiagram
 6. **Settle** only if the work succeeded. If the facilitator does not return a clean success, USDC's on-chain `authorizationState(payer, nonce)` decides: used → treat as paid (`unconfirmed`); not used → one more settle attempt for transient reasons; definitively refused → failed.
 7. **Commit**, store the response, return it with `PAYMENT-RESPONSE` and `X-PAYMENT-RESPONSE`.
 
-**Pay only on success.** Work failure → the authorization is never settled; `502 provisioning_failed` (open) with `charged: false` and the steps. Settlement failure → the work is undone; 402 `settlement_failed`, `charged: false`.
+**Pay only on success.** Work failure → the authorization is never settled; `502 provisioning_failed` (open) with `charged: false`, the name of the failed step and the steps. Provider error text is logged, never returned. Settlement failure → the work is undone; 402 `settlement_failed`, `charged: false`.
 
-**Refund after settlement.** If the commit fails after the money moved, the work is undone and, for openings (payTo = treasury), the refunder sends the same amount of USDC from the treasury key to the payer and waits for the receipt: `502 {refunded: true, refundTx, reason, charged: true, paidUsd, tx}`, payment status `refunded`. If the refund transfer fails: `502 {refunded: false, refundError, message: "Refund pending…"}`, status stays `settled`, and the log line `REFUND FAILED — manual action required` names the payer and amount. For orders, a commit failure after settlement marks the order `failed` and answers `502 delivery_failed, charged: true`; the buyer must contact the seller.
+**Refund after settlement.** If the commit fails after the money moved, the work is undone and, for openings (payTo = treasury), the refunder sends the same amount of USDC from the treasury key to the payer and waits for the receipt: `502 {refunded: true, refundTx, reason, charged: true, paidUsd, tx}`, payment status `refunded`. `reason` is a fixed public sentence; the internal reason is stored in `payments.error`. If the refund transfer fails: `502 {refunded: false, reason, charged: true, paidUsd, tx, message}` saying the operator has been alerted, status stays `settled`, and the log line `REFUND FAILED — manual action required` names the payer and amount.
+
+Refunds are never simulated with real payments. `ViemRefunder` is used only when `AWNING_TREASURY_PRIVATE_KEY` is a 32-byte key whose address equals `AWNING_TREASURY_ADDRESS` (`treasuryRefundProblem` in [`web/lib/adapters/refunder.ts`](../web/lib/adapters/refunder.ts)). Otherwise the refunder is `UnavailableRefunder`, which always fails, so the answer is `refunded: false` and the operator is alerted. Pro is not sold without a working refunder (`web/lib/services/readiness.ts`). The mock refunder exists only with the mock facilitator. For orders, a commit failure after settlement marks the order `failed` and answers `502 delivery_failed, charged: true`; the buyer must contact the seller.
 
 **Expiry.** Unpaid open requests after `expiresAt` → `410 quote_expired`. Paid requests get `MAX_TIMEOUT_SECONDS` (300 s) of grace so a payment signed just before expiry completes.
 
+**CORS.** Every x402 response, including 402s, replays, 409s and paid answers, has `access-control-allow-origin: *` and exposes `PAYMENT-REQUIRED`, `PAYMENT-RESPONSE`, `X-PAYMENT-RESPONSE`. `OPTIONS` answers a preflight that allows `content-type`, `payment-signature` and `x-payment`.
+
 **Facilitator.** `HttpFacilitator` uses `@x402/core`'s `HTTPFacilitatorClient` against `AWNING_FACILITATOR_URL` (default `https://facilitator.payai.network`) with a 12 s timeout. `MockFacilitator` (`AWNING_FACILITATOR_URL=mock`) verifies the EIP-3009 signature with viem against the USDC-on-Base EIP-712 domain and settles in memory; it refuses to start in production.
+
+## Reconciler
+
+A paid request can stop before it stores an answer: the function is killed, or settlement ends `unconfirmed` (the facilitator's answer was unclear and the chain could not be read). [`web/lib/x402/reconcile.ts`](../web/lib/x402/reconcile.ts) finishes those payments, using USDC's on-chain `authorizationState(payer, nonce)` as the truth.
+
+It looks at payments in `working` or `unconfirmed` whose `updated_at` is older than 3 minutes (longer than any paid request can live), at most 25 per run (10 when triggered by the health check).
+
+| Payment status | Money moved on chain? | Purpose | Result | Stored answer for a replay |
+|---|---|---|---|---|
+| `working` | no | either | `failed`; an open's plan is released back to `quoted` (or `opened` if the business is already live on Free) | `503 {error: "work_interrupted", charged: false, refunded: false}`: the payer may pay again |
+| `working` | yes | open | treasury refund → `refunded`; plan released | `502 {refunded: true, refundTx, reason, charged: true, paidUsd}` |
+| `working` | yes | open, refund fails | `settled`; `OPERATOR: REFUND REQUIRED` logged; plan released | `502 {refunded: false, charged: true, paidUsd, message}` |
+| `working` | yes | order | `settled`; `OPERATOR: order settled to the seller but not recorded` logged | `502 {error: "delivery_failed", charged: true, refunded: false, paidUsd}` |
+| `unconfirmed` | yes | either | `settled` | unchanged (the original success) |
+| `unconfirmed` | no, and more than 15 minutes old | either | `failed`; `OPERATOR: delivered without settlement` logged. The business stays open or the order stays recorded | unchanged |
+| `unconfirmed` | no, younger | either | unchanged; checked again next run | — |
+| any | chain read fails | either | unchanged | — |
+
+Each actionable row is claimed first with an optimistic update on `updated_at`, so two runs (cron and health) never act on the same payment twice. An interrupted open also logs `OPERATOR: interrupted paid open — check provider resources for this plan` with the plan's steps and provider ids: undoing provider resources created before the interruption is left to the operator.
+
+It runs from three places: after every `GET /v1/health` that reached the database (scheduled with `after()`), a daily Vercel cron (`17 4 * * *`, [`web/vercel.json`](../web/vercel.json)), and a GitHub workflow every 10 minutes ([`.github/workflows/reconcile.yml`](../.github/workflows/reconcile.yml)). The cron and the workflow call `GET /v1/cron/reconcile` with `Authorization: Bearer $CRON_SECRET`.
 
 ## Multi-tenant hosting
 
@@ -214,7 +241,7 @@ One deployment serves every host. `web/middleware.ts` resolves the tenant from `
 | `<slug>.awning.sh`, `<slug>.localhost` | that business | `/s/<slug>` |
 | anything else | custom domain (`www.` stripped) | `/s/<domain>`; the page looks it up with `getBusinessByDomain` (Pro businesses only) |
 
-`/v1/*`, `/x402/*`, `/_next/*`, `/s/*` and a few static files pass through on every host, so the API works on `api.awning.sh` and on every storefront host. `web/app/s/[slug]/page.tsx` renders the business with its palette: hero, offers with prices, a copyable "Buy with your AI agent" prompt and the x402 URL per offer, the phone line, and "Opened with Awning". Drafts get a "Preview — not open yet" ribbon and `robots: noindex`. Custom domains reach the project because the orchestrator attaches them through the Vercel API and points their DNS at Vercel.
+`/v1/*`, `/x402/*`, `/_next/*` and a few static files pass through on every host, so the API works on `api.awning.sh` and on every storefront host. `/s/*` is the internal rewrite target: on a business host it answers `404` (`blockedOnTenantHost`), so one business's domain can never render another business. `web/app/s/[slug]/page.tsx` renders the business with its palette: hero, offers with prices, a copyable "Buy with your AI agent" prompt and the x402 URL per offer, the phone line, and "Opened with Awning". Drafts get a "Preview — not open yet" ribbon and `robots: noindex`. Custom domains reach the project because the orchestrator attaches them through the Vercel API and points their DNS at Vercel.
 
 ## Data model
 
@@ -252,18 +279,20 @@ Migrations are generated with drizzle-kit into `web/drizzle/` and applied automa
 | Plugin → API, every tool except `awning_plan` | 4 s per request (the paid tools make two in parallel) | `FETCH_TIMEOUT_MS`, `plugin/src/awning.ts` |
 | Plugin → `POST /v1/plan` | 8 s | `PLAN_TIMEOUT_MS` |
 | `POST /v1/plan`, server side | target under about 6.5 s: LLM 4.5 s (`AWNING_LLM_TIMEOUT_MS`), second domain check `max(1.2 s, 6.5 s − elapsed)`, phone search 5 s | `web/lib/services/plans.ts` |
-| First domain check inside `/v1/plan` | 8 s (not bounded by the 6.5 s target; see failure modes) | `checkFor(…, 8000)` |
-| `/v1/plan`, `/x402/*` functions | 30 s | `maxDuration` |
+| First domain check inside `/v1/plan` | 5 s | `checkFor(…, 5000)` |
+| `/v1/plan` function | 30 s | `maxDuration` |
+| `/x402/*` functions | 90 s | `maxDuration` |
+| Reconciler run | 60 s function; payments stale after 3 min | `web/app/v1/cron/reconcile/route.ts`, `STALE_AFTER_MS` |
 | Facilitator `/verify`, `/settle` | 12 s each; settle up to 2 attempts | `HttpFacilitator` |
 | `authorizationState` read | 6 s per attempt | `HttpFacilitator.authorizationUsed` |
-| Opening saga | `AWNING_OPEN_DEADLINE_MS` (code default 20 s), per-step caps above | `web/lib/env.ts`, `proSteps()` |
+| Opening saga | `AWNING_OPEN_DEADLINE_MS` (default 14 s), per-step caps above | `web/lib/env.ts`, `proSteps()` |
 | Each undo | 8 s | `compensate` |
 | Owner SMS after an order | waits at most 3 s | `buy` commit |
 | Refund transfer | RPC 10 s, receipt wait 20 s | `ViemRefunder` |
 | Signed authorization | 300 s | `MAX_TIMEOUT_SECONDS` |
 | PayBox proposal | at most 4 min, never past the plan's expiry; refused with under 60 s left | `proposalExpiry` |
 
-The paid open has no end-to-end bound below `maxDuration`: verify (12 s) + saga (20 s) + two settle attempts with chain checks (2 × (12 s + 6 s)) can exceed 30 s in the worst case. Typical calls are far shorter, but the bound is not enforced. See failure modes.
+Worst case for a paid open before the commit: verify (12 s) + saga (14 s) + two settle attempts with chain checks (2 × (12 s + 6 s)) = 62 s, inside the 90 s `maxDuration`. A refund after a failed commit can add up to 30 s more. If a function is killed anyway, the reconciler finishes the payment.
 
 ## Failure modes
 
@@ -276,9 +305,9 @@ The paid open has no end-to-end bound below `maxDuration`: verify (12 s) + saga 
 | LLM slow or failing | template draft; domains match the template name | none | `createPlan` |
 | Photo generation fails or hits the hourly cap | logged; the storefront keeps its drawn art | none | `generateBusinessImages` |
 | Registrar check fails during planning | no domains resolve; all three options are unavailable; Pro cannot be bought; Free still works | none | `checkFor`, `pickDomains` |
-| First domain check slow (up to 8 s) | `/v1/plan` can exceed the plugin's 8 s wait; the plugin reports a timeout although a plan was created | none | `createPlan` |
+| First domain check slow | cut off at 5 s; the plan uses the names that answered | none | `createPlan` |
 | Quote expired | unpaid: `410 quote_expired`; paid within 300 s: completes | none / normal | `quoteOpen` |
-| Pro providers not all real (real facilitator) | `503 pro_unavailable {missing}`, no challenge | none | `readiness.ts` |
+| Pro providers not all real, or no working refunder (real facilitator) | `503 pro_unavailable {missing}`, no challenge | none | `readiness.ts` |
 | Treasury address missing | `503 misconfigured` on `/x402/open` | none | `quoteOpen` |
 | Domain taken or price changed between plan and payment | `preflight` fails, nothing to undo, `502 provisioning_failed` | not settled | `proSteps` |
 | Twilio number taken since planning | next candidate, then a fresh search, then US numbers | none | `TwilioTelephony.buy` |
@@ -286,14 +315,14 @@ The paid open has no end-to-end bound below `maxDuration`: verify (12 s) + saga 
 | An undo fails | step marked `compensation_failed`, error logged, resource left in place | not settled | `compensate` |
 | DNS fails after registration | other steps undone; the domain stays registered in Awning's account and is reused on the next attempt | not settled; Awning bears the domain cost | `proSteps` |
 | Settlement refused | work undone; 402 `settlement_failed`, `charged: false` | not moved | `handlePaidRequest` |
-| Facilitator timeout and chain unreadable | treated as paid; payment `unconfirmed`; needs reconciliation (no job exists) | unknown | `settleWithTruth` |
+| Facilitator timeout and chain unreadable | treated as paid; payment `unconfirmed`; the reconciler confirms it on chain later, or flags it to the operator if it never settled | unknown until reconciled | `settleWithTruth`, `reconcile.ts` |
 | Commit fails after settlement (open) | work undone, treasury refund, `502 refunded: true` | refunded | `handlePaidRequest` |
-| Refund transfer fails | `502 refunded: false`, `REFUND FAILED` log, status `settled` | held by Awning until a manual refund | `handlePaidRequest` |
+| Refund transfer fails, or refunds unavailable | `502 refunded: false`, operator alerted, status `settled` | held by Awning until a manual refund | `handlePaidRequest` |
 | Commit fails after settlement (order) | order `failed`; `502 delivery_failed, charged: true` | with the owner | `buy` |
 | Same paid request sent twice | stored response replayed byte for byte; in flight → `409 payment_in_progress` | settled once | `replayIfSeen` |
 | Second payment for an open plan | `200 alreadyOpen: true, charged: false`; owner token only to the original payer | not settled | `openPro` |
 | Two payments open the same plan at once | the loser gets `409 open_in_progress`; its key is released for retry | loser not settled | `openPro` |
-| Function killed at `maxDuration` mid-request | payment row stays `working` (that authorization replays 409 forever); plan stays `opening` until another payment takes it over after 3 min; provider resources from completed steps are not undone; if killed after settlement, the money moved with no commit and no refund | depends on where it stopped | gap; no reconciler |
+| Function killed mid-request | after 3 minutes the reconciler reads the chain: not paid → `failed`, plan released, replay answers `work_interrupted`; paid open → refunded; paid order → flagged to the operator. Provider resources from completed steps are logged for the operator to clean up | not charged, refunded, or with the owner | `reconcile.ts` |
 | Database down | `GET /v1/health` 503; routes `500 internal_error` | none moves before the DB claim | `handler` |
 | Twilio webhook with a bad signature | `403` | none | `/v1/voice/:slug` |
 | Owner SMS slow or failing | receipt returned after at most 3 s; failure logged | normal | `buy` |
@@ -302,4 +331,5 @@ The paid open has no end-to-end bound below `maxDuration`: verify (12 s) + saga 
 
 - One Vercel project, root `web/`, Node 24. Domains `awning.sh`, `www.awning.sh`, `api.awning.sh` and the wildcard `*.awning.sh`. Custom business domains are added by the orchestrator.
 - Secrets in environment variables (see `.env.example`); locally, the repo-root `.env` is loaded by `web/next.config.ts`.
+- Vercel cron: `GET /v1/cron/reconcile` daily at 04:17 UTC; GitHub workflow `reconcile payments` every 10 minutes (needs the `CRON_SECRET` repository secret; skips when the API is unreachable).
 - CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) on Ubuntu 24.04 with Node 24.21.0 and pnpm 11.11.0: the plugin's official starter test (type-check, two builds with identical bytes, conformance), the plugin unit checks, and a deterministic-build check; then the web type-check, vitest suite (with `AWNING_FORCE_MOCKS=1` and the mock facilitator) and `next build`.
