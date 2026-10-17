@@ -86,7 +86,7 @@ export const S5Buy: React.FC<SceneProps> = ({ timing, take, assets }) => {
       ) : null}
 
       {/* the 5.00 approval, as their PayBox shows it */}
-      <div style={{ position: "absolute", left: 1330, top: 170, opacity: interpolate(f, [tFive - 6, tFive + 4], [0, 1], clamp) * (1 - frameOut), transform: `translateY(${interpolate(f, [tFive - 6, tFive + 10], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
+      <div style={{ position: "absolute", left: 1330, top: 170, opacity: interpolate(f, [tFive - 6, tFive + 4], [0, 1], clamp) * (1 - frameOut), transform: `translate(${frameOut * 700}px, ${interpolate(f, [tFive - 6, tFive + 10], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
         <Ticket width={470} scale={0.9} rotate={2} kicker={["PAYBOX", "USDC · BASE"]} title={<>{BUSINESS.tasting.title}, {BUSINESS.name}</>} amount={sale.amount} note={<>USDC to<br />the owner's wallet</>} />
         {f >= approveAt ? (
           <div style={{ position: "absolute", left: 170, top: 250 }}>

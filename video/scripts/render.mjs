@@ -1,4 +1,4 @@
-// npm run render:main | render:30 | render:thumb | render:all   [-- --skip-prepare] [--preview]
+// npm run render:main | render:30 | render:thumb | render:all | render:srt   [-- --skip-prepare] [--preview]
 //
 //   main  → out/awning-demo-main.mp4 (1920×1080, 30 fps, H.264 CRF 16, AAC 192 kb/s) + out/awning-demo.srt
 //   cut30 → out/awning-demo-30s.mp4
@@ -84,6 +84,11 @@ async function video(id, file) {
   if (!preview) loudnorm(out);
 }
 
+if (what === "srt") {
+  const comp = await selectComposition({ serveUrl, id: "Main", inputProps: {} });
+  fs.writeFileSync(path.join(OUT, "awning-demo.srt"), srt(comp.props.captions ?? [], comp.fps));
+  console.log(`captions → out/awning-demo.srt (${comp.props.captions?.length ?? 0} cues)`);
+}
 if (what === "main" || what === "all") await video("Main", "awning-demo-main.mp4");
 if (what === "cut30" || what === "all") await video("Cut30", "awning-demo-30s.mp4");
 if (what === "thumb" || what === "all") {

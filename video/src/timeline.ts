@@ -196,12 +196,12 @@ export function buildCaptions(tl: Timeline, takes: Record<string, Take>, subs: {
     }
   }
   // hold each caption until the next one (at most 0.7 s past its last word), never overlapping
+  for (const c of caps) c.from = Math.max(0, c.from - 2); // a caption leads its first word slightly
   for (let i = 0; i < caps.length; i++) {
     const c = caps[i]!;
     const nx = caps[i + 1];
     const hold = Math.round(0.7 * fps);
     c.to = Math.min(c.to + hold, nx ? nx.from - 1 : c.to + hold);
-    c.from = Math.max(0, c.from - 2);
   }
   return caps;
 }
