@@ -57,6 +57,9 @@ function challenge(amount, payTo) {
 function route(method, url, body, headers) {
   const path = url.pathname;
   if (scenario === "down") return json(503, { error: "upstream exploded", debug: "x-awning-plugin-key=SECRET-SHOULD-NOT-LEAK" });
+  if (scenario === "policy") return json(422, { error: "policy_blocked", message: "Awning can't open this: counterfeit goods and forged documents aren't allowed on Awning. Nothing was created or charged.", category: "counterfeit" });
+  if (scenario === "suspended") return json(403, { error: "business_suspended", message: "Ridge Roast is under review; its checkout is paused and nothing was charged" });
+  if (scenario === "limited") return json(429, { error: "rate_limited", message: "This wallet has drafted 12 businesses in the last hour. Try again later." });
   if (method === "POST" && path === "/v1/plan") return json(200, plan("plan_new"));
   let m;
   if (method === "GET" && (m = path.match(/^\/v1\/plans\/([^/]+)$/))) {

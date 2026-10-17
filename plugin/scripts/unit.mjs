@@ -329,6 +329,22 @@ await test("upstream failure: isError, short message, nothing leaked", async () 
   assert.ok(!text(result).includes("SECRET"));
 });
 
+await test("policy block: the human reason, and no rephrasing around it", async () => {
+  const { result } = await call("awning_plan", { sentence: "Fake IDs shipped worldwide", ownerWallet: "0x1111111111111111111111111111111111111111" }, { scenario: "policy" });
+  assert.equal(result.isError, true);
+  assert.match(text(result), /counterfeit goods and forged documents/);
+  assert.match(text(result), /do not rephrase/);
+  assert.ok(!text(result).includes("policy_blocked"));
+});
+
+await test("suspended business and per-wallet limits explain themselves", async () => {
+  const suspended = await call("awning_buy", { slug: "ridge-roast", sku: "tasting" }, { scenario: "suspended" });
+  assert.equal(suspended.result.isError, true);
+  assert.match(text(suspended.result), /paused while Awning reviews a report/);
+  const limited = await call("awning_plan", { sentence: "Ridge Roast, coffee from Accra", ownerWallet: "0x1111111111111111111111111111111111111111" }, { scenario: "limited" });
+  assert.match(text(limited.result), /limit reached: This wallet has drafted 12 businesses/);
+});
+
 await test("timeout: a silent API fails within the 4 s budget", async () => {
   const started = Date.now();
   const { result } = await call("awning_business", { slug: "ridge-roast" }, { scenario: "slow" });

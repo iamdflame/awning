@@ -90,14 +90,22 @@ export async function apiRequest(path: string, options: RequestOptions = {}): Pr
 export function apiMessage(data: unknown): string | undefined {
   if (data === null || typeof data !== "object") return undefined;
   const record = data as Record<string, unknown>;
-  const raw = typeof record.error === "string" ? record.error
-    : typeof record.message === "string" ? record.message
+  // The API answers { error: <code>, message: <human text> }: prefer the text.
+  const raw = typeof record.message === "string" ? record.message
+    : typeof record.error === "string" ? record.error
     : record.error && typeof record.error === "object" && typeof (record.error as Record<string, unknown>).message === "string"
       ? (record.error as Record<string, string>).message
       : undefined;
   if (!raw) return undefined;
   const clean = raw.replace(/[\u0000-\u001f\u007f]+/g, " ").trim();
   return clean.length > 200 ? `${clean.slice(0, 197)}...` : clean;
+}
+
+/** Machine-readable error code from an API error body ({ error: "policy_blocked", message: "..." }). */
+export function apiCode(data: unknown): string | undefined {
+  if (data === null || typeof data !== "object") return undefined;
+  const code = (data as Record<string, unknown>).error;
+  return typeof code === "string" && /^[a-z_]{2,40}$/.test(code) ? code : undefined;
 }
 
 type Expectation = { notFound?: string; ownerAuth?: boolean };
@@ -108,6 +116,14 @@ export function expectOk(response: ApiResponse, expectation: Expectation = {}): 
   if (status >= 200 && status < 300) return data;
   const detail = apiMessage(data);
   const with_ = (text: string) => (detail ? `${text} Awning said: "${detail}"` : text);
+  const code = apiCode(data);
+  if (code === "policy_blocked") {
+    throw new AwningError(`${detail ?? "Awning's acceptable use policy does not allow this business."} Tell the user plainly; do not rephrase the request to get around the policy.`);
+  }
+  if (code === "business_suspended" || code === "business_unavailable") {
+    throw new AwningError(with_("This business is paused while Awning reviews a report. Nothing was charged; do not retry."));
+  }
+  if (code === "rate_limited" && detail) throw new AwningError(`Awning limit reached: ${detail}`);
   if (status === 400 || status === 422) throw new AwningError(with_("Awning rejected the request as invalid. Check the inputs and try again."));
   if ((status === 401 || status === 403) && expectation.ownerAuth) {
     throw new AwningError("Awning rejected the owner token for this business. Use the ownerToken returned when the business opened (awning_open_free, or the paid awning_open response).");
