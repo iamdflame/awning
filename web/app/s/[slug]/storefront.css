@@ -1,0 +1,167 @@
+/* The storefront every Awning business gets. Themed entirely from the business's own palette
+   (--ground, --ink, --accent, --accent2, --stripeA, --stripeB, --deep, --on-accent) and two fonts
+   (--display, --text). Structure varies by category: .h-sign (food: menu board), .h-poster
+   (repair: pegboard of price tags), .h-arch (studio: work in an arched window, gallery labels).
+   Awning's own brand appears only in the slim ribbon at the very bottom. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--text),ui-sans-serif,sans-serif;font-size:17px;line-height:1.55}
+::selection{background:var(--accent);color:var(--on-accent,#fff)}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+
+/* ---------- the business's own canopy ---------- */
+.rod{background:var(--ink);color:var(--ground)}
+.rod .wrap{height:60px;display:flex;align-items:center;gap:24px}
+.brand{font-family:var(--display);font-size:22px;line-height:1;text-decoration:none;white-space:nowrap}
+.rod-status{font-size:14px;opacity:.75;white-space:nowrap}
+.rod nav{display:flex;align-items:center;gap:26px;margin-left:auto;font-size:15px;font-weight:500}
+.rod nav a{text-decoration:none;opacity:.85;line-height:1}
+.rod nav a:hover{opacity:1}
+.rod nav .callbtn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;background:var(--ground);color:var(--ink);font-weight:600;opacity:1;font-variant-numeric:tabular-nums}
+.canopy{--sw:52px;height:68px;transform-origin:top;animation:unroll 1s cubic-bezier(.34,1.32,.64,1) both}
+@keyframes unroll{from{transform:scaleY(.1)}to{transform:none}}
+/* scallop: the classic shop awning */
+.c-scallop{background:linear-gradient(180deg,rgb(0 0 0/.22),rgb(0 0 0/0) 30%,rgb(255 255 255/.07) 62%,rgb(0 0 0/.1)),repeating-linear-gradient(90deg,var(--stripeA) 0 var(--sw),var(--stripeB) var(--sw) calc(var(--sw)*2));
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - var(--sw)/2 + 1px) no-repeat,radial-gradient(circle at 50% 0,#000 calc(var(--sw)/2 - .5px),#0000 calc(var(--sw)/2)) bottom left/var(--sw) calc(var(--sw)/2) repeat-x;
+  mask:linear-gradient(#000 0 0) top/100% calc(100% - var(--sw)/2 + 1px) no-repeat,radial-gradient(circle at 50% 0,#000 calc(var(--sw)/2 - .5px),#0000 calc(var(--sw)/2)) bottom left/var(--sw) calc(var(--sw)/2) repeat-x;
+  filter:drop-shadow(0 8px 8px rgb(0 0 0/.14))}
+/* flat: a workshop's straight canvas with a hem */
+.c-flat{--sw:34px;height:44px;background:linear-gradient(180deg,rgb(0 0 0/.25),rgb(0 0 0/0) 40%),repeating-linear-gradient(90deg,var(--stripeA) 0 var(--sw),var(--stripeB) var(--sw) calc(var(--sw)*2));box-shadow:inset 0 -6px 0 var(--ink),0 8px 14px -6px rgb(0 0 0/.3)}
+/* tile: a studio's tiled lintel instead of canvas */
+.c-tile{height:48px;background:var(--tile) left top/48px 48px repeat-x;box-shadow:inset 0 -4px 0 var(--ink),inset 0 4px 0 rgb(0 0 0/.15);animation:none}
+
+/* ---------- buttons ---------- */
+.b{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 22px;border-radius:999px;font:600 16px/1 var(--text);text-decoration:none;white-space:nowrap;border:0;cursor:pointer;transition:transform .14s cubic-bezier(.22,1,.36,1),filter .18s,background-color .18s}
+.b:active{transform:scale(.96)}
+.b-row{background:var(--accent);color:var(--on-accent,#fff)}
+.b-row:hover{filter:brightness(1.07)}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(28px,4vw,56px) 0 clamp(56px,7vw,96px);position:relative;overflow:hidden}
+.hero h1{font-family:var(--display);font-weight:400;line-height:.9;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.tagline{font-size:clamp(18px,1vw + 11px,22px);line-height:1.4;margin:18px 0 0;max-width:30ch;text-wrap:pretty}
+.pr b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(26px,2.2vw,34px);line-height:1;font-variant-numeric:tabular-nums}
+.pr small{display:block;font-size:13px;opacity:.7;margin-top:4px;white-space:nowrap}
+.art svg{width:100%;height:auto}
+
+/* food: name, then the menu board, poster object filling the right */
+.h-sign .wrap{display:grid;grid-template-columns:7fr 5fr;gap:clamp(24px,4vw,64px);align-items:center}
+.h-sign h1{font-size:clamp(68px,10vw,164px)}
+.h-sign .art{align-self:center;margin:0 -4% 0 0}
+.board{margin-top:32px;background:var(--deep);color:var(--ink);border-radius:20px;padding:22px 24px 10px;box-shadow:inset 0 0 0 1px rgb(255 255 255/.06),0 24px 48px -24px rgb(0 0 0/.5);max-width:640px}
+.board-h{margin:0 0 6px;font-size:14px;font-weight:600;opacity:.7}
+.board ul{list-style:none;margin:0;padding:0}
+.board li{display:grid;grid-template-columns:1fr auto auto;gap:20px;align-items:center;padding:14px 0;border-top:1px dashed color-mix(in oklab,var(--ink) 25%,transparent)}
+.board li:first-child{border-top:0}
+.board h3{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.1;margin:0 0 4px}
+.board p{margin:0;font-size:14px;opacity:.72;max-width:40ch}
+.board .pr{text-align:right}
+
+/* repair: huge condensed name over a turning wheel, prices on tags */
+.h-poster .wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:0 24px}
+.h-poster .copy{grid-column:1/span 8;grid-row:1;position:relative;z-index:2}
+.h-poster h1{font-size:clamp(88px,14.5vw,232px);line-height:.8;text-transform:uppercase;font-weight:900}
+.h-poster .art{grid-column:7/span 6;grid-row:1/span 2;margin:-40px -18% 0 0;z-index:1}
+.h-poster .art-spin{animation:spin 60s linear infinite;transform-origin:300px 300px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.peg{grid-column:1/span 9;grid-row:2;position:relative;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;padding:26px 18px 18px;
+  background:radial-gradient(circle,color-mix(in oklab,var(--ink) 30%,transparent) 2.5px,transparent 3px) 0 0/26px 26px;border-radius:16px}
+.ptag{position:relative;background:#fffdf6;color:#141414;border-radius:10px 10px 14px 14px;padding:30px 18px 18px;transform:rotate(var(--r));box-shadow:0 2px 4px rgb(0 0 0/.12),0 14px 24px -12px rgb(0 0 0/.35);display:flex;flex-direction:column;gap:6px;clip-path:polygon(14% 0,86% 0,100% 18px,100% 100%,0 100%,0 18px)}
+.ptag .hole{position:absolute;top:9px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--ground);box-shadow:inset 0 1px 2px rgb(0 0 0/.4)}
+.ptag h3{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;margin:0}
+.ptag p{margin:0;font-size:14px;line-height:1.4;opacity:.75;flex:1}
+.ptag .pr b{font-weight:900;font-size:40px}
+.ptag .b{margin-top:6px;align-self:flex-start}
+
+/* studio: the work in an arched window, gallery labels beside it */
+.h-arch .wrap{display:grid;grid-template-columns:6fr 6fr;gap:clamp(24px,5vw,80px);align-items:center;position:relative}
+.h-arch::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;background:var(--tile) 0 0/72px 72px;box-shadow:inset -6px 0 0 var(--ink)}
+.h-arch .art{z-index:1}
+.h-arch .art{box-shadow:inset 0 0 0 10px var(--ink),0 30px 60px -30px rgb(0 0 0/.6)!important}
+.h-arch .art{order:-1;position:relative;background:var(--deep);border-radius:999px 999px 18px 18px;padding:72px 36px 0;overflow:hidden;box-shadow:inset 0 0 0 10px color-mix(in oklab,var(--ink) 70%,var(--ground));min-height:600px;display:flex;align-items:flex-end}
+.h-arch .art svg{margin-bottom:-8px}
+.h-arch h1{font-size:clamp(72px,8.4vw,136px)}
+.labels{margin-top:32px;display:grid;gap:18px}
+.lab{display:grid;grid-template-columns:1fr auto;gap:4px 20px;align-items:end;padding:16px 0 4px;border-top:2px solid var(--ink)}
+.lab:first-child{border-top-width:3px}
+.lab h3{font-family:var(--display);font-weight:400;font-size:21px;margin:0;line-height:1.15}
+.lab p{grid-column:1;margin:0;font-size:14px;opacity:.72}
+.lab .pr{grid-column:2;grid-row:1/span 2;text-align:right}
+.lab .b{grid-column:1/-1;justify-self:start;min-height:40px;padding:0 16px;font-size:14px;margin-top:8px}
+
+/* ---------- buy with your AI agent ---------- */
+.agent{padding:clamp(56px,8vw,112px) 0;background:var(--ink);color:var(--ground)}
+.agent .wrap{display:grid;grid-template-columns:5fr 7fr;gap:clamp(24px,5vw,72px);align-items:start}
+.agent h2{font-family:var(--display);font-weight:400;font-size:clamp(36px,4.2vw,60px);line-height:.98;margin:0 0 18px}
+.agent .lede{margin:0;max-width:42ch;opacity:.85}
+.slip{background:var(--ground);color:var(--ink);border-radius:24px;padding:clamp(20px,3vw,32px)}
+.slip label{display:block;font-size:13px;font-weight:600;opacity:.7;margin:0 0 8px}
+.prompt{font-family:var(--display);font-size:clamp(22px,2vw,28px);line-height:1.25;margin:0 0 20px;text-wrap:pretty}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.link{flex:1;min-width:0;font:500 13.5px/1.4 "Martian Mono",ui-monospace,monospace;background:color-mix(in oklab,var(--ink) 8%,transparent);border-radius:12px;padding:13px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{height:46px;padding:0 16px;border-radius:12px;border:0;background:var(--ink);color:var(--ground);font:600 14px/1 var(--text);cursor:pointer;white-space:nowrap;transition:transform .14s}
+.copy-btn:active{transform:scale(.96)}
+.slip .fine{margin:18px 0 0;font-size:14px;opacity:.8}
+.slip hr{border:0;border-top:1.5px dashed color-mix(in oklab,var(--ink) 20%,transparent);margin:22px 0}
+
+/* ---------- visit / call ---------- */
+.visit{padding:clamp(56px,8vw,112px) 0}
+.visit .wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.about{grid-column:1/span 5}
+.about h2,.hours h2,.phone h2{font:600 14px/1 var(--text);opacity:.7;margin:0 0 16px}
+.about p{margin:0;font-size:19px;line-height:1.5;text-wrap:pretty}
+.hours{grid-column:7/span 3}
+.hours dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:16px}
+.hours dt{font-weight:600}.hours dd{margin:0;font-variant-numeric:tabular-nums}
+.phone{grid-column:10/span 3}
+.phone a{font-family:var(--display);font-size:clamp(24px,2vw,30px);line-height:1.1;text-decoration:none;display:block;font-variant-numeric:tabular-nums}
+.phone p{margin:8px 0 0;font-size:15px;opacity:.75}
+.addr{margin-top:20px;font-size:15px}
+
+/* ---------- footer + Awning ribbon ---------- */
+.foot{border-top:1.5px solid color-mix(in oklab,var(--ink) 15%,transparent);padding:28px 0}
+.foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px}
+.foot .name{font-family:var(--display);font-size:20px}
+.ribbon{display:flex;align-items:center;justify-content:center;gap:10px;height:40px;background:#00683b;color:#f7f6ed;font:600 13px/1 "Archivo",sans-serif;font-stretch:110%;text-decoration:none}
+.ribbon svg{width:22px;height:auto}
+.ribbon span{opacity:.75;font-weight:500;padding-left:10px;border-left:1px solid rgb(247 246 237/.3)}
+
+/* ---------- draft: papered window, canopy rolled up ---------- */
+.draftbar{display:none}
+.is-draft .draftbar{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 16px;background:repeating-linear-gradient(-45deg,#1b1b1b 0 14px,#f2c230 14px 28px);color:#1b1b1b;font:700 14px/1.3 "Archivo",sans-serif;text-align:center}
+.is-draft .draftbar span{background:#f2c230;padding:6px 12px;border-radius:6px}
+.is-draft .canopy{height:22px;-webkit-mask:none;mask:none;border-radius:0 0 12px 12px;animation:none;box-shadow:none;filter:none;background:linear-gradient(180deg,rgb(0 0 0/.25),rgb(255 255 255/.15) 45%,rgb(0 0 0/.3)),repeating-linear-gradient(90deg,var(--stripeA) 0 30px,var(--stripeB) 30px 60px);margin:0 clamp(16px,4vw,48px)}
+.is-draft .art{position:relative}
+.is-draft .art::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgb(255 255 255/.18),transparent 60%),repeating-linear-gradient(97deg,rgb(0 0 0/.035) 0 2px,transparent 2px 9px),#c49a6c;border-radius:inherit;clip-path:polygon(0 2%,48% 0,100% 3%,99% 51%,100% 98%,52% 100%,1% 97%,2% 50%)}
+.stamp{display:none;position:absolute;inset:0;z-index:2;place-items:center;pointer-events:none}
+.is-draft .stamp{display:grid}
+.stamp b{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.4vw,48px);color:#3b2a18;transform:rotate(-6deg);padding:10px 22px;border:3px solid #3b2a18;border-radius:12px;background:rgb(255 255 255/.12);text-align:center;line-height:1.05}
+.is-draft [data-notify]{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+
+@media (max-width: 960px){
+  .rod-status{display:none}
+  .rod nav a:not(.callbtn):not(:first-child){display:none}
+  .rod nav{gap:16px}
+  .brand{font-size:19px}
+  .canopy.c-scallop{--sw:39px;height:50px}
+  .hero .wrap{grid-template-columns:1fr!important;gap:24px}
+  .hero .copy,.hero .art,.peg{grid-column:1/-1!important;grid-row:auto!important;margin:0!important}
+  .h-sign h1{font-size:68px}
+  .h-sign .art{order:-1;max-width:180px;justify-self:end;margin:0 -8px -12px 0!important}
+  .board{padding:16px 16px 6px}
+  .board li{grid-template-columns:1fr auto;gap:8px 12px}
+  .board li .b{grid-column:1/-1;justify-self:start;min-height:44px}
+  .h-poster h1{font-size:92px}
+  .h-poster .art{order:-1;max-width:190px;justify-self:end;margin:0 -30px -20px 0!important}
+  .peg{grid-template-columns:1fr;gap:18px;padding-top:18px}
+  .h-arch .art{order:-1;min-height:0;max-width:250px;padding:36px 22px 0;justify-self:center}
+  .h-arch::before{width:100%;height:320px;bottom:auto}
+  .h-arch h1{font-size:72px}
+  .agent .wrap{grid-template-columns:1fr}
+  .visit .wrap{grid-template-columns:1fr;gap:36px}
+  .about,.hours,.phone{grid-column:1/-1}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
