@@ -17,9 +17,14 @@ import { orderView } from "./views";
 
 export const buyBodySchema = z.object({
   qty: z.number().int().min(1).max(MAX_QTY).optional(),
-  buyerNote: z.string().trim().max(500).optional(),
-  buyerContact: z.string().trim().max(200).optional(),
+  buyerNote: z.string().trim().max(500).transform(plainText).optional(),
+  buyerContact: z.string().trim().max(200).transform(plainText).optional(),
 });
+
+/** One line of plain text: no control characters, no newlines (buyer text reaches SMS and the owner's agent). */
+function plainText(s: string): string {
+  return s.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, " ").replace(/\s{2,}/g, " ").trim();
+}
 
 export function fulfillmentFor(b: BusinessRow, offer: OfferRow, orderId: string, qty: number, buyerContact: string | null): Fulfillment {
   const code = `${b.slug.slice(0, 3).toUpperCase()}-${shortCode(orderId, 6)}`;

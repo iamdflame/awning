@@ -220,6 +220,7 @@ export function paymentResponseHeaders(settle: SettleResponse): Record<string, s
   return {
     "PAYMENT-RESPONSE": encoded,
     "X-PAYMENT-RESPONSE": encoded,
+    "access-control-allow-origin": "*",
     "access-control-expose-headers": EXPOSE,
   };
 }

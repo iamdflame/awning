@@ -138,10 +138,11 @@ describe("reports, automatic hold and operator review", () => {
 
     const first = await readJson(await report(slug, "203.0.113.1"));
     expect(first.held).toBe(false);
-    // The same person reporting again does not count twice.
+    // The same network reporting again does not count twice.
+    expect((await readJson(await report(slug, "203.0.113.77"))).held).toBe(false);
     expect((await readJson(await report(slug, "203.0.113.1"))).held).toBe(false);
-    expect((await readJson(await report(slug, "203.0.113.2"))).held).toBe(false);
-    const third = await readJson(await report(slug, "203.0.113.3"));
+    expect((await readJson(await report(slug, "198.51.100.2"))).held).toBe(false);
+    const third = await readJson(await report(slug, "192.0.2.3"));
     expect(third.held).toBe(true);
 
     const buyRes = await buy(slug, p.business.offers[0].sku, {});

@@ -3,7 +3,7 @@
  * servers always see the current process.env. Secrets are never logged.
  */
 
-export const VERSION = "0.1.0";
+export const VERSION = "1.0.0";
 
 function str(name: string): string | undefined {
   const v = process.env[name];
@@ -50,10 +50,12 @@ export const env = {
   elevenLabsKey: () => str("ELEVENLABS_API_KEY"),
   elevenLabsVoiceId: () => str("ELEVENLABS_VOICE_ID"),
   planTtlSeconds: () => Number(str("AWNING_PLAN_TTL_SECONDS") ?? 1800),
-  openDeadlineMs: () => Number(str("AWNING_OPEN_DEADLINE_MS") ?? 20000),
+  openDeadlineMs: () => Number(str("AWNING_OPEN_DEADLINE_MS") ?? 14000),
   /** Trust & safety: per-wallet limits and the operator key for takedowns. */
   planLimitPerHour: () => Number(str("AWNING_PLAN_LIMIT_PER_HOUR") ?? 12),
   freeOpensPerDay: () => Number(str("AWNING_FREE_OPENS_PER_DAY") ?? 3),
+  globalPlansPerHour: () => Number(str("AWNING_GLOBAL_PLANS_PER_HOUR") ?? 300),
+  globalFreeOpensPerHour: () => Number(str("AWNING_GLOBAL_FREE_OPENS_PER_HOUR") ?? 60),
   adminKey: () => str("AWNING_ADMIN_KEY"),
 };
 

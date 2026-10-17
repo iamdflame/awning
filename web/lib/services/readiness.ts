@@ -1,7 +1,8 @@
 import { adapters } from "../adapters";
 import { facilitator } from "../x402/facilitator";
 
-const PRO_PROVIDERS = ["registrar", "hosting", "telephony", "receptionist"] as const;
+// The refunder is part of Pro: a paid open that fails after settlement must be able to give the money back.
+const PRO_PROVIDERS = ["registrar", "hosting", "telephony", "receptionist", "refunder"] as const;
 
 export type ProReadiness = {
   /** Pro can be sold right now. */

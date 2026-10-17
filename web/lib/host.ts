@@ -43,6 +43,11 @@ export function isPassthroughPath(pathname: string): boolean {
   );
 }
 
+/** /s/<slug> is the internal rewrite target; on a business's own host it would render another business. */
+export function blockedOnTenantHost(host: HostKind, pathname: string): boolean {
+  return host.kind !== "root" && (pathname === "/s" || pathname.startsWith("/s/"));
+}
+
 /** The internal path a request should be rewritten to, or null to serve it unchanged. */
 export function rewriteTarget(host: HostKind, pathname: string, search: URLSearchParams): string | null {
   if (isPassthroughPath(pathname)) return null;

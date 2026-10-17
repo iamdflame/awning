@@ -24,7 +24,7 @@ const WHY: Record<keyof Adapters, string> = {
   drafter: "neither ANTHROPIC_API_KEY nor AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — deterministic template drafts",
   imager: "no AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — storefronts use their drawn poster art",
   notifier: "Twilio not configured — owner notifications are logged",
-  refunder: "AWNING_TREASURY_PRIVATE_KEY not set — refunds are simulated",
+  refunder: "treasury key missing or not matching AWNING_TREASURY_ADDRESS — refunds unavailable (never simulated with real payments)",
 };
 
 function build(): Adapters {
@@ -36,7 +36,8 @@ function build(): Adapters {
         receptionist: new MockReceptionist(),
         drafter: new TemplateDrafter(),
         notifier: new LogNotifier(),
-        refunder: new MockRefunder(),
+        // Even with mocks forced, a real facilitator means real money: never simulate a refund.
+        refunder: env.facilitatorUrl() === "mock" ? new MockRefunder() : makeRefunder(),
         imager: new MockImager(),
       }
     : {

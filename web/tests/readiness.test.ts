@@ -27,7 +27,7 @@ describe("real money never buys simulated provisioning", () => {
     const res = await openPaid(plan.planId, { domain: plan.recommendedDomain, package: "pro" });
     expect(res.status).toBe(503);
     expect(res.headers.get("PAYMENT-REQUIRED")).toBeNull();
-    expect((await readJson(res)).missing).toEqual(["registrar", "hosting", "telephony", "receptionist"]);
+    expect((await readJson(res)).missing).toEqual(["registrar", "hosting", "telephony", "receptionist", "refunder"]);
 
     // Free opening and sales (payTo = owner) keep working.
     expect((await openFree(plan.planId)).status).toBe(200);

@@ -113,7 +113,7 @@ export async function createPlan(input: PlanInput) {
     });
     return { ...c, checks };
   };
-  const firstCheck = checkFor(template.name, template.city, 8000);
+  const firstCheck = checkFor(template.name, template.city, 5000);
   const phoneSearch = withTimeout((s) => a.telephony.search(country, s), 5000).catch((err) => {
     log.warn("phone search failed", { error: errorMessage(err) });
     return [] as string[];

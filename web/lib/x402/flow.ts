@@ -66,7 +66,13 @@ export type PaidFlowOptions = {
 function respond(r: StoredResponse): Response {
   return new Response(JSON.stringify(r.body, (_k, v) => (typeof v === "bigint" ? v.toString() : v)), {
     status: r.status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...(r.headers ?? {}) },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-PAYMENT-RESPONSE",
+      ...(r.headers ?? {}),
+    },
   });
 }
 
@@ -181,20 +187,23 @@ export async function handlePaidRequest(o: PaidFlowOptions): Promise<Response> {
     }
     try {
       const refund = await adapters().refunder.refund({ to: match.payer, amountAtomic: o.charge.amountAtomic, reason });
-      const body = { refunded: true, refundTx: refund.tx, reason, charged: true, paidUsd: atomicToUsd(o.charge.amountAtomic), tx: info.tx };
+      const body = { refunded: true, refundTx: refund.tx, reason: PUBLIC_DELIVERY_FAILURE, charged: true, paidUsd: atomicToUsd(o.charge.amountAtomic), tx: info.tx };
       return finish(match.key, "refunded", { status: 502, body, headers }, { tx: info.tx, refundTx: refund.tx, error: reason });
     } catch (refundErr) {
-      const body = { refunded: false, reason, refundError: errorMessage(refundErr), charged: true, paidUsd: atomicToUsd(o.charge.amountAtomic), tx: info.tx, message: "Refund pending: it will be retried by the operator." };
+      const body = { refunded: false, reason: PUBLIC_DELIVERY_FAILURE, charged: true, paidUsd: atomicToUsd(o.charge.amountAtomic), tx: info.tx, message: "The automatic refund could not be sent. Awning's operator has been alerted and will refund this payment; keep this response." };
       log.error("REFUND FAILED — manual action required", { key: match.key, payer: match.payer, amountAtomic: o.charge.amountAtomic, error: errorMessage(refundErr) });
       return finish(match.key, "settled", { status: 502, body, headers }, { tx: info.tx, error: `${reason}; refund failed: ${errorMessage(refundErr)}` });
     }
   }
 }
 
+/** What a payer is told when delivery failed after settlement (the internal reason is logged and stored). */
+const PUBLIC_DELIVERY_FAILURE = "Your payment settled but the result could not be recorded.";
+
 function respondInProgress(): Response {
   return new Response(JSON.stringify({ error: "payment_in_progress", message: "This payment is already being processed. Do not pay again; check the result shortly.", charged: false }), {
     status: 409,
-    headers: { "content-type": "application/json", "retry-after": "3", "cache-control": "no-store" },
+    headers: { "content-type": "application/json", "retry-after": "3", "cache-control": "no-store", "access-control-allow-origin": "*" },
   });
 }
 

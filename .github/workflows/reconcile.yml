@@ -1,0 +1,24 @@
+name: reconcile payments
+
+# Settles the truth for x402 payments a request left unfinished (see web/lib/x402/reconcile.ts).
+# Vercel's daily cron is the backstop; this runs it every 10 minutes.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Call the reconciler
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          API: https://api.awning.sh
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "::notice::CRON_SECRET not set; skipping"; exit 0; fi
+          if ! curl -fsS --max-time 20 "$API/v1/health" -o /dev/null; then echo "::warning::$API not reachable; skipping"; exit 0; fi
+          curl -fsS --max-time 70 -H "Authorization: Bearer $CRON_SECRET" "$API/v1/cron/reconcile"

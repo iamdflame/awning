@@ -270,8 +270,7 @@ export async function openPro(req: Request, planId: string, body: z.infer<typeof
           status: 502,
           body: {
             error: "provisioning_failed",
-            message: `Could not open ${business.name}: ${saga.failedStep} failed (${saga.reason}). The payment was not settled — you were not charged.`,
-            reason: saga.reason,
+            message: `Could not open ${business.name}: the ${saga.failedStep} step failed. The payment was not settled — you were not charged.`,
             failedStep: saga.failedStep,
             charged: false,
             refunded: false,
@@ -329,6 +328,9 @@ export async function openPro(req: Request, planId: string, body: z.infer<typeof
 }
 
 /** POST /v1/open-free — free subdomain open. No money; idempotent by plan. */
+/** How long a repeated open-free call may receive the owner token again. */
+export const FREE_OPEN_RETRY_WINDOW_MS = 10 * 60_000;
+
 export async function openFree(planId: string): Promise<Response> {
   const t0 = performance.now();
   const plan = await getPlan(planId);
@@ -336,8 +338,20 @@ export async function openFree(planId: string): Promise<Response> {
   const business = await getBusinessById(plan.businessId);
   if (!business) return apiError(404, "plan_not_found", `Plan ${planId} has no business`);
 
-  const already = (b: BusinessRow) =>
-    json({ business: openedBusinessView(b), ownerToken: ownerTokenFor(b.id, b.ownerTokenVersion), alreadyOpen: true, steps: [] });
+  // The owner token is a bearer secret and planIds travel through agent chats. A retry of the same free
+  // open shortly after it happened gets the token again (idempotency); later, or for a Pro business,
+  // open-free never re-issues it.
+  const already = (b: BusinessRow) => {
+    const openedAt = b.openedAt ? new Date(b.openedAt).getTime() : 0;
+    const retry = b.package === "free" && Date.now() - openedAt < FREE_OPEN_RETRY_WINDOW_MS;
+    return json({
+      business: openedBusinessView(b),
+      ownerToken: retry ? ownerTokenFor(b.id, b.ownerTokenVersion) : null,
+      alreadyOpen: true,
+      steps: [],
+      ...(retry ? {} : { message: `${b.name} is already open. Its owner token was returned when it opened and is not shown again.` }),
+    });
+  };
 
   if (business.status === "live") return already(business);
   if (business.status === "suspended") return apiError(403, "business_suspended", `${business.name} is under review and can't be opened.`);

@@ -2,7 +2,8 @@ import { handler, parseBody } from "@/lib/api";
 import { buy, buyBodySchema } from "@/lib/services/orders";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 30;
+// verify + provisioning + settlement with an on-chain check; the reconciler covers a killed function.
+export const maxDuration = 90;
 
 type Ctx = { params: Promise<{ slug: string; sku: string }> };
 
@@ -23,3 +24,18 @@ export const GET = handler(async (req: Request, ctx: Ctx) => {
   const { slug, sku } = await ctx.params;
   return buy(req, slug, sku, {});
 });
+
+
+/** CORS preflight: browsers send PAYMENT-SIGNATURE / X-PAYMENT on the paid retry. */
+export function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, OPTIONS",
+      "access-control-allow-headers": "content-type, payment-signature, x-payment",
+      "access-control-expose-headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-PAYMENT-RESPONSE",
+      "access-control-max-age": "86400",
+    },
+  });
+}

@@ -112,13 +112,16 @@ describe("failure discovered after settlement is refunded", () => {
     const out = await readJson(res);
     expect(out.refunded).toBe(true);
     expect(out.refundTx).toMatch(/^0x[0-9a-f]{64}$/);
-    expect(out.reason).toMatch(/commit failed after settlement/);
+    // The payer sees what happened; the internal cause stays in the payment row and the log.
+    expect(out.reason).toBe("Your payment settled but the result could not be recorded.");
+    expect(JSON.stringify(out)).not.toMatch(/commit failed|duplicate|unique|constraint/i);
     expect(world.facilitator.settleCalls).toBe(1);
     expect(refunder.refunds).toHaveLength(1);
     expect(refunder.refunds[0]!.to.toLowerCase()).toBe(payer.address.toLowerCase());
     expect(refunder.refunds[0]!.amountAtomic).toBe(BigInt(plan.domains.find((x: any) => x.domain === domain).totalAtomic));
     const pay = (await rows("payments"))[0];
     expect(pay.status).toBe("refunded");
+    expect(pay.error).toMatch(/commit failed after settlement/);
     expect((world.adapters.telephony as MockTelephony).owned.size).toBe(0);
   });
 });

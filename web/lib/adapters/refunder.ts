@@ -51,8 +51,36 @@ export class MockRefunder implements Refunder {
   }
 }
 
-export function makeRefunder(): Refunder {
+/**
+ * Real payments with no usable treasury key: refunds are impossible, and we
+ * must never claim one happened. Every call fails, so the paid flow reports
+ * `refunded: false` and logs the case for the operator.
+ */
+export class UnavailableRefunder implements Refunder {
+  readonly name = "unavailable";
+  readonly mock = true;
+  constructor(readonly why: string) {}
+  async refund(): Promise<{ tx: string }> {
+    throw new Error(`refunds are unavailable on this server: ${this.why}`);
+  }
+}
+
+/** Why a configured treasury cannot refund, or null when it can. */
+export function treasuryRefundProblem(): string | null {
   const pk = env.treasuryPrivateKey();
-  if (pk && /^0x[0-9a-fA-F]{64}$/.test(pk)) return new ViemRefunder(pk as `0x${string}`, env.baseRpcUrl());
-  return new MockRefunder();
+  if (!pk) return "AWNING_TREASURY_PRIVATE_KEY is not set";
+  if (!/^0x[0-9a-fA-F]{64}$/.test(pk)) return "AWNING_TREASURY_PRIVATE_KEY is not a 32-byte hex key";
+  const address = env.treasuryAddress();
+  if (!address) return "AWNING_TREASURY_ADDRESS is not set";
+  if (privateKeyToAccount(pk as `0x${string}`).address.toLowerCase() !== address.toLowerCase()) {
+    return "AWNING_TREASURY_PRIVATE_KEY does not control AWNING_TREASURY_ADDRESS";
+  }
+  return null;
+}
+
+/** Real refunder when the treasury key is valid and matches the address; otherwise refunds are unavailable (never simulated). */
+export function makeRefunder(): Refunder {
+  const problem = treasuryRefundProblem();
+  if (problem) return new UnavailableRefunder(problem);
+  return new ViemRefunder(env.treasuryPrivateKey() as `0x${string}`, env.baseRpcUrl());
 }
