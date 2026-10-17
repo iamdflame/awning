@@ -1,6 +1,6 @@
 import { env } from "../env";
 import { log } from "../log";
-import { stableIndex } from "../ids";
+import { sha256Hex, stableIndex } from "../ids";
 import { usdStringToCents } from "../money";
 import { ProviderError, excerpt, http, obj } from "./http";
 import type { DnsRecord, DomainCheck, Registrar } from "./types";
@@ -85,6 +85,10 @@ export class PorkbunRegistrar implements Registrar {
       if (unresolved.has(domain.toLowerCase()) || !r.avail) {
         return { domain, available: false, priceUsd: "0", cents: 0, premium: false, unresolved: true };
       }
+      if (r.inYourAccount === true) {
+        // Ours already (an earlier attempt registered it): not available to anyone, reusable by us.
+        return { domain, available: false, priceUsd: String(r.price ?? "0"), cents: 0, premium: false, inAccount: true };
+      }
       const premium = r.premium === "yes" || r.premium === true;
       const minDuration = Number(r.minDuration ?? 1);
       const priceUsd = String(r.price ?? "0");
@@ -102,6 +106,11 @@ export class PorkbunRegistrar implements Registrar {
   }
 
   async register(domain: string, cents: number, idempotencyKey: string, signal?: AbortSignal) {
+    const [owned] = await this.check([domain], signal).catch(() => [] as DomainCheck[]);
+    if (owned?.inAccount) {
+      log.info("porkbun: domain already in the account; reusing it", { domain });
+      return { orderId: "existing", cents };
+    }
     const method = await this.methodFor(cents, signal);
     const body: Record<string, unknown> = { cost: cents, agreeToTerms: "yes" };
     if (method === "usdc") body.payWith = "usdc";
@@ -116,8 +125,12 @@ export class PorkbunRegistrar implements Registrar {
       if (!header) throw new ProviderError("porkbun", "402 without PAYMENT-REQUIRED header", 402, "PAYMENT_REQUIRED");
       const { payX402Challenge } = await import("../x402/buyer");
       const signature = await payX402Challenge(header, BigInt(cents) * 10_000n);
+      // Porkbun stores every response under an Idempotency-Key for 24 h, errors included. Binding the
+      // key to this signed payment means a retry of the same payment replays, while a new payment
+      // never inherits a cached failure (seen live: a cached rate-limit 400 replayed on every retry).
+      const paidIdem = `${idem}-${sha256Hex(signature).slice(0, 16)}`;
       res = await this.createCall(domain, body, {
-        idem,
+        idem: paidIdem,
         signal,
         timeoutMs: 20000,
         headers: { "PAYMENT-SIGNATURE": signature },
@@ -139,7 +152,8 @@ export class PorkbunRegistrar implements Registrar {
     for (let attempt = 0; ; attempt++) {
       await sleep(Math.max(0, CREATE_SPACING_MS - (Date.now() - this.lastCreateEnd)), opts.signal);
       const started = Date.now();
-      const res = await this.post(`/domain/create/${domain}`, body, opts);
+      const keyed = attempt > 0 && opts.idem ? { ...opts, idem: `${opts.idem}-r${attempt}` } : opts;
+      const res = await this.post(`/domain/create/${domain}`, body, keyed);
       this.lastCreateEnd = Date.now();
       const rj = obj(res.json);
       log.info("porkbun create", {
