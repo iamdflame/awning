@@ -187,7 +187,8 @@ function proSteps(): Step<OpenState>[] {
     },
     {
       name: "dns",
-      timeoutMs: 8000,
+      // zone read + conflicting deletes + two creates, with backoff on transient answers
+      timeoutMs: 12000,
       retries: 1,
       run: async (s, signal) => {
         const { ids } = await a.registrar.setDns(s.domain.domain, s.plan.prepared.dns, `awning-dns-${s.plan.id}`, signal);

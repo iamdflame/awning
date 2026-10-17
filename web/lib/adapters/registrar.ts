@@ -201,18 +201,39 @@ export class PorkbunRegistrar implements Registrar {
       ["CNAME", "*"],
       ["A", "www"],
     ];
-    await Promise.all(
-      clear.map(([type, sub]) =>
-        this.post(`/dns/deleteByNameType/${domain}/${type}${sub ? `/${sub}` : ""}`, {}, { signal, timeoutMs: 8000 }).catch(() => undefined),
-      ),
-    );
+    // Read the zone once and delete only what conflicts, one call at a time: a burst of parallel
+    // calls gets a 503 from Porkbun's proxy (seen live).
+    const zone = await this.post(`/dns/retrieve/${domain}`, {}, { signal, timeoutMs: 8000 }).catch(() => null);
+    const existing = zone ? (Array.isArray(obj(zone.json).records) ? (obj(zone.json).records as unknown[]).map(obj) : []) : [];
+    const sub = (name: unknown) => {
+      const n = String(name ?? "").toLowerCase();
+      return n === domain.toLowerCase() ? "" : n.endsWith(`.${domain.toLowerCase()}`) ? n.slice(0, -(domain.length + 1)) : n;
+    };
+    const conflicts = existing.filter((r) => clear.some(([type, name]) => String(r.type) === type && sub(r.name) === name));
+    for (const r of conflicts) {
+      await this.post(`/dns/delete/${domain}/${String(r.id)}`, {}, { signal, timeoutMs: 8000 }).catch(() => undefined);
+    }
+    if (!zone) {
+      for (const [type, name] of clear) {
+        await this.post(`/dns/deleteByNameType/${domain}/${type}${name ? `/${name}` : ""}`, {}, { signal, timeoutMs: 8000 }).catch(() => undefined);
+      }
+    }
     const ids: string[] = [];
     for (const [i, rec] of records.entries()) {
-      const res = await this.post(
+      let res = await this.post(
         `/dns/create/${domain}`,
         { name: rec.name, type: rec.type, content: rec.content, ttl: 600 },
         { idem: `${idempotencyKey}:${i}`, signal, timeoutMs: 8000 },
       );
+      // Transient proxy/rate answers: back off and retry with a fresh key (errors are cached per key).
+      for (let retry = 1; retry <= 2 && [429, 502, 503, 504].includes(res.status); retry++) {
+        await sleep(1500 * retry, signal);
+        res = await this.post(
+          `/dns/create/${domain}`,
+          { name: rec.name, type: rec.type, content: rec.content, ttl: 600 },
+          { idem: `${idempotencyKey}:${i}:r${retry}`, signal, timeoutMs: 8000 },
+        );
+      }
       const r = obj(res.json);
       if (!res.ok || r.status !== "SUCCESS") {
         throw new ProviderError("porkbun", `dns create ${rec.type} ${rec.name || "@"} failed (${res.status}): ${excerpt(String(r.message ?? res.text))}`, res.status, String(r.code ?? ""));
