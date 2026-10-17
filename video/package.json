@@ -1,0 +1,42 @@
+{
+  "name": "awning-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Awning launch film: Remotion compositions (Main, Cut30, Thumbnail), Playwright product captures, scratch voice, captions.",
+  "engines": {
+    "node": "24.x"
+  },
+  "packageManager": "pnpm@11.11.0",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "scratch-voice": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/scratch-voice.ps1",
+    "assets": "node scripts/fetch-assets.mjs",
+    "capture": "node capture/run.mjs",
+    "captions": "node scripts/captions.mjs",
+    "typecheck": "tsc --noEmit",
+    "render:main": "node scripts/render.mjs main",
+    "render:30": "node scripts/render.mjs cut30",
+    "render:thumb": "node scripts/render.mjs thumb",
+    "render:all": "node scripts/render.mjs all"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.533",
+    "@remotion/cli": "4.0.533",
+    "@remotion/install-whisper-cpp": "4.0.533",
+    "@remotion/media-utils": "4.0.533",
+    "@remotion/paths": "4.0.533",
+    "@remotion/renderer": "4.0.533",
+    "@remotion/transitions": "4.0.533",
+    "playwright": "1.64.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.533"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

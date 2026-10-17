@@ -1,0 +1,14 @@
+# renders, founder recordings, downloaded stock and audio (re-downloadable or re-generatable)
+out/
+public/rec/
+public/stock/
+public/audio/
+public/capture/
+node_modules/
+# whisper.cpp binaries and models (installed by scripts/captions.mjs)
+whisper.cpp/
+# local mock server copy and capture scratch
+.cache/
+*.log
+# fonts are downloaded by npm run assets (OFL; see CREDITS.md)
+public/fonts/
