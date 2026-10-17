@@ -1,12 +1,17 @@
 # Recording runbook: the two agent takes
 
-The film needs screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a different agent, ChatGPT, buys from it). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
+The film needs screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a different agent, Claude Code in a terminal, buys from it). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
 
 ## Before you start (10 minutes)
 
 **PayBox**
 - Awning is enabled in your PayBox account (Plugins → Unofficial plugins → Awning → Enable).
-- **One PayBox account, two agents.** Until PayBox publishes Awning, only your developer account can use it, so both takes use your account: **Claude.ai** is the owner, **ChatGPT** is the buyer. Connect PayBox to both (Claude: Settings → Connectors; ChatGPT: Settings → Connectors / Apps).
+- **One PayBox account, two agents.** Until PayBox publishes Awning, only your developer account can use it, so both takes use your account: **Claude.ai** (browser) is the owner, **Claude Code** (terminal) is the buyer.
+- **Connect Claude Code to PayBox** (once):
+  1. Open a new terminal (Windows Terminal or PowerShell) in an empty folder, e.g. `mkdir C:demo-buyer; cd C:demo-buyer`.
+  2. Run: `claude mcp add --transport http paybox https://api.paybox.sh/mcp`
+  3. Run `claude`, type `/mcp`, pick **paybox**, choose **Authenticate**, and approve in the browser with the same PayBox account.
+  4. Check: ask *"Using PayBox, list my installed plugins."* Awning should be there.
 - **Two wallets, so the sale visibly moves money:**
   - **Paying wallet** (your PayBox Base wallet): at least **17 USDC** (11.06 for the Ridge Roast opening on `ridgeroast.shop`: 2.06 domain + 9.00 Pro, then 5.00 for the tasting).
   - **Sales wallet** (where Ridge Roast's sales land): a **different** Base address you own. Either a second wallet in PayBox, if your account lets you add one, or any wallet you control (Coinbase Wallet, MetaMask, …). Copy its address.
@@ -31,11 +36,11 @@ Start recording, then:
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
 
-## Buyer take → `buyer.mp4` (ChatGPT, same PayBox account)
+## Buyer take → `buyer.mp4` (Claude Code in a terminal, same PayBox account)
 
-Start recording, then:
+Terminal maximized, font enlarged (Ctrl + = a few times, about 18 pt), dark theme is fine. Start `claude` in the demo folder, start recording, then:
 
-1. New chat. Type and send:
+1. Type and send:
    > Find a coffee tasting in Accra and book one for Saturday morning.
 2. When it shows Ridge Roast and the $5 tasting, type and send:
    > Yes, book it.
