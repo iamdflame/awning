@@ -4,7 +4,7 @@ One Next.js 15 app (App Router, TypeScript strict) serves everything:
 
 - **API** under `/v1/*` and **x402 endpoints** under `/x402/*` on every host (`api.awning.sh` maps to the same project).
 - **Storefronts** for every business: `<slug>.awning.sh`, the owner's custom domain, or `localhost:3000/?b=<slug>` in development.
-- **Root pages** on `awning.sh`: `/` (landing placeholder), `/live` (event feed, polls every 3 s), `/directory`.
+- **Root pages** on `awning.sh`: `/` (the landing, ported from `design/landing`; its "Opened today" street is real businesses first, then marked examples), `/for-agents` (plugin tools, x402 endpoints, `use_plugin` and curl examples), `/live` (event feed, polls every 3 s), `/directory`.
 
 The PayBox plugin (`plugin/`) talks to this API. PayBox pays the x402 endpoints for the user.
 
@@ -50,6 +50,8 @@ Full list with comments: [`../.env.example`](../.env.example). Every provider is
 | `BASE_RPC_URL` | Refund transfers, on-chain `authorizationState` checks | `https://mainnet.base.org` |
 | `DATABASE_URL` | Neon/Postgres (`@neondatabase/serverless`, drizzle) | PGlite in `web/.data/` |
 | `ANTHROPIC_API_KEY`, `AWNING_LLM_MODEL`, `AWNING_LLM_TIMEOUT_MS` | Business drafts (`claude-sonnet-5-5`, forced tool call → strict JSON, validated and normalised); domain checks run in parallel; over budget (default 4500 ms; the whole plan stays under ~6.5 s because the plugin waits 8 s) or on error → template | deterministic template drafter |
+| `AI_GATEWAY_API_KEY` (else the Vercel OIDC token: per request on Vercel, `VERCEL_OIDC_TOKEN` in `web/.env.local` locally), `AWNING_GATEWAY_LLM_MODEL` | Without an Anthropic key, drafts go through the Vercel AI Gateway chat API (default `google/gemini-2.5-flash`, strict `json_schema`, reasoning off) with the same prompt, validation and budget; measured 2.1-3.9 s | template drafter |
+| `AWNING_IMAGE_MODEL`, `AWNING_IMAGE_MAX_PER_HOUR` | Two illustrative photos per business (hero + detail) from the AI Gateway (default `bfl/flux-2-klein-4b`), generated with `after()` once the plan response is sent, one at a time, capped per rolling hour (default 30); WebP in `business_images`, served at `/img/:id` (immutable). A storefront missing photos asks again at most every 10 min | storefronts show their drawn poster object |
 | `PORKBUN_API_KEY`, `PORKBUN_SECRET_KEY`, `PORKBUN_PAY_WITH` | Availability/price, registration, DNS (`credit` or `usdc` over x402) | deterministic mock registrar with snapshot prices |
 | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | Attach custom domains to the project | mock hosting |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Buy local numbers, TwiML receptionist, owner SMS | fictional `+1 202 555 01xx` numbers, logged notifications |

@@ -8,7 +8,7 @@
 .fa-h1{font-size:clamp(2.75rem,1.2rem + 3.4vw,4rem)}
 .fa-hero .lede{margin:28px 0 0;max-width:34em}
 .fa-toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
-.fa-toc a{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:var(--r-pill);background:var(--surface);box-shadow:inset 0 0 0 1.5px oklch(0.21 0.035 160/.14);text-decoration:none;font-weight:600;font-size:15px;transition:background-color var(--dur-color)}
+.fa-toc a{display:inline-flex;align-items:center;height:44px;padding:0 15px;border-radius:var(--r-pill);background:var(--surface);box-shadow:inset 0 0 0 1.5px oklch(0.21 0.035 160/.14);text-decoration:none;font-weight:600;font-size:14.5px;transition:background-color var(--dur-color)}
 .fa-toc a:hover{background:var(--g-50)}
 .fa-wire{margin:0;background:var(--c-0);color:var(--g-900);padding:24px 24px 34px;font:400 13px/1.75 var(--font-receipt);font-stretch:88%;box-shadow:var(--shadow-3);transform:rotate(1.6deg);
   -webkit-mask:radial-gradient(circle at 7px 100%,#0000 6.5px,#000 7px) bottom left/14px 8px repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 7px) no-repeat;mask:radial-gradient(circle at 7px 100%,#0000 6.5px,#000 7px) bottom left/14px 8px repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 7px) no-repeat}

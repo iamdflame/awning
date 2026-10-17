@@ -1,5 +1,5 @@
 import type { Palette } from "../db/schema";
-import { bestOn, contrast, ensureContrast, isHex, lightness, mix } from "./color";
+import { bestOn, contrast, ensureContrast, isHex, lightness, luminance, mix } from "./color";
 
 /**
  * Storefront theming (ported from design/storefront/storefront.js): the category
@@ -63,6 +63,19 @@ function sane(p: Partial<Palette> | null | undefined): Palette {
   return ok ? { primary: pal.primary, accent: pal.accent, ink: pal.ink, paper: pal.paper } : FALLBACK;
 }
 
+/** A button color whose label reads (4.5:1): moves the color away from its label until it does. */
+function button(accent: string, labels: string[]): { accent: string; onAccent: string } {
+  const on = bestOn(accent, labels);
+  if (contrast(on, accent) >= 4.5) return { accent, onAccent: on };
+  const away = luminance(on) < 0.2 ? "#ffffff" : "#000000";
+  for (let t = 0.05; t <= 1.0001; t += 0.05) {
+    const a = mix(accent, away, t);
+    const o = bestOn(a, labels);
+    if (contrast(o, a) >= 4.5) return { accent: a, onAccent: o };
+  }
+  return { accent: away, onAccent: bestOn(away, labels) };
+}
+
 /**
  * The API's palette is {primary, accent, ink, paper}; the richer theme derives
  * from it per structure, so a business generated with only four colors still
@@ -82,9 +95,9 @@ export function themeFrom(palette: Partial<Palette> | null | undefined, hero: He
     if (contrast(p.paper, ground) < 7) ground = ensureContrast(ground, p.paper, 7, "#000000");
     const ink = p.paper;
     const deep = mix(ground, "#000000", 0.42);
-    const accent = ensureContrast(lightness(p.accent) > lightness(ground) ? p.accent : mix(p.accent, p.paper, 0.4), deep, 3.2, p.paper);
-    const accent2 = mix(accent, p.ink, 0.32); // a darker band of the same color (the bag's crimped top)
-    return { ground, ink, accent, accent2, stripeA: accent, stripeB: p.paper, deep, onAccent: bestOn(accent, [p.ink, deep, white]) };
+    const b = button(ensureContrast(lightness(p.accent) > lightness(ground) ? p.accent : mix(p.accent, p.paper, 0.4), deep, 3.2, p.paper), [p.ink, deep, white]);
+    const accent2 = mix(b.accent, p.ink, 0.32); // a darker band of the same color (the bag's crimped top)
+    return { ground, ink, accent: b.accent, accent2, stripeA: b.accent, stripeB: p.paper, deep, onAccent: b.onAccent };
   }
 
   if (hero === "poster") {
@@ -92,17 +105,17 @@ export function themeFrom(palette: Partial<Palette> | null | undefined, hero: He
     let ground = p.accent;
     for (let t = 0; t <= 0.9 && contrast(p.ink, ground) < 7; t += 0.05) ground = mix(p.accent, p.paper, t);
     if (contrast(p.ink, ground) < 7) ground = p.paper;
-    const accent = ensureContrast(p.primary, ground, 3.2, p.ink);
+    const b = button(ensureContrast(p.primary, ground, 3.2, p.ink), [white, p.paper, p.ink]);
     const accent2 = contrast(p.primary, ground) > 2 ? mix(p.primary, white, 0.18) : mix(p.ink, p.primary, 0.5);
-    return { ground, ink: p.ink, accent, accent2, stripeA: accent, stripeB: mix(p.paper, white, 0.6), deep: mix(p.ink, p.primary, 0.25), onAccent: bestOn(accent, [white, p.paper, p.ink]) };
+    return { ground, ink: p.ink, accent: b.accent, accent2, stripeA: b.accent, stripeB: mix(p.paper, white, 0.6), deep: mix(p.ink, p.primary, 0.25), onAccent: b.onAccent };
   }
 
   // arch: paper tinted with the primary, the work in a deep arched window
   const ground = ensureContrast(mix(p.paper, p.primary, 0.1), p.ink, 7, p.paper);
-  const accent = ensureContrast(p.primary, ground, 3.2, p.ink);
+  const b = button(ensureContrast(p.primary, ground, 3.2, p.ink), [white, p.paper, p.ink]);
   const accent2 = p.accent;
   const deep = mix(p.ink, p.primary, 0.22);
-  return { ground, ink: p.ink, accent, accent2, stripeA: accent, stripeB: mix(p.paper, white, 0.6), deep, onAccent: bestOn(accent, [white, p.paper, p.ink]) };
+  return { ground, ink: p.ink, accent: b.accent, accent2, stripeA: b.accent, stripeB: mix(p.paper, white, 0.6), deep, onAccent: b.onAccent };
 }
 
 /** An azulejo-style tile for studio canopies, drawn in the business's colors (storefront.js tileSVG). */

@@ -174,9 +174,10 @@ function examples(): ShopView[] {
 export function buildStreet(real: RealShop[], now: Date, need = STREET_LENGTH): ShopView[] {
   const shops = real.slice(0, 12).map((r, i) => shopFromReal(r, i, now));
   if (shops.length >= need) return shops;
-  // never an example with the same name as a real shop on the street
-  const taken = new Set(real.map((r) => r.name.trim().toLowerCase()));
-  return [...shops, ...examples().filter((e) => !taken.has(e.name.trim().toLowerCase())).slice(0, need - shops.length)];
+  // never an example that shares a name or a slug with a real shop on the street
+  const taken = new Set(real.flatMap((r) => [r.name.trim().toLowerCase(), `slug:${r.slug}`]));
+  const clash = (e: ShopView) => taken.has(e.name.trim().toLowerCase()) || taken.has(`slug:${e.key.replace(/^example:/, "")}`);
+  return [...shops, ...examples().filter((e) => !clash(e)).slice(0, need - shops.length)];
 }
 
 /** A second copy for the endless drift, with its own SVG ids. */

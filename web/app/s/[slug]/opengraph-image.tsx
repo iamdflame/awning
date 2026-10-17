@@ -24,6 +24,24 @@ async function googleFont(family: string, text: string, weight?: number): Promis
   }
 }
 
+/** At most two lines, split where the longer line is shortest (like text-wrap: balance). */
+function twoLines(name: string): string[] {
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.length < 2 || name.length <= 12) return [name];
+  let best: [string, string] = [name, ""];
+  let score = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(" ");
+    const b = words.slice(i).join(" ");
+    const m = Math.max(a.length, b.length);
+    if (m < score) {
+      score = m;
+      best = [a, b];
+    }
+  }
+  return best;
+}
+
 async function load(param: string): Promise<{ v: StoreView; photo: string | null } | null> {
   const key = decodeURIComponent(param).toLowerCase();
   const b = key.includes(".") ? await getBusinessByDomain(key) : await getBusinessBySlug(key);
@@ -53,8 +71,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const poster = v.structure.hero === "poster";
   const offers = closed ? [] : v.offers.slice(0, 3);
   const name = poster ? v.name.toUpperCase() : v.name;
-  const longest = Math.max(4, ...name.split(/\s+/).map((w) => w.length));
-  const nameSize = Math.min(poster ? 132 : 112, Math.floor(600 / (longest * (poster ? 0.47 : 0.66))));
+  const lines = twoLines(name);
+  const longest = Math.max(4, ...lines.map((l) => l.length));
+  const nameSize = Math.min(poster ? 120 : 100, Math.floor(620 / (longest * (poster ? 0.47 : 0.64))));
+  const tagline = (closed ? "Closed while Awning reviews a report." : v.tagline).slice(0, 72);
   const text = [name, v.name, v.tagline, ...offers.flatMap((o) => [o.title, usd(o.price)]), "Opening soon Closed for review", "0123456789$.,"].join(" ");
   const [display, body, ribbon] = await Promise.all([
     googleFont(v.structure.display, text, poster ? 900 : undefined),
@@ -87,8 +107,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         </div>
         <div style={{ flex: 1, display: "flex", padding: "26px 56px 0 64px", gap: 44 }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
-            <div style={{ fontFamily: "Display", fontSize: nameSize, lineHeight: 0.92, letterSpacing: -1, display: "flex", flexWrap: "wrap" }}>{name}</div>
-            <div style={{ fontSize: 28, lineHeight: 1.3, marginTop: 28, opacity: 0.9, display: "flex" }}>{closed ? "Closed while Awning reviews a report." : v.tagline}</div>
+            <div style={{ display: "flex", flexDirection: "column", fontFamily: "Display", fontSize: nameSize, letterSpacing: -1 }}>
+              {lines.map((l) => (
+                <div key={l} style={{ display: "flex", height: Math.round(nameSize * 0.98), alignItems: "flex-end" }}>
+                  {l}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 26, lineHeight: 1.3, marginTop: 22, opacity: 0.9, display: "flex" }}>{tagline}</div>
             {offers.length ? (
               <div style={{ display: "flex", flexDirection: "column", marginTop: 26, padding: "8px 22px", borderRadius: 18, background: v.structure.hero === "sign" ? t.deep : "transparent", border: v.structure.hero === "sign" ? "none" : `3px solid ${t.ink}` }}>
                 {offers.map((o, i) => (

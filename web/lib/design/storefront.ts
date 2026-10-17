@@ -62,9 +62,19 @@ export function verbFor(kind: OfferKind, title: string): string {
   return "Buy";
 }
 
+const WEEKDAY = /^(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day$/;
+
+/** An offer title as it reads mid-sentence: "Small Glazed Bowl" → "small glazed bowl", "Saturday tasting" stays. */
 function phrase(title: string): string {
-  if (/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/.test(title) || /^[A-Z]{2}/.test(title)) return title;
-  return title.charAt(0).toLowerCase() + title.slice(1);
+  const words = title.split(" ");
+  const titleCase = words.length > 1 && words.filter((w) => /^[a-z]{3,}/i.test(w)).every((w) => /^[A-Z][a-z]/.test(w));
+  return words
+    .map((w, i) => {
+      if (WEEKDAY.test(w) || /^[A-Z0-9]{2,}/.test(w)) return w; // weekdays and acronyms keep their capitals
+      if (i === 0 || titleCase) return w.charAt(0).toLowerCase() + w.slice(1);
+      return w;
+    })
+    .join(" ");
 }
 
 function article(p: string): string {
