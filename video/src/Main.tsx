@@ -60,7 +60,7 @@ export const calcMain: CalculateMetadataFunction<FilmProps> = async ({ props }) 
 };
 
 /** The music bed, ducked under every spoken phrase (sidechain-style volume automation). */
-export const MusicBed: React.FC<{ src: string | null; spans: [number, number][]; total: number; gap?: number; under?: number; from?: number }> = ({ src, spans, total, gap = 0.5, under = 0.17, from = 0 }) => {
+export const MusicBed: React.FC<{ src: string | null; spans: [number, number][]; total: number; gap?: number; under?: number; from?: number }> = ({ src, spans, total, gap = 0.78, under = 0.26, from = 0 }) => {
   if (!src) return null;
   const vol = (f: number) => {
     let duck = 0;
@@ -68,10 +68,13 @@ export const MusicBed: React.FC<{ src: string | null; spans: [number, number][];
       if (f < a - 12 || f > b + 18) continue;
       duck = Math.max(duck, interpolate(f, [a - 12, a - 2, b + 4, b + 18], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
     }
-    const level = gap + (under - gap) * duck;
-    const fadeIn = interpolate(f, [0, 24], [0.3, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-    const fadeOut = interpolate(f, [total - 84, total - 4], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-    return level * fadeIn * fadeOut;
+    // after the last word the music has the end card to itself: it lifts, then fades out
+    const lastWord = spans.length ? spans[spans.length - 1]![1] : total;
+    const swell = interpolate(f, [lastWord + 6, lastWord + 30], [1, 1.12], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    const level = (gap + (under - gap) * duck) * swell;
+    const fadeIn = interpolate(f, [0, 10], [0.55, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    const fadeOut = interpolate(f, [total - 60, total - 2], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    return Math.min(1, level * fadeIn * fadeOut);
   };
   return <Audio src={staticFile(src)} volume={vol} trimBefore={Math.round(from * FPS)} name="music" />;
 };

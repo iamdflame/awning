@@ -57,7 +57,7 @@ export const directoryResults = {
   duration: 5,
   settle: 1600,
   cursor: [[0, 1226, 452], [2.0, 700, 760, "inOut"]],
-  scroll: [[0, 0], [0.6, 0], [3.6, { sel: ".dir-list", offset: -40 }, "glide"]],
+  scroll: [[0, 0], [0.6, 0], [3.6, { sel: ".dir-card", align: "center", offset: 60 }, "glide"]],
   stills: [{ at: 4.8, name: "directory-results" }],
 };
 
@@ -69,7 +69,15 @@ export const live = {
   path: "/live",
   startFrozen: true,
   duration: 9,
-  cursor: [[0, 1520, 840], [5.4, 1520, 840], [6.8, 1090, 512, "out"], [9, 1100, 516]],
+  // ends on the newest sale's transaction link ("… on BaseScan"), where the film pushes in
+  points: (page) =>
+    page.evaluate(() => {
+      const a = document.querySelector(".lv-order .lv-tx a, .lv-tx a");
+      if (!a) return { tx: { x: 990, y: 336 } };
+      const r = a.getBoundingClientRect();
+      return { tx: { x: Math.round(r.left + r.width * 0.45), y: Math.round(r.top + r.height * 0.6) } };
+    }),
+  cursor: [[0, 1520, 840], [5.4, 1520, 840], [6.8, "tx", "out"], [9, "tx"]],
   actions: [{ at: 1.0, sale: true }],
   scroll: [[0, 0], [9, 0]],
   stills: [{ at: 8.8, name: "live-feed" }],

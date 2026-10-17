@@ -15,16 +15,18 @@ type CanopyProps = { a: string; b: string; rod: string };
  */
 const CanopyPresentation: React.FC<TransitionPresentationComponentProps<CanopyProps>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
   const exiting = presentationDirection === "exiting";
-  if (exiting) return <AbsoluteFill style={{ opacity: p < 0.5 ? 1 : 0 }}>{children}</AbsoluteFill>;
+  // each scene is its own stacking context, so nothing inside the outgoing one (a tag, a stamp) can
+  // poke through the canopy
+  if (exiting) return <AbsoluteFill style={{ opacity: p < 0.5 ? 1 : 0, isolation: "isolate", zIndex: 0 }}>{children}</AbsoluteFill>;
   const down = interpolate(p, [0, 0.5], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE.out });
   const up = interpolate(p, [0.56, 1], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE.inOut });
   const cover = p < 0.5 ? down : 1 - up;
   const sw = 120;
   const height = 1080 + sw; // tall enough that its scallops clear the frame when it is down
   return (
-    <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: p < 0.5 ? 0 : 1 }}>{children}</AbsoluteFill>
-      <AbsoluteFill style={{ pointerEvents: "none" }}>
+    <AbsoluteFill style={{ zIndex: 1, isolation: "isolate" }}>
+      <AbsoluteFill style={{ opacity: p < 0.5 ? 0 : 1, isolation: "isolate" }}>{children}</AbsoluteFill>
+      <AbsoluteFill style={{ pointerEvents: "none", zIndex: 10 }}>
         <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 44, background: passedProps.rod, zIndex: 2, transform: `translateY(${(cover > 0.001 ? 0 : -1) * 44}px)` }} />
         <Canopy sw={sw} height={height} a={passedProps.a} b={passedProps.b} progress={Math.max(0.0001, cover)} style={{ position: "absolute", left: 0, right: 0, top: 30 }} />
       </AbsoluteFill>

@@ -14,6 +14,7 @@
     "assets": "node scripts/fetch-assets.mjs",
     "capture": "node capture/run.mjs --both",
     "review": "node scripts/review.mjs",
+    "edl-helper": "node scripts/edl-helper.mjs",
     "captions": "node scripts/captions.mjs",
     "typecheck": "tsc --noEmit",
     "render:main": "node scripts/render.mjs main",

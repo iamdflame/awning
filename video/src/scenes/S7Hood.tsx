@@ -234,28 +234,28 @@ export const S7Hood: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <AbsoluteFill style={{ opacity: ph2 }}>
         {ph2 > 0 ? (
           <>
-            <Card x={90} y={180} w={420} h={240} at={tSales - 8} dark>
-              <Title color={C.c50}>A buyer's agent</Title>
+            <Card x={80} y={170} w={520} h={260} at={tSales - 8} dark>
+              <Title size={52} color={C.c50}>A buyer's agent</Title>
               <Sub color="rgba(205,243,219,.8)">Claude Code, paying with PayBox</Sub>
             </Card>
-            <Card x={1330} y={180} w={500} h={240} at={tSales - 4} glow={interpolate(f, [tOwners + 20, tOwners + 30], [0, 1], clamp)}>
-              <Title>The owner's wallet</Title>
-              <Sub>USDC on Base</Sub>
+            <Card x={1300} y={170} w={540} h={260} at={tSales - 4} glow={interpolate(f, [tOwners + 20, tOwners + 30], [0, 1], clamp)}>
+              <Title size={52}>The owner's wallet</Title>
+              <Sub size={28}>USDC on Base, theirs alone</Sub>
             </Card>
-            <Card x={710} y={560} w={500} h={230} at={tSales}>
-              <Title>Awning</Title>
-              <Sub>checks the payment, records the order</Sub>
+            <Card x={680} y={560} w={560} h={250} at={tSales}>
+              <Title size={52}>Awning</Title>
+              <Sub size={28}>checks the payment, records the order</Sub>
               {f >= tNever2 - 4 ? (
-                <div style={{ position: "absolute", right: 26, top: 22 }}>
-                  <Stamp at={tHolds - 4} size={30} rotate={-8} color={C.tomatoDeep}>
+                <div style={{ position: "absolute", right: 22, top: 24 }}>
+                  <Stamp at={tHolds - 4} size={36} rotate={-8} color={C.tomatoDeep}>
                     Holds 0.00
                   </Stamp>
                 </div>
               ) : null}
             </Card>
-            <Arrow d="M520 300 C 820 150, 1030 150, 1326 300" at={tSales} dur={18} color={C.sun} width={5} />
-            <Arrow d="M960 556 C 960 470, 960 420, 960 300" at={tOwners - 6} dur={14} color={C.g300} dash label="verifies, never touches it" lx={986} ly={430} />
-            <Coin from={[520, 300]} via={[920, 150]} to={[1326, 300]} at={tOwners - 10} dur={30} label={`+${BUSINESS.tasting.priceUsdc}`} />
+            <Arrow d="M600 300 C 860 140, 1040 140, 1296 300" at={tSales} dur={18} color={C.sun} width={6} />
+            <Arrow d="M960 556 C 960 470, 960 420, 960 330" at={tOwners - 6} dur={14} color={C.g300} dash label="verifies, never touches it" lx={990} ly={420} />
+            <Coin from={[600, 300]} via={[948, 130]} to={[1296, 300]} at={tOwners - 10} dur={30} label={`+${BUSINESS.tasting.priceUsdc}`} />
           </>
         ) : null}
       </AbsoluteFill>

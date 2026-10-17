@@ -94,7 +94,7 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
       {/* right column: one approval, as a PayBox ticket */}
       <div style={{ position: "absolute", left: 1330, top: 110, width: 540, opacity: interpolate(f, [tOn - 6, tOn + 6], [1, 0], clamp) }}>
         <Rise at={tOne - 4} stagger={5} style={{ ...display(96), color: C.c900 }}>{"One\napproval."}</Rise>
-        <div style={{ marginTop: 46, opacity: interpolate(f, [tPayBox - 6, tPayBox + 4], [0, 1], clamp), transform: `translateY(${interpolate(f, [tPayBox - 6, tPayBox + 8], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
+        <div style={{ marginTop: 72, opacity: interpolate(f, [tPayBox - 6, tPayBox + 4], [0, 1], clamp), transform: `translateY(${interpolate(f, [tPayBox - 6, tPayBox + 8], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
           <Ticket
             width={470}
             scale={0.92}

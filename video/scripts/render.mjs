@@ -69,6 +69,8 @@ async function video(id, file) {
     audioBitrate: "192k",
     scale: preview ? 0.5 : 1,
     concurrency: null,
+    // the product captures are 3072x1728: give frame extraction more than the default 2 threads
+    offthreadVideoThreads: 6,
     chromiumOptions: { gl: "angle" },
     onProgress: ({ progress }) => {
       const p = Math.floor(progress * 20);
