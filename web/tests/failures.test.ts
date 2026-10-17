@@ -88,6 +88,28 @@ describe("failure before settlement moves no money", () => {
   });
 });
 
+describe("registrar rehearsal", () => {
+  it("an account the registrar would refuse fails at preflight: no provider touched, nothing charged", async () => {
+    const registrar = new MockRegistrar();
+    registrar.rehearsalError = "registration would fail (VERIFICATION_REQUIRED): Your account phone number and email address must be verified.";
+    const telephony = new MockTelephony();
+    const hosting = new MockHosting();
+    const world = await freshWorld({ registrar, telephony, hosting });
+    const plan = await createPlan();
+    const body = { domain: plan.recommendedDomain, package: "pro" };
+    const sig = await signPayment(await openPaid(plan.planId, body), newBuyer());
+    const res = await openPaid(plan.planId, body, { "PAYMENT-SIGNATURE": sig });
+    expect(res.status).toBe(502);
+    const out = await readJson(res);
+    expect(out).toMatchObject({ error: "provisioning_failed", failedStep: "preflight", charged: false });
+    expect(JSON.stringify(out)).not.toMatch(/VERIFICATION_REQUIRED|phone number/);
+    expect(registrar.calls.some((c) => c.startsWith("rehearse:"))).toBe(true);
+    expect(registrar.calls.some((c) => c.startsWith("register:"))).toBe(false);
+    expect(telephony.owned.size).toBe(0);
+    expect(world.facilitator.settleCalls).toBe(0);
+  });
+});
+
 describe("failure discovered after settlement is refunded", () => {
   let world: Awaited<ReturnType<typeof freshWorld>>;
   let refunder: MockRefunder;

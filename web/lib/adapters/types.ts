@@ -24,6 +24,11 @@ export interface Registrar {
   check(domains: string[], signal?: AbortSignal): Promise<DomainCheck[]>;
   /** Registers at exactly `cents`; must refuse if the registrar's current price differs. */
   register(domain: string, cents: number, idempotencyKey: string, signal?: AbortSignal): Promise<{ orderId: string; cents: number }>;
+  /**
+   * Rehearses `register` with no charge and no side effect (account verified, spend limit,
+   * price, order size). Throws with the registrar's reason when the real call would fail.
+   */
+  rehearse(domain: string, cents: number, signal?: AbortSignal): Promise<void>;
   setDns(domain: string, records: DnsRecord[], idempotencyKey: string, signal?: AbortSignal): Promise<{ ids: string[] }>;
 }
 

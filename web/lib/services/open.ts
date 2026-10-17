@@ -101,13 +101,17 @@ function proSteps(): Step<OpenState>[] {
   return [
     {
       name: "preflight",
-      timeoutMs: 6000,
+      // availability + price, then balance and a dry-run registration
+      timeoutMs: 9000,
       run: async (s, signal) => {
         const [c] = await a.registrar.check([s.domain.domain], signal);
         // Already ours (an earlier attempt registered it): the registrar's idempotency key replays that registration.
         if (c?.inAccount) return;
         if (!c || !c.available) throw new Error(`${s.domain.domain} is no longer available`);
         if (c.cents !== s.domain.registrarCents) throw new Error(`price changed: quoted ${s.domain.registrarCents}¢, now ${c.cents}¢`);
+        // Rehearse the registration before touching any other provider: an unverified registrar
+        // account or a spent monthly limit fails here, with nothing to undo and nothing charged.
+        await a.registrar.rehearse(s.domain.domain, s.domain.registrarCents, signal);
       },
     },
     {
@@ -174,7 +178,8 @@ function proSteps(): Step<OpenState>[] {
     {
       // Irreversible and costly: last of the provider steps.
       name: "register_domain",
-      timeoutMs: 15000,
+      // Paying the registrar in USDC is its own x402 round trip (402 → sign → on-chain settle).
+      timeoutMs: 22000,
       run: async (s, signal) => {
         const r = await a.registrar.register(s.domain.domain, s.domain.registrarCents, `awning-open-${s.plan.id}-${s.domain.domain}`, signal);
         s.prov.registrarOrderId = r.orderId;

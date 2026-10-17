@@ -40,7 +40,11 @@ export const env = {
   llmTimeoutMs: () => Number(str("AWNING_LLM_TIMEOUT_MS") ?? 5000),
   porkbunKey: () => str("PORKBUN_API_KEY"),
   porkbunSecret: () => str("PORKBUN_SECRET_KEY"),
-  porkbunPayWith: () => (str("PORKBUN_PAY_WITH") === "usdc" ? "usdc" : "credit") as "usdc" | "credit",
+  /** credit: prepaid Porkbun balance; usdc: x402 from the treasury per purchase; auto: credit when it covers the price, else usdc. */
+  porkbunPayWith: () => {
+    const v = str("PORKBUN_PAY_WITH");
+    return (v === "usdc" || v === "auto" ? v : "credit") as "usdc" | "credit" | "auto";
+  },
   vercelToken: () => str("VERCEL_TOKEN"),
   vercelProjectId: () => str("VERCEL_PROJECT_ID"),
   vercelTeamId: () => str("VERCEL_TEAM_ID"),
@@ -52,7 +56,7 @@ export const env = {
   elevenLabsKey: () => str("ELEVENLABS_API_KEY"),
   elevenLabsVoiceId: () => str("ELEVENLABS_VOICE_ID"),
   planTtlSeconds: () => Number(str("AWNING_PLAN_TTL_SECONDS") ?? 1800),
-  openDeadlineMs: () => Number(str("AWNING_OPEN_DEADLINE_MS") ?? 14000),
+  openDeadlineMs: () => Number(str("AWNING_OPEN_DEADLINE_MS") ?? 26000),
   /** Trust & safety: per-wallet limits and the operator key for takedowns. */
   planLimitPerHour: () => Number(str("AWNING_PLAN_LIMIT_PER_HOUR") ?? 12),
   freeOpensPerDay: () => Number(str("AWNING_FREE_OPENS_PER_DAY") ?? 3),

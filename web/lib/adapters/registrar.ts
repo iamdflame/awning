@@ -22,8 +22,22 @@ export class PorkbunRegistrar implements Registrar {
   constructor(
     private readonly apiKey: string,
     private readonly secretKey: string,
-    private readonly payWith: "credit" | "usdc",
+    private readonly payWith: "credit" | "usdc" | "auto",
   ) {}
+
+  /** Prepaid balance in cents (0 when it cannot be read). */
+  private async balanceCents(signal?: AbortSignal): Promise<number> {
+    const res = await this.post("/account/balance", {}, { signal, timeoutMs: 4000 });
+    const r = obj(res.json);
+    return res.ok && r.status === "SUCCESS" ? Number(r.balance ?? 0) : 0;
+  }
+
+  /** How this purchase is paid: account credit is fastest (no on-chain step), USDC needs no balance. */
+  private async methodFor(cents: number, signal?: AbortSignal): Promise<"credit" | "usdc"> {
+    if (this.payWith !== "auto") return this.payWith;
+    const balance = await this.balanceCents(signal).catch(() => 0);
+    return balance >= cents ? "credit" : "usdc";
+  }
 
   private auth() {
     return { apikey: this.apiKey, secretapikey: this.secretKey };
@@ -71,11 +85,12 @@ export class PorkbunRegistrar implements Registrar {
   }
 
   async register(domain: string, cents: number, idempotencyKey: string, signal?: AbortSignal) {
+    const method = await this.methodFor(cents, signal);
     const body: Record<string, unknown> = { cost: cents, agreeToTerms: "yes" };
-    if (this.payWith === "usdc") body.payWith = "usdc";
+    if (method === "usdc") body.payWith = "usdc";
     let res = await this.post(`/domain/create/${domain}`, body, { idem: idempotencyKey, signal, timeoutMs: 15000 });
 
-    if (res.status === 402 && this.payWith === "usdc") {
+    if (res.status === 402 && method === "usdc") {
       const header = res.headers.get("payment-required");
       if (!header) throw new ProviderError("porkbun", "402 without PAYMENT-REQUIRED header", 402, "PAYMENT_REQUIRED");
       const { payX402Challenge } = await import("../x402/buyer");
@@ -93,6 +108,17 @@ export class PorkbunRegistrar implements Registrar {
       throw new ProviderError("porkbun", `create ${domain} failed (${res.status}): ${excerpt(String(r.message ?? res.text))}`, res.status, String(r.code ?? ""));
     }
     return { orderId: String(r.orderId ?? ""), cents: Number(r.cost ?? cents) };
+  }
+
+  /** `dryRun: true` checks everything the real create would (verification, spend limit, price) and charges nothing. */
+  async rehearse(domain: string, cents: number, signal?: AbortSignal) {
+    const body: Record<string, unknown> = { cost: cents, agreeToTerms: "yes", dryRun: true };
+    if ((await this.methodFor(cents, signal)) === "usdc") body.payWith = "usdc";
+    const res = await this.post(`/domain/create/${domain}`, body, { signal, timeoutMs: 6000 });
+    const r = obj(res.json);
+    // With payWith usdc a passing rehearsal may also answer 402 (terms only, nothing charged).
+    if (res.status === 402 || (res.ok && r.status === "SUCCESS")) return;
+    throw new ProviderError("porkbun", `registration would fail (${String(r.code ?? res.status)}): ${excerpt(String(r.message ?? res.text))}`, res.status, String(r.code ?? ""));
   }
 
   async setDns(domain: string, records: DnsRecord[], idempotencyKey: string, signal?: AbortSignal) {
@@ -150,6 +176,14 @@ export class MockRegistrar implements Registrar {
       const taken = ours || stableIndex(`taken:${domain}`, 5) === 0;
       return { domain, available: !taken, priceUsd, cents: usdStringToCents(priceUsd), premium: false, inAccount: ours };
     });
+  }
+
+  /** Set to make the next rehearsals fail (tests). */
+  rehearsalError: string | null = null;
+
+  async rehearse(domain: string, cents: number) {
+    this.calls.push(`rehearse:${domain}:${cents}`);
+    if (this.rehearsalError) throw new Error(this.rehearsalError);
   }
 
   private readonly byKey = new Map<string, { orderId: string; cents: number }>();
