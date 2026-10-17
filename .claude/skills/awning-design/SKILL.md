@@ -7,14 +7,14 @@ description: "Awning's design system and review standard: brand, tokens, type, c
 
 ## The idea
 
-Awning turns one sentence into a real shop, so the brand looks like a **street**, not a dashboard. awning.sh wears a striped, scalloped canopy (canopy green and canvas) over a shop window where a business opens live. Everything else (receipts, price tags, hanging signs, a street of shopfronts) comes from the same street. Generated storefronts wear *their own* awning in *their own* colors; Awning's brand appears there only as a slim ribbon.
+Awning turns one sentence into a real shop, so the brand looks like a **street**, not a dashboard. awning.sh wears a striped, scalloped canopy (canopy green and canvas); its hero is a street of independent shops with a hoarding in the gap, where your sentence is lettered and a new shop opens live. Everything else (receipts, price tags, hanging signs, a street of shopfronts) comes from the same street. Generated storefronts wear *their own* awning in *their own* colors; Awning's brand appears there only as a slim ribbon.
 
 Source of truth: `design/brand/palette.css` (tokens), `design/landing/` (awning.sh), `design/storefront/` (the business template), `design/BRAND.md`, `design/DIRECTION.md`.
 
 ## Non-negotiables
 
 1. **The canopy crowns every Awning page**: rod bar in `--g-800` + `.canopy` stripes with scallops (copy the CSS mask from `landing.css`). Never a plain white header.
-2. **First screens lead with the product working** (the shop window, a storefront, a receipt), never with a paragraph or a chat box.
+2. **First screens lead with the product working** (the street with a shop opening, a storefront with prices, a receipt), never with a paragraph, a chat box or a device mockup.
 3. **Money is shown as a receipt or ticket**, with Martian Mono, a dashed rule and the amount in Archivo 800 green. Never a stat tile, never a chart of fake numbers.
 4. **One accent**: tomato is the OPEN sign: primary CTAs and live signals only. Sun yellow only where money lands.
 5. **Storefronts never look like Awning.** They take the business palette and font pair; the only Awning mark is the 40 px ribbon at the very bottom.
@@ -70,7 +70,7 @@ Source of truth: `design/brand/palette.css` (tokens), `design/landing/` (awning.
 
 ## Motion
 
-- **Orchestrated moment (hero, ~13 s loop):** sentence typed in sun-gold on the window glass (26 ms/char) → glass clears (550 ms) → storefront awning unrolls (`--ease-unroll`, 900 ms) → OPEN sign flips (800 ms) → phone chip slides in and the icon jiggles 4× → receipt prints line by line (450 ms apart) → the agent's purchase highlights the menu row → "+5.00" pops. Loop pauses when off screen.
+- **Orchestrated moment (hero, ~14 s loop per business):** the sentence is lettered in sun-gold on a green hoarding (24 ms/char) → the receipt starts printing (plan, domain, PayBox tap) → the hoarding lifts (800 ms) revealing the facade in the business's colors → the signboard paints left to right (900 ms) → the awning unrolls (`--ease-unroll`, 900 ms) → the website shows in the shop window → the door's OPEN sign flips → the phone chip slides in and rings → the agent's purchase highlights the menu row → "+5.00" pops. Next business: the hoarding comes back down. Loop pauses off screen.
 - Canopy unrolls once on load (1.1 s). The street drifts 90 s/loop and pauses on hover and focus.
 - Buttons: press `scale(.96)`, hover deepens the tinted shadow in 180 ms. Icons nudge on hover.
 - `prefers-reduced-motion`: hero shows its end state, nothing drifts, sways or pulses.
@@ -79,7 +79,7 @@ Source of truth: `design/brand/palette.css` (tokens), `design/landing/` (awning.
 
 - **Buttons:** `.btn-primary` tomato gradient + inset highlight + tomato glow; `.btn-ghost` 1.5 px inner ring at 20% ink; `.btn-canvas` paper on green. Heights 52 (40 in the rod). Labels nowrap. Icons are drawn (storefront, phone), never "→".
 - **Rod + canopy** (`.rod`, `.canopy`): `--sw` 56 px desktop, 39 px phone; mask overlap `+1px` to avoid a seam.
-- **Shop window** (`.window/.glass/.sill`), **OPEN sign** (`.sign`, flips with `.is-open`), **phone chip** (`.ring`), **receipt** (`.receipt`, scalloped tear via mask), **ticket** (`.ticket`, side notches), **price tag** (`.tag` clip-path + string), **ledger** (`.ledger`), **street shopfront** (`.shop`, data-driven CSS vars `--wall --trim --sA --sB --glass --disp`).
+- **Hero street** (`.hstreet/.hstage/.lot/.facade/.hoarding`; the shop window renders the real storefront at 2x scaled by .5), **OPEN sign** (`.sign`, flips with `.is-open`), **phone chip** (`.ring`), **receipt** (`.receipt`, scalloped tear via mask), **ticket** (`.ticket`, side notches), **price tag** (`.tag` clip-path + string), **ledger** (`.ledger`), **street shopfront** (`.shop`, data-driven CSS vars `--wall --trim --sA --sB --glass --disp`).
 - **Tool board** (`.board .tools`): tool name in Martian Mono sun, one-line description, a pill: `pays` (tomato tint) or `read/free/owner` (neutral).
 - **Empty state:** "Nothing opened yet today. Be the first shop on the street." with a single empty lot drawn as a dashed scaffold.
 - **Error:** says what happened and that the money is back: "ridgeroast.co was taken a minute ago. Your 19 USDC is back in your wallet."
@@ -87,9 +87,10 @@ Source of truth: `design/brand/palette.css` (tokens), `design/landing/` (awning.
 ## Storefront theming (every generated business)
 
 - Input from the API: `palette {primary, accent, ink, paper}`, `category`. `themeFrom()` in `design/storefront/storefront.js` derives `ground, ink, accent, accent2, stripeA, stripeB, deep`.
-- Font pair and hero variant by category: food/coffee → Alfa Slab One + Work Sans, `sign` hero; repair/tools → Big Shoulders Display 900 + Barlow, `poster` hero; craft/studio → Young Serif + Figtree, `arch` hero. Add rows, never one global font.
-- Sections, in order: rod + their canopy, hero (name, tagline, status, primary "Book/Buy · price", phone), menu board of offers (on `--ink`), "Buy with your AI agent" slip (exact prompt + x402 link `https://api.awning.sh/x402/b/:slug/:sku` with copy buttons + payTo wallet), about/hours/call, footer, Awning ribbon.
-- **Draft state** (`status: draft`): caution-tape bar "Preview, not open yet…", awning rolled up, kraft paper over the art with an "Opening soon" stamp, buy buttons disabled, no phone.
+- **Structure by category, not just a palette:** food/coffee → Alfa Slab One + Work Sans, `sign` hero with a **menu board** of prices in the first screen and a scalloped canopy; repair/tools → Big Shoulders Display 900 + Barlow, `poster` hero with a turning wheel and **price tags on a pegboard**, flat hemmed canopy; craft/studio → Young Serif + Figtree, `arch` hero with the work in an arched window set into a **tiled wall**, gallery-label prices, tiled lintel instead of canvas. Add rows to `BY_CATEGORY`, never one global layout.
+- Prices show in dollars (USDC) with the local currency beside them when `local {symbol, rate}` is known (rate from a live source in production, never hard-coded). Phone numbers use the local format.
+- Sections, in order: rod (name, status, nav, call) + their canopy, hero (name, tagline, offers with prices and actions), "Buy with your AI agent" slip (exact prompt + x402 link `https://api.awning.sh/x402/b/:slug/:sku` with copy buttons + payTo wallet), about/hours/call, footer, Awning ribbon.
+- **Draft state** (`status: draft`): caution-tape bar "Preview, not open yet…", canopy rolled up, kraft paper over the art with an "Opening soon" stamp, buy buttons become "Notify me", no phone.
 - **Free plan** (no phone/domain): hide call buttons and the phone column; domain shows `slug.awning.sh`.
 
 ## Copy
@@ -107,7 +108,9 @@ The five AI clusters and the tells in studio's craft.md, plus, for this project:
 - purple, the PayBox/MoonPay violet, or any gradient text;
 - a row of three identical feature cards with icons;
 - invented "businesses opened" counters;
-- storefronts that share Awning's green or Archivo (they must look independent).
+- storefronts that share Awning's green or Archivo (they must look independent);
+- plain white cards for offers (the round-2 jury called Barro a card kit);
+- illustrations that collide with the business name on phones.
 
 ## Review format
 
