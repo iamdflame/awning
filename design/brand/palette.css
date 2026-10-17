@@ -1,0 +1,79 @@
+/* Awning tokens. OKLCH source of truth; hex in comments for tools that can't read OKLCH.
+   Brand hue 158 (canopy green). Neutrals are "canvas": awning cotton, tinted warm-green, never flat grey. */
+:root {
+  /* canopy green: the brand */
+  --g-50: oklch(0.97 0.025 158);   /* #e8fbef */
+  --g-100: oklch(0.93 0.05 158);   /* #cdf3db */
+  --g-200: oklch(0.87 0.08 158);   /* #a8e5c0 */
+  --g-300: oklch(0.78 0.11 158);   /* #76cd9c */
+  --g-400: oklch(0.66 0.13 158);   /* #3baa73 */
+  --g-500: oklch(0.54 0.13 158);   /* #008450 */
+  --g-600: oklch(0.45 0.115 158);  /* #00683b  the canopy */
+  --g-700: oklch(0.38 0.095 158);  /* #00512e */
+  --g-800: oklch(0.31 0.075 160);  /* #003b23 */
+  --g-900: oklch(0.25 0.055 162);  /* #002919 */
+  --g-950: oklch(0.19 0.04 164);   /* #00190f */
+
+  /* canvas: the neutrals */
+  --c-0: oklch(0.99 0.006 105);    /* #fcfcf7  paper highlight */
+  --c-50: oklch(0.972 0.012 105);  /* #f7f6ed  canvas */
+  --c-100: oklch(0.945 0.016 105); /* #eeeee2 */
+  --c-200: oklch(0.9 0.02 108);    /* #e0e0d1 */
+  --c-300: oklch(0.82 0.022 115);  /* #c6c9b7 */
+  --c-500: oklch(0.6 0.026 135);   /* #828e80 */
+  --c-700: oklch(0.45 0.03 150);   /* #526355 muted ink */
+  --c-900: oklch(0.21 0.035 160);  /* #081d13 ink */
+
+  /* the one sharp accent: the OPEN sign */
+  --tomato: oklch(0.635 0.2 31);   /* #eb4b35 */
+  --tomato-deep: oklch(0.56 0.19 30); /* #cc3526 (text on canvas, 4.6:1) */
+  /* receipts and money landing */
+  --sun: oklch(0.86 0.15 88);      /* #faca4b */
+
+  /* semantic */
+  --bg: var(--c-50);
+  --surface: var(--c-0);
+  --surface-sunk: var(--c-100);
+  --ink: var(--c-900);
+  --muted: var(--c-700);
+  --line: oklch(0.21 0.035 160 / 0.12);
+  --brand: var(--g-600);
+  --brand-ink: var(--c-50);
+  --accent: var(--tomato);
+  --success: var(--g-500);
+  --warning: oklch(0.78 0.15 75);
+  --danger: var(--tomato-deep);
+  --focus: oklch(0.62 0.17 245);   /* a blue ring, readable on green, canvas and tomato */
+
+  /* type */
+  --font-display: "Archivo", ui-sans-serif, sans-serif; /* set with font-stretch 112–125% */
+  --font-text: "Archivo", ui-sans-serif, sans-serif;    /* font-stretch 100% */
+  --font-receipt: "Martian Mono", ui-monospace, monospace; /* ONLY on receipts, tx hashes and the x402 link */
+  --step-display: clamp(3rem, 1.6rem + 5.6vw, 7.25rem);
+  --step-h1: clamp(2.5rem, 1.6rem + 3.4vw, 4.75rem);
+  --step-h2: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+  --step-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --step-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+  --step-body: 1.0625rem;
+  --step-small: 0.875rem;
+
+  /* space: 4 px base, 8 px rhythm */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px; --s-10: 128px;
+  --section: clamp(72px, 10vw, 152px);
+  --gutter: clamp(16px, 4vw, 56px);
+  --container: 1240px;
+
+  /* radius follows hierarchy: windows are arched, cards are soft, chips are pills */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 16px; --r-lg: 24px; --r-xl: 36px; --r-pill: 999px;
+
+  /* depth: layered, tinted with the canopy hue */
+  --shadow-1: 0 1px 1px oklch(0.25 0.05 158 / .06), 0 2px 4px oklch(0.25 0.05 158 / .06);
+  --shadow-2: 0 1px 2px oklch(0.25 0.05 158 / .06), 0 4px 8px oklch(0.25 0.05 158 / .06), 0 16px 32px -8px oklch(0.25 0.08 158 / .16);
+  --shadow-3: 0 2px 4px oklch(0.25 0.05 158 / .06), 0 12px 24px -6px oklch(0.25 0.06 158 / .14), 0 40px 80px -24px oklch(0.22 0.08 158 / .32);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-unroll: cubic-bezier(0.34, 1.32, 0.64, 1); /* the awning drop: a little bounce at the end, like canvas settling */
+  --dur-micro: 140ms; --dur-color: 180ms; --dur-ui: 220ms; --dur-reveal: 700ms;
+}
