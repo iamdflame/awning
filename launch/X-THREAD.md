@@ -1,105 +1,20 @@
-# Awning on X: launch post and thread
+# Awning on X: the launch posts
 
 Awning is a PayBox plugin that turns one sentence into a real business that people and AI agents can buy from the minute it opens.
 
-These are drafts written as "I", for you to post from your own account. Read each one aloud and change anything that doesn't sound like you. Attach the demo video to post 1, then reply to it with posts 2 to 7. If the organizers publish a post template, a hashtag or handles to tag, follow theirs exactly and trim to fit.
+Post from **your personal account**. Every post below matches what the film shows and what is live today. Lengths are as X counts them (every link counts as 23 characters); all fit in 280.
 
-## Post 1: the launch post (attach the demo video)
+## How to post, in order
 
-Use version A if the video opens the business on its own domain, version B if it opens on the free `awning.sh` subdomain. The post has to match what the video shows.
+1. Open PayBox's hackathon announcement: https://x.com/PayBox/status/2111092311597744221
+2. **Repost → Quote**, attach the film `video/out/awning-demo-main.mp4` (upload the file itself, not a link), paste **Post 1**, post it.
+3. Reply to your own Post 1 with **Reply 1**, then reply to that with **Reply 2**, then **Reply 3** (a thread). Optional extras after that.
+4. Go back to PayBox's announcement and post the **Reply under the announcement**, with your Post 1 link pasted in.
+5. Pin Post 1 to your profile. Copy its link into your PayBox submission.
 
-**A** (271 characters as X counts them)
+## The posts
 
-```
-One sentence to my AI agent opened a real business.
-
-"Ridge Roast, coffee from Accra." One PayBox approval and it was live on its own domain. Then a fresh chat found it and booked a $5 tasting, paid to the owner's wallet.
-
-Awning, a PayBox plugin: awning.sh
-```
-
-**B** (262 characters)
-
-```
-One sentence to my AI agent opened a real business.
-
-"Ridge Roast, small-batch coffee from Accra." It went live with a storefront and a checkout. Then a fresh chat found it on its own and booked a $5 tasting, paid straight to the owner's wallet.
-
-Awning, a PayBox plugin: awning.sh
-```
-
-## Posts 2 to 7: the thread
-
-**2** (233)
-
-```
-How it works:
-
-awning_plan drafts the name, copy, offers and a storefront, and prices three real domains.
-awning_open_free puts it live on name.awning.sh for $0.
-awning_open asks for one approval, registers your domain and goes live.
-```
-
-**3** (266)
-
-```
-The plugin never pays. It returns an x402 proposal checked against Awning's live quote, and PayBox asks you to approve.
-
-A Pro payment settles only after the domain is registered and the site is attached. If something fails after that, Awning's treasury refunds you.
-```
-
-**4** (227)
-
-```
-Every sale is an x402 payment in USDC on Base whose payTo is the owner's own wallet. Awning takes no fee on sales and never holds the money.
-
-Openings and sales show up at awning.sh/live, each sale with its transaction on Base.
-```
-
-**5** (153; attach a screenshot of awning.sh/for-agents)
-
-```
-Every shop is also an API. Nine plugin tools, two x402 endpoints and a public JSON API, with copyable use_plugin and curl examples:
-
-awning.sh/for-agents
-```
-
-**6** (203)
-
-```
-A real domain from one sentence invites abuse. Sentences, drafts and names are screened, brand look-alikes like m00npay are refused, quotas cap openings, and anyone can report a shop at awning.sh/report.
-```
-
-**7** (171)
-
-```
-Next: a phone line answered by an AI receptionist. It's built and switches on once telephony is connected.
-
-Made for the PayBox hackathon by MoonPay. Open yours: awning.sh
-```
-
-Once the phone line is live, replace post 7 with: "Every Pro shop now has a phone line. Call it and an AI receptionist answers for the owner." Post it only after you have made a real call to a real Awning number.
-
-## Three alternative hooks for post 1
-
-Swap one in for the opening line of post 1 and keep the rest.
-
-1. `Agents can pay for things now. Mine just opened the shop they buy from.`
-2. `I gave my AI agent one sentence and got back a business with a storefront, a checkout and a domain.` (with version A only)
-3. `AI agents can pay now. So I built a plugin that opens shops they can pay.`
-
-## Before posting
-
-- Every claim in the post must be visible in the video: the sentence, the PayBox approval, the live storefront, the second agent's purchase and the payment reaching the owner's wallet.
-- Don't mention the phone line as working until it is.
-- Use real numbers from your run (the domain, the price you approved). If your take used a different business, change the name and prices in posts 1 and 2.
-
-
-## Final posts (use these)
-
-Lengths are as X counts them (every link counts as 23).
-
-### Post 1: quote-post PayBox's hackathon announcement (https://x.com/PayBox/status/2111092311597744221) and attach `video/out/awning-demo-main.mp4` (246)
+### Post 1: quote of PayBox's announcement, with the film attached (246)
 
 ```
 One sentence to my AI agent opened a real business.
@@ -109,7 +24,7 @@ One sentence to my AI agent opened a real business.
 Meet Awning 👇
 ```
 
-### Reply 1: links and proof (reply to your own Post 1) (213)
+### Reply 1: try it, and the proof (213)
 
 ```
 Try it: awning.sh
@@ -140,8 +55,40 @@ Code: github.com/iamdflame/awning
 Built for the @PayBox hackathon by @MoonPay.
 ```
 
-### Reply under PayBox's announcement post (after Post 1 is up) (149)
+### Reply under PayBox's announcement (paste your Post 1 link) (149)
 
 ```
 My entry: Awning. One sentence to your agent opens a real business, on its own domain, that other agents can buy from. Demo: [paste your Post 1 link]
 ```
+
+## Optional extra replies (add to the thread if you like)
+
+### Extra A: trust and safety (attach a screenshot of awning.sh/report if you want) (214)
+
+```
+A real domain from one sentence invites abuse, so every sentence, draft and name is screened, brand look-alikes like m00npay are refused, quotas cap openings, and anyone can report a shop at awning.sh/report.
+```
+
+### Extra B: what's next (159)
+
+```
+Next: a phone line answered by an AI receptionist. It's built and switches on once telephony is connected.
+
+Open yours in one sentence: awning.sh
+```
+
+Only once a real call to a real Awning number has worked, you can post: "Every Pro shop now has a phone line. Call it and an AI receptionist answers for the owner."
+
+## Getting it seen by PayBox and MoonPay
+
+- The **quote of PayBox's announcement** puts the film in @PayBox's notifications and next to the post every entrant and the PayBox team watch. **@PayBox** is tagged in Post 1 and Reply 2, **@MoonPay** in Reply 3. Don't tag anyone else.
+- **Native video** (the uploaded file) reaches more people on X than a link; the film opens on the product working and is captioned for silent viewing.
+- **The first hour matters most**: ask a few friends to like, reply and repost early; reply to every comment yourself, quickly and personally.
+- **Pin** Post 1, and share its link in the hackathon's Discord or Telegram if there is one.
+- Never buy engagement, use extra accounts or spam replies: it breaks X's rules and the hackathon's rule on genuine work.
+
+## Before you press Post
+
+- The film is `video/out/awning-demo-main.mp4` (1:50). Watch it once fully first.
+- Every number above is from the real run: ridgeroast.shop, 11.06 USDC opening, 5.00 USDC sale, both on Base.
+- Don't describe the phone line as working until it is.
