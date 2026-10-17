@@ -93,6 +93,8 @@ function proSteps(): Step<OpenState>[] {
       timeoutMs: 6000,
       run: async (s, signal) => {
         const [c] = await a.registrar.check([s.domain.domain], signal);
+        // Already ours (an earlier attempt registered it): the registrar's idempotency key replays that registration.
+        if (c?.inAccount) return;
         if (!c || !c.available) throw new Error(`${s.domain.domain} is no longer available`);
         if (c.cents !== s.domain.registrarCents) throw new Error(`price changed: quoted ${s.domain.registrarCents}¢, now ${c.cents}¢`);
       },
@@ -123,7 +125,9 @@ function proSteps(): Step<OpenState>[] {
       timeoutMs: 9000,
       run: async (s, signal) => {
         const r = s.plan.prepared.receptionist;
-        const { agentId } = await a.receptionist.create({ businessName: s.business.name, agentName: r.agentName, systemPrompt: r.systemPrompt, firstMessage: r.firstMessage }, signal);
+        // The prompt was written for the recommended domain; point it at the one being opened.
+        const systemPrompt = s.plan.recommendedDomain ? r.systemPrompt.split(`https://${s.plan.recommendedDomain}`).join(`https://${s.domain.domain}`) : r.systemPrompt;
+        const { agentId } = await a.receptionist.create({ businessName: s.business.name, agentName: r.agentName, systemPrompt, firstMessage: r.firstMessage }, signal);
         s.prov.receptionistAgentId = agentId;
       },
       undo: async (s, signal) => {
@@ -235,7 +239,7 @@ export async function openPro(req: Request, planId: string, body: z.infer<typeof
             },
           };
         }
-        return { ok: false, status: 409, body: { error: "open_in_progress", message: "This plan is being opened by another payment. You were not charged; check the plan status shortly.", charged: false, refunded: false } };
+        return { ok: "retry", status: 409, body: { error: "open_in_progress", message: "This plan is being opened by another payment. You were not charged; check the plan status shortly.", charged: false, refunded: false } };
       }
 
       const restoreStatus = business.status === "live" ? ("opened" as const) : ("quoted" as const);

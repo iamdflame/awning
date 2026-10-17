@@ -37,11 +37,22 @@ export class TwilioTelephony implements Telephony {
   }
 
   async buy(input: BuyNumberInput, signal?: AbortSignal) {
-    let candidates = input.candidates;
-    if (!candidates.length) candidates = await this.search(input.country, signal);
-    if (!candidates.length && input.country !== "US") candidates = await this.search("US", signal);
     let lastErr = "no numbers available";
-    for (const number of candidates.slice(0, 3)) {
+    for (let round = 0; round < 2; round++) {
+      // Round 0: numbers found at plan time. Round 1: a fresh search (they may have been taken since).
+      let candidates = round === 0 ? input.candidates : await this.search(input.country, signal).catch(() => [] as string[]);
+      if (!candidates.length && round === 1 && input.country !== "US") candidates = await this.search("US", signal);
+      const bought = await this.tryBuy(candidates.slice(0, 3), input, signal);
+      if ("sid" in bought) return bought;
+      lastErr = bought.error;
+      if (!bought.retryable) break;
+    }
+    throw new ProviderError("twilio", `buy number failed: ${lastErr}`);
+  }
+
+  private async tryBuy(candidates: string[], input: BuyNumberInput, signal?: AbortSignal): Promise<{ sid: string; number: string } | { error: string; retryable: boolean }> {
+    let lastErr = "no candidates";
+    for (const number of candidates) {
       const form = new URLSearchParams({ PhoneNumber: number, FriendlyName: input.friendlyName.slice(0, 64), VoiceUrl: input.voiceUrl, VoiceMethod: "POST" });
       if (input.smsUrl) form.set("SmsUrl", input.smsUrl);
       const res = await http(`${TWILIO}/Accounts/${this.sid}/IncomingPhoneNumbers.json`, {
@@ -57,9 +68,9 @@ export class TwilioTelephony implements Telephony {
       }
       lastErr = `(${res.status}) ${excerpt(res.text)}`;
       // 400 = number was taken since the search; try the next candidate.
-      if (res.status !== 400) break;
+      if (res.status !== 400) return { error: lastErr, retryable: false };
     }
-    throw new ProviderError("twilio", `buy number failed: ${lastErr}`);
+    return { error: lastErr, retryable: true };
   }
 
   async release(sid: string, signal?: AbortSignal) {

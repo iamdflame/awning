@@ -66,7 +66,7 @@ export class PorkbunRegistrar implements Registrar {
       // Premium names cannot be registered over the API; multi-year minimum
       // terms would make the quoted first-year price wrong. Treat both as unavailable.
       const available = r.avail === "yes" && !premium && minDuration === 1 && cents > 0;
-      return { domain, available, priceUsd, cents, premium };
+      return { domain, available, priceUsd, cents, premium, inAccount: r.inYourAccount === true };
     });
   }
 
@@ -146,20 +146,27 @@ export class MockRegistrar implements Registrar {
     return domains.map((domain) => {
       const tld = domain.split(".").pop() ?? "com";
       const priceUsd = MOCK_PRICES[tld] ?? "14.99";
-      const taken = this.registered.has(domain) || stableIndex(`taken:${domain}`, 5) === 0;
-      return { domain, available: !taken, priceUsd, cents: usdStringToCents(priceUsd), premium: false };
+      const ours = this.registered.has(domain);
+      const taken = ours || stableIndex(`taken:${domain}`, 5) === 0;
+      return { domain, available: !taken, priceUsd, cents: usdStringToCents(priceUsd), premium: false, inAccount: ours };
     });
   }
 
+  private readonly byKey = new Map<string, { orderId: string; cents: number }>();
+
   async register(domain: string, cents: number, idempotencyKey: string) {
     this.calls.push(`register:${domain}:${cents}`);
+    const replay = this.byKey.get(idempotencyKey);
+    if (replay) return replay; // same Idempotency-Key → original result, like Porkbun
     const tld = domain.split(".").pop() ?? "com";
     const expected = usdStringToCents(MOCK_PRICES[tld] ?? "14.99");
     if (cents !== expected) throw new ProviderError("mock-registrar", `price mismatch: quoted ${cents}, live ${expected}`, 400, "PRICE_MISMATCH");
     if (this.registered.has(domain)) throw new ProviderError("mock-registrar", `${domain} is not available`, 400, "DOMAIN_NOT_AVAILABLE");
     this.registered.add(domain);
     log.info("MOCK registrar registered domain", { domain, cents });
-    return { orderId: `mock-order-${stableIndex(idempotencyKey, 1_000_000)}`, cents };
+    const result = { orderId: `mock-order-${stableIndex(idempotencyKey, 1_000_000)}`, cents };
+    this.byKey.set(idempotencyKey, result);
+    return result;
   }
 
   async setDns(domain: string, records: DnsRecord[]) {

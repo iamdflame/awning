@@ -13,6 +13,8 @@ export type DomainCheck = {
   premium: boolean;
   /** Registry did not answer; neither available nor taken. */
   unresolved?: boolean;
+  /** Already registered in our registrar account. */
+  inAccount?: boolean;
 };
 
 export interface Registrar {

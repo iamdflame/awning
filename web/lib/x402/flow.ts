@@ -47,7 +47,9 @@ export type WorkResult =
   /** Work failed before settlement: nothing was charged. */
   | { ok: false; status: number; body: unknown }
   /** Nothing to do (e.g. already done by another payment): do not settle. */
-  | { ok: "skip"; status: number; body: unknown };
+  | { ok: "skip"; status: number; body: unknown }
+  /** Transient conflict (e.g. the same plan is being opened by another payment): release the key so a retry is re-evaluated. */
+  | { ok: "retry"; status: number; body: unknown };
 
 export type PaidFlowOptions = {
   req: Request;
@@ -131,6 +133,10 @@ export async function handlePaidRequest(o: PaidFlowOptions): Promise<Response> {
 
   if (result.ok === false) return finish(match.key, "failed", { status: result.status, body: result.body }, { error: "work_failed" });
   if (result.ok === "skip") return finish(match.key, "superseded", { status: result.status, body: result.body });
+  if (result.ok === "retry") {
+    await d.delete(schema.payments).where(and(eq(schema.payments.key, match.key), eq(schema.payments.status, "working")));
+    return respond({ status: result.status, body: result.body, headers: { "retry-after": "3" } });
+  }
 
   // Work succeeded: now, and only now, move the money.
   const settled = await settleWithTruth(payment, requirements);
