@@ -12,7 +12,7 @@ import { newId } from "../ids";
 import { errorMessage, log } from "../log";
 import { centsToAtomic, parseOfferPrice, proTotalAtomic } from "../money";
 import { receptionistName, receptionistPrompt } from "../plan/receptionist";
-import { allocateSlug, getBusinessById, offersFor, skuFrom, slugify } from "./businesses";
+import { allocateSlug, getBusinessById, offersFor, releaseOwnDraft, skuFrom, slugify } from "./businesses";
 import { planView } from "./views";
 import { PolicyError, assertPlanQuota, screenBusiness, screenText } from "../policy";
 
@@ -164,6 +164,7 @@ export async function createPlan(input: PlanInput) {
   }));
 
   const d = await db();
+  await releaseOwnDraft(slugify(draft.name), input.ownerWallet);
   let slug = await allocateSlug(draft.name, draft.city);
   const domains = pickDomains(checks, primary, variants).map(toPlanDomain);
   const recommended = domains.find((x) => x.available)?.domain ?? null;

@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "../db/client";
+import { businessImages } from "../db/images";
 import type { BusinessRow, OfferKind, OfferRow } from "../db/schema";
 import { newId } from "../ids";
 
@@ -31,6 +32,26 @@ export async function slugTaken(slug: string): Promise<boolean> {
 }
 
 /** First free slug among name, name-city, name-2…name-99. */
+/**
+ * A redraft by the same owner replaces their earlier unopened draft, so the name and preview
+ * address stay the same. Only a draft whose plan is still just quoted (never paid, never opening)
+ * and has no payment attempts is released.
+ */
+export async function releaseOwnDraft(slug: string, ownerWallet: string): Promise<boolean> {
+  const d = await db();
+  const [b] = await d.select().from(schema.businesses).where(eq(schema.businesses.slug, slug)).limit(1);
+  if (!b || b.status !== "draft" || b.ownerWallet.toLowerCase() !== ownerWallet.toLowerCase()) return false;
+  const [plan] = await d.select().from(schema.plans).where(eq(schema.plans.id, b.planId)).limit(1);
+  if (plan && plan.status !== "quoted") return false;
+  const [paid] = await d.select({ key: schema.payments.key }).from(schema.payments).where(eq(schema.payments.refId, b.planId)).limit(1);
+  if (paid) return false;
+  await d.delete(schema.offers).where(eq(schema.offers.businessId, b.id));
+  await d.delete(businessImages).where(eq(businessImages.businessId, b.id));
+  await d.delete(schema.businesses).where(eq(schema.businesses.id, b.id));
+  if (plan) await d.delete(schema.plans).where(eq(schema.plans.id, plan.id));
+  return true;
+}
+
 export async function allocateSlug(name: string, city: string | null): Promise<string> {
   const base = slugify(name);
   const candidates = [base];

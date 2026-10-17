@@ -36,7 +36,7 @@ Rules:
 - name: the business name the owner gave; if none, a short, plausible, original name (2-3 words).
 - tagline: under 60 characters, plain and specific.
 - description: 2 short sentences in plain language: what the business sells, and how buying works.
-- offers: 3-4 things a customer can buy today, each with a one-line description (at most 12 words). Keep every price the owner stated exactly. Other prices must be realistic local prices in USD (whole dollars or .50). kind is one of product, service, booking, digital, subscription.
+- offers: if the owner lists what they sell, offer exactly those items and nothing else; otherwise 3-4 things a customer can buy today. Each has a one-line description (at most 12 words). Keep every price the owner stated exactly. Other prices must be realistic local prices in USD (whole dollars or .50). kind is one of product, service, booking, digital, subscription.
 - city: only if the owner mentioned a place, else null.
 - category: one of the provided categories.
 - palette: four hex colours (primary, accent, ink, paper) that suit the business; ink on paper must be easy to read (dark ink, light paper).`;
@@ -322,11 +322,16 @@ export function finalizeDraft(raw: BusinessDraft, input: DraftInput): BusinessDr
       return true;
     });
   // Prices the owner stated are facts: make sure each one is on the menu.
-  for (const stated of detectPricedOffers(input.sentence)) {
-    if (!offers.some((o) => Math.abs(o.priceUsd - stated.priceUsd) < 0.005)) offers.unshift(stated);
+  const stated = detectPricedOffers(input.sentence);
+  // An owner who priced two or more things has given their menu: sell exactly that, never a
+  // padded catalogue (seen live: an unrequested subscription the agent then could not remove).
+  const ownerListed = stated.length >= 2;
+  if (ownerListed) offers = offers.filter((o) => stated.some((s) => Math.abs(o.priceUsd - s.priceUsd) < 0.005));
+  for (const s of stated) {
+    if (!offers.some((o) => Math.abs(o.priceUsd - s.priceUsd) < 0.005)) offers.unshift(s);
   }
   for (const o of [...fallback.offers, ...cat.offers]) {
-    if (offers.length >= 3) break;
+    if (ownerListed || offers.length >= 3) break;
     if (!offers.some((x) => x.title.toLowerCase() === o.title.toLowerCase())) offers.push({ ...o });
   }
   offers = offers.slice(0, 5);
