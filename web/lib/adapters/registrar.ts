@@ -6,6 +6,19 @@ import { ProviderError, excerpt, http, obj } from "./http";
 import type { DnsRecord, DomainCheck, Registrar } from "./types";
 
 const PORKBUN = "https://api.porkbun.com/api/json/v3";
+/** Porkbun answers "1 out of 1 create attempts within 1 seconds used" to faster calls (dry runs count). */
+const CREATE_SPACING_MS = 1100;
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (ms <= 0) return resolve();
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener("abort", () => {
+      clearTimeout(timer);
+      reject(signal.reason ?? new Error("aborted"));
+    }, { once: true });
+  });
+}
 
 /**
  * Porkbun API v3 (https://porkbun.com/api/json/v3/documentation).
@@ -38,6 +51,9 @@ export class PorkbunRegistrar implements Registrar {
     const balance = await this.balanceCents(signal).catch(() => 0);
     return balance >= cents ? "credit" : "usdc";
   }
+
+  /** When the last dry run hit the create endpoint (the next create waits out the spacing). */
+  private lastRehearsal = 0;
 
   private auth() {
     return { apikey: this.apiKey, secretapikey: this.secretKey };
@@ -92,14 +108,19 @@ export class PorkbunRegistrar implements Registrar {
     // In USDC mode the unpaid request only fetches the 402 terms: it carries no key, so the paid
     // request (the one that registers) is the only call bound to it, and a retry replays that.
     const idem = `${idempotencyKey}-${method}`;
-    let res = await this.post(`/domain/create/${domain}`, body, { idem: method === "usdc" ? undefined : idem, signal, timeoutMs: 15000 });
+    await sleep(Math.max(0, CREATE_SPACING_MS - (Date.now() - this.lastRehearsal)), signal);
+    let lastCreate = Date.now();
+    let res = await this.createCall(domain, body, { idem: method === "usdc" ? undefined : idem, signal, timeoutMs: 15000 });
 
     if (res.status === 402 && method === "usdc") {
       const header = res.headers.get("payment-required");
       if (!header) throw new ProviderError("porkbun", "402 without PAYMENT-REQUIRED header", 402, "PAYMENT_REQUIRED");
       const { payX402Challenge } = await import("../x402/buyer");
       const signature = await payX402Challenge(header, BigInt(cents) * 10_000n);
-      res = await this.post(`/domain/create/${domain}`, body, {
+      // Porkbun allows one create call per second per account.
+      await sleep(Math.max(0, CREATE_SPACING_MS - (Date.now() - lastCreate)), signal);
+      lastCreate = Date.now();
+      res = await this.createCall(domain, body, {
         idem,
         signal,
         timeoutMs: 20000,
@@ -114,11 +135,23 @@ export class PorkbunRegistrar implements Registrar {
     return { orderId: String(r.orderId ?? ""), cents: Number(r.cost ?? cents) };
   }
 
+  /** One create call, retried once when Porkbun's one-create-per-second limit answers instead. */
+  private async createCall(domain: string, body: Record<string, unknown>, opts: { idem?: string; signal?: AbortSignal; timeoutMs?: number; headers?: Record<string, string> }) {
+    const res = await this.post(`/domain/create/${domain}`, body, opts);
+    const msg = String(obj(res.json).message ?? "");
+    if (res.status === 400 && /create attempts within d+ seconds/i.test(msg)) {
+      await sleep(CREATE_SPACING_MS, opts.signal);
+      return this.post(`/domain/create/${domain}`, body, opts);
+    }
+    return res;
+  }
+
   /** `dryRun: true` checks everything the real create would (verification, spend limit, price) and charges nothing. */
   async rehearse(domain: string, cents: number, signal?: AbortSignal) {
     const body: Record<string, unknown> = { cost: cents, agreeToTerms: "yes", dryRun: true };
     if ((await this.methodFor(cents, signal)) === "usdc") body.payWith = "usdc";
-    const res = await this.post(`/domain/create/${domain}`, body, { signal, timeoutMs: 6000 });
+    const res = await this.createCall(domain, body, { signal, timeoutMs: 6000 });
+    this.lastRehearsal = Date.now();
     const r = obj(res.json);
     // With payWith usdc a passing rehearsal may also answer 402 (terms only, nothing charged).
     if (res.status === 402) return;
