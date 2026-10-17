@@ -7,7 +7,7 @@ This script films only what is live today: drafting, a free or custom-domain ope
 ## Setup before recording
 
 - **Owner:** Claude.ai with PayBox connected and Awning enabled under Plugins. A Base wallet in PayBox with enough USDC for the domain you will pick (a `.shop` opening was 11.06 USDC at Porkbun's 2026-10-17 list price, `docs/SPEC.md`).
-- **Buyer:** ChatGPT with PayBox connected under a *different* PayBox account, Awning enabled, and at least 5 USDC on Base.
+- **Buyer:** Claude Code in a terminal, connected to the same PayBox account over MCP (an unpublished plugin is visible only to its developer). Owner sales go to a separate wallet address, so the purchase visibly moves money. See `RECORDING-RUNBOOK.md`.
 - **Tabs ready:** `awning.sh/live`, `awning.sh/directory`, and BaseScan on the owner's wallet address.
 - **Pick a fresh name.** Check `awning.sh/directory` first. If Ridge Roast is already open, use another business and change every prompt and caption to match.
 - **Check `awning.sh/status`.** If Pro is unavailable, open on the free subdomain instead (shot 3 becomes `awning_open_free`) and use launch post B in `X-THREAD.md`.
@@ -20,8 +20,8 @@ This script films only what is live today: drafting, a free or custom-domain ope
 |---|---|---|
 | P1 | Owner, Claude | `Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags and a $5 tasting session. Sales go to my PayBox wallet.` |
 | P2 | Owner, Claude | `Open it on ridgeroast.shop.` (use a domain the plan lists as available, at the price it shows) |
-| P3 | Buyer, ChatGPT | `Find a coffee tasting in Accra and book one for Saturday morning.` |
-| P4 | Buyer, ChatGPT | `Yes, book it.` |
+| P3 | Buyer, Claude Code | `Find a coffee tasting in Accra and book one for Saturday morning.` |
+| P4 | Buyer, Claude Code | `Yes, book it.` |
 | P5 | Owner, Claude | `Add a monthly subscription box to Ridge Roast for $30.` |
 | P6 | Owner, Claude | `How are Ridge Roast's sales?` |
 
@@ -34,7 +34,7 @@ This script films only what is live today: drafting, a free or custom-domain ope
 | 0:11–0:14 | Click the preview link: the draft storefront with its "Preview, not open yet" ribbon, offers and generated photo. | A private preview. | |
 | 0:14–0:18 | Back in Claude, type **P2**. `awning_open` returns a proposal; the PayBox approval window shows the amount in USDC on Base. Approve. | One approval. | "One approval in PayBox." |
 | 0:18–0:26 | The paid response: "live at https://ridgeroast.shop". Open it with the address bar in view. Scroll from the menu to the "Buy with your AI agent" slip. | A real domain. Registered, paid, live. | "That's a real domain, registered and live." |
-| 0:26–0:32 | Switch to ChatGPT, a different PayBox account. Type **P3**. `awning_find` returns Ridge Roast and the tasting price. | A different person. A different agent. | "Now someone else asks their own agent." |
+| 0:26–0:32 | Switch to Claude Code in a terminal. Type **P3**. `awning_find` returns Ridge Roast and the tasting price. | A different agent. | "Now a different agent goes shopping." |
 | 0:32–0:38 | Type **P4**. `awning_buy` returns a proposal; the PayBox window shows 5.00 USDC and the owner's wallet. Approve. The answer shows the booking code. | 5.00 USDC, straight to the owner. | |
 | 0:38–0:45 | `awning.sh/live`: the new SOLD line, +5.00. Click its transaction: BaseScan shows the USDC transfer into the owner's wallet. | Its first customer was an AI agent. | "Its first customer was an AI agent, and the money went straight to the owner." |
 | 0:45–0:55 | Back in Claude as the owner. Type **P5**. `awning_add_offer` answers; refresh the storefront and the new row is there. | The owner runs it from the chat. | "The owner runs the shop from the same chat." |
@@ -64,7 +64,7 @@ To keep the total at 2:00, shorten 0:45–1:15 by 10 seconds (drop the `/for-age
 | 0:00–0:04 | Type **P1** in Claude and send. | One sentence. |
 | 0:04–0:08 | The plan: name, offers, domains with prices; one second on the preview. | Drafted. Nothing paid yet. |
 | 0:08–0:14 | **P2**, the PayBox approval, then the live storefront on its own domain. | One approval. A real domain, live. |
-| 0:14–0:24 | ChatGPT, another account: **P3**, **P4**, the 5.00 USDC approval, then the +5.00 line on `awning.sh/live` and the BaseScan transfer. | Its first customer was an AI agent. Paid straight to the owner. |
+| 0:14–0:24 | Claude Code in a terminal: **P3**, **P4**, the 5.00 USDC approval, then the +5.00 line on `awning.sh/live` and the BaseScan transfer. | Its first customer was an AI agent. Paid straight to the owner. |
 | 0:24–0:30 | End card: logo, one-liner, awning.sh. | Open yours. awning.sh |
 
 ## Captions as one list (for the subtitle file)
@@ -74,7 +74,7 @@ To keep the total at 2:00, shorten 0:45–1:15 by 10 seconds (drop the `/for-age
 3. A private preview.
 4. One approval.
 5. A real domain. Registered, paid, live.
-6. A different person. A different agent.
+6. A different agent.
 7. 5.00 USDC, straight to the owner.
 8. Its first customer was an AI agent.
 9. The owner runs it from the chat.
