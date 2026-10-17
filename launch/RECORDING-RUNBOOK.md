@@ -16,6 +16,8 @@ The film needs screen recordings that only you can make, because the payments ar
   - **Paying wallet** (your PayBox Base wallet): at least **17 USDC** (11.06 for the Ridge Roast opening on `ridgeroast.shop`: 2.06 domain + 9.00 Pro, then 5.00 for the tasting).
   - **Sales wallet** (where Ridge Roast's sales land): a **different** Base address you own. Either a second wallet in PayBox, if your account lets you add one, or any wallet you control (Coinbase Wallet, MetaMask, …). Copy its address.
 - Quick check before recording, in a **new chat**: *"Using PayBox, run the Awning plugin's awning_about tool."* It should describe Awning. If it can't find the plugin, enable it again (PayBox → Plugins → Unofficial plugins) and check the PayBox connector is on for the chat.
+- **One-time agent verification, before recording (no money, no clock).** PayBox asks a new agent connection to match emojis the first time it signs. Do it with a plain message signature, not a payment: in Claude, ask *"Use PayBox to sign the message 'Verify my agent' with my Base wallet."*, then in the signing window match the emojis and approve with your passkey. Do the same once in Claude Code before the buyer take.
+- **Ask for Pro directly**, never the free version first (an upgrade adds a step and a second plan).
 - **Always name Awning in the prompt.** Without it, Claude may build a web page itself instead of calling the plugin (seen in a take).
 
 **Screen**
