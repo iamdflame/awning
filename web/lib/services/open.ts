@@ -5,7 +5,7 @@ import { adapters } from "../adapters";
 import { apiError, apiUrl, json, ownerTokenFor } from "../api";
 import { db, schema } from "../db/client";
 import type { BusinessRow, PlanDomain, PlanRow, Provisioning, StepRecord } from "../db/schema";
-import { businessUrl, env } from "../env";
+import { businessUrl, env, subdomainUrl } from "../env";
 import { errorMessage, log } from "../log";
 import { atomicToUsd, PRO_FEE_ATOMIC } from "../money";
 import { runSaga, type Step } from "../orchestrator/machine";
@@ -24,7 +24,18 @@ export const openBodySchema = z.object({
 });
 
 function openedBusinessView(b: BusinessRow) {
-  return { slug: b.slug, name: b.name, url: businessUrl(b), domain: b.package === "pro" ? b.domain : null, phone: b.phone, status: b.status, package: b.package };
+  const pro = b.package === "pro" && !!b.domain;
+  return {
+    slug: b.slug,
+    name: b.name,
+    url: businessUrl(b),
+    // A just-registered domain can take a few minutes to resolve worldwide; the subdomain works at once.
+    ...(pro ? { liveNowAt: subdomainUrl(b.slug), domainNote: `${b.domain} is registered and connected; a new domain can take a few minutes to resolve everywhere. It is live right now at ${subdomainUrl(b.slug)}.` } : {}),
+    domain: pro ? b.domain : null,
+    phone: b.phone,
+    status: b.status,
+    package: b.package,
+  };
 }
 
 function treasury(): string | null {

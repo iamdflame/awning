@@ -335,7 +335,7 @@ function createServer() {
         `After approval PayBox sends POST ${apiBase()}${openPath(id)} with the payment. Poll the returned PayBox request until it is terminal; do not call awning_open again.`,
         upgrade
           ? "The paid response contains the new URL (and phone number when Pro includes one); the owner token does not change. If opening fails before payment settles, nothing is charged; if it says refunded: true, the USDC was returned (refundTx)."
-          : "The paid response contains the live URL, the phone number when Pro includes one, and ownerToken (the user must keep it for awning_add_offer and awning_orders). If opening fails before payment settles, nothing is charged; if it says refunded: true, the USDC was returned (refundTx).",
+          : "The paid response contains the live URL, the phone number when Pro includes one, and ownerToken (the user must keep it for awning_add_offer and awning_orders). A just-registered domain can take a few minutes to resolve; business.liveNowAt works immediately, so share both. If opening fails before payment settles, nothing is charged; if it says refunded: true, the USDC was returned (refundTx).",
         "Amount checked against Awning's live x402 quote.",
       ].join("\n")),
     };
