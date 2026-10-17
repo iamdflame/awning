@@ -7,15 +7,15 @@ Generate one audio file per line below in ElevenLabs, name it exactly as shown (
 | Setting | Value |
 |---|---|
 | Voice | **Dflame** (your own voice in your library). Second choice: **Eric – Smooth, Trustworthy**. Third: **George – Warm, Captivating Storyteller** |
-| Model | **Eleven Multilingual v2** (the steadiest for a cloned voice across many lines). If a line sounds flat, regenerate only that line with **Eleven v3** |
-| Stability | 50% (lower to 40% if it sounds read; raise to 60% if it wobbles) |
+| Model | **Eleven v4** (`eleven_v4`, in your account). If a line drifts from your voice, regenerate that line with **Eleven Multilingual v2**, the steadiest for a cloned voice |
+| Stability | **Natural** (about 50%). Use Creative for vo-04 and vo-08 if they sound flat; Robust if a take wobbles |
 | Similarity | 80% |
 | Style exaggeration | 15% |
 | Speaker boost | On |
 | Speed | 1.00 (0.95 for vo-07 and vo-09) |
 | Output | MP3 44.1 kHz 192 kbps (or WAV 48 kHz if your plan offers it) |
 
-Generate 2–3 takes of each line and keep the one that sounds like you talking to a friend, not reading. Leave about 0.3 s of silence at the start and end of each file; don't add music.
+Eleven v4 understands delivery cues in square brackets. Optional: start vo-04 with `[confident]`, vo-05's last sentence with `[warmly]`, and vo-08 with `[proud]`; the brackets are not spoken. Generate 2–3 takes of each line and keep the one that sounds like you talking to a friend, not reading. Leave about 0.3 s of silence at the start and end of each file; don't add music.
 
 **Say it like this:** Awning = "AW-ning". PayBox = "pay box". USDC = "U-S-D-C". Accra = "ah-KRAH". awning.sh = "awning dot S-H". BaseScan = "base scan".
 
