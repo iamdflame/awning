@@ -15,7 +15,8 @@ The film needs screen recordings that only you can make, because the payments ar
 - **Two wallets, so the sale visibly moves money:**
   - **Paying wallet** (your PayBox Base wallet): at least **17 USDC** (11.06 for the Ridge Roast opening on `ridgeroast.shop`: 2.06 domain + 9.00 Pro, then 5.00 for the tasting).
   - **Sales wallet** (where Ridge Roast's sales land): a **different** Base address you own. Either a second wallet in PayBox, if your account lets you add one, or any wallet you control (Coinbase Wallet, MetaMask, …). Copy its address.
-- Quick check before recording: in Claude, ask *"Use the Awning plugin's awning_about tool."* It should answer with what Awning is. If it can't find the plugin, enable it again and start a new chat.
+- Quick check before recording, in a **new chat**: *"Using PayBox, run the Awning plugin's awning_about tool."* It should describe Awning. If it can't find the plugin, enable it again (PayBox → Plugins → Unofficial plugins) and check the PayBox connector is on for the chat.
+- **Always name Awning in the prompt.** Without it, Claude may build a web page itself instead of calling the plugin (seen in a take).
 
 **Screen**
 - Recorder: **OBS Studio** (free; Settings → Video: base and output 1920×1080, 60 fps; Output: recording format MP4, quality "High") or **Xbox Game Bar** (Win + Alt + R records the active window).
@@ -27,13 +28,13 @@ The film needs screen recordings that only you can make, because the payments ar
 Start recording, then:
 
 1. New chat. Type exactly and send:
-   > Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags at $14 and a $5 tasting session. Sales go to my wallet 0x… (paste your sales wallet address).
+   > Open a business on Awning through PayBox: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags at $14 and a $5 tasting session. Sales go to my wallet 0x… (paste your sales wallet address).
 
    If Claude still asks a question (a price, a detail), answer briefly and keep recording; the edit cuts it.
 2. Wait for the plan (name, offers, domains with prices). Let it sit on screen for 3 seconds.
 3. Click the **preview link**. Let the draft storefront load, scroll slowly to the offers, pause 2 seconds, go back to the chat.
 4. Type and send (use the `.shop` domain the plan lists, at the price it shows):
-   > Open it on ridgeroast.shop.
+   > Open it on Awning at ridgeroast.shop.
 5. The PayBox approval appears: let the amount be readable for 2 seconds, then **approve with your passkey**.
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
@@ -43,7 +44,7 @@ Start recording, then:
 Terminal maximized, font enlarged (Ctrl + = a few times, about 18 pt), dark theme is fine. Start `claude` in the demo folder, start recording, then:
 
 1. Type and send:
-   > Find a coffee tasting in Accra and book one for Saturday morning.
+   > Using PayBox, find a coffee tasting in Accra on Awning and book one for Saturday morning.
 2. When it shows Ridge Roast and the $5 tasting, type and send:
    > Yes, book it.
 3. The PayBox approval shows **5.00 USDC** to the sales wallet: hold 2 seconds, **approve** (paying from your PayBox wallet).
@@ -52,9 +53,9 @@ Terminal maximized, font enlarged (Ctrl + = a few times, about 18 pt), dark them
 ## Owner take 2 → `owner-2.mp4` (Claude, same chat as before)
 
 1. Type and send:
-   > Add a monthly subscription box to Ridge Roast for $30.
+   > Add a monthly subscription box to Ridge Roast on Awning for $30.
 2. When it confirms, type and send:
-   > How are Ridge Roast's sales?
+   > How are Ridge Roast's sales on Awning?
 3. Hold on the order list for 3 seconds. Stop recording.
 
 ## Hand-off
