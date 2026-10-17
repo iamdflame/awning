@@ -138,8 +138,22 @@ export class PorkbunRegistrar implements Registrar {
   private async createCall(domain: string, body: Record<string, unknown>, opts: { idem?: string; signal?: AbortSignal; timeoutMs?: number; headers?: Record<string, string> }) {
     for (let attempt = 0; ; attempt++) {
       await sleep(Math.max(0, CREATE_SPACING_MS - (Date.now() - this.lastCreateEnd)), opts.signal);
+      const started = Date.now();
       const res = await this.post(`/domain/create/${domain}`, body, opts);
       this.lastCreateEnd = Date.now();
+      const rj = obj(res.json);
+      log.info("porkbun create", {
+        domain,
+        attempt,
+        dryRun: body.dryRun === true,
+        payWith: body.payWith ?? "credit",
+        paid: !!opts.headers?.["PAYMENT-SIGNATURE"],
+        idem: !!opts.idem,
+        status: res.status,
+        code: String(rj.code ?? rj.status ?? ""),
+        message: excerpt(String(rj.message ?? "")),
+        ms: this.lastCreateEnd - started,
+      });
       const limited = res.status === 400 && /create attempts within d+ seconds/i.test(String(obj(res.json).message ?? ""));
       if (!limited || attempt >= 2) return res;
     }
