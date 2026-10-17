@@ -7,3 +7,4 @@ for s in ridge-roast spoke-and-chain barro-studio; do ./shot.sh "storefront/inde
 ./shot.sh "storefront/index.html?b=barro-studio&state=draft" $O --viewports desktop,phone --wait 2500 --full --name storefront-draft-barro-studio
 ./shot.sh brand/index.html $O --viewports desktop,phone --wait 1500 --full --name brand-sheet
 cd ../$O && for f in *.png; do n=$(echo $f | sed -E 's/-127\.0\.0\.1-8787-[a-z/.-]*index\.html__/-/; s/desktop/1440/; s/phone/390/'); [ "$f" != "$n" ] && mv -f "$f" "$n"; done; rm -f index.json
+cd /c/Users/Dflame/Music/pay-/design/tools && node fullphone.mjs http://127.0.0.1:8787/landing/index.html ../shots/$R/landing-390__full.png 9600

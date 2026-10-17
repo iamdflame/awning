@@ -77,12 +77,16 @@ img,svg{display:block;max-width:100%}
 .ptag .b{margin-top:6px;align-self:flex-start}
 
 /* studio: the work in an arched window, gallery labels beside it */
-.h-arch .wrap{display:grid;grid-template-columns:6fr 6fr;gap:clamp(24px,5vw,80px);align-items:center}
+.h-arch .wrap{display:grid;grid-template-columns:6fr 6fr;gap:clamp(24px,5vw,80px);align-items:center;position:relative}
+.h-arch::before{content:"";position:absolute;left:0;top:0;bottom:0;width:44%;background:var(--tile) 0 0/72px 72px;box-shadow:inset -6px 0 0 var(--ink)}
+.h-arch .art{z-index:1}
+.h-arch .art{box-shadow:inset 0 0 0 10px var(--ink),0 30px 60px -30px rgb(0 0 0/.6)!important}
 .h-arch .art{order:-1;position:relative;background:var(--deep);border-radius:999px 999px 18px 18px;padding:72px 36px 0;overflow:hidden;box-shadow:inset 0 0 0 10px color-mix(in oklab,var(--ink) 70%,var(--ground));min-height:600px;display:flex;align-items:flex-end}
 .h-arch .art svg{margin-bottom:-8px}
 .h-arch h1{font-size:clamp(72px,8.4vw,136px)}
-.labels{margin-top:28px;display:grid;gap:12px}
-.lab{display:grid;grid-template-columns:1fr auto;gap:4px 20px;align-items:end;padding:14px 16px;background:#fff;border-radius:6px;box-shadow:0 1px 2px rgb(0 0 0/.06),inset 0 0 0 1px color-mix(in oklab,var(--ink) 10%,transparent)}
+.labels{margin-top:32px;display:grid;gap:18px}
+.lab{display:grid;grid-template-columns:1fr auto;gap:4px 20px;align-items:end;padding:16px 0 4px;border-top:2px solid var(--ink)}
+.lab:first-child{border-top-width:3px}
 .lab h3{font-family:var(--display);font-weight:400;font-size:21px;margin:0;line-height:1.15}
 .lab p{grid-column:1;margin:0;font-size:14px;opacity:.72}
 .lab .pr{grid-column:2;grid-row:1/span 2;text-align:right}
@@ -139,19 +143,22 @@ img,svg{display:block;max-width:100%}
 
 @media (max-width: 960px){
   .rod-status{display:none}
-  .rod nav a:not(.callbtn){display:none}
+  .rod nav a:not(.callbtn):not(:first-child){display:none}
+  .rod nav{gap:16px}
+  .brand{font-size:19px}
   .canopy.c-scallop{--sw:39px;height:50px}
   .hero .wrap{grid-template-columns:1fr!important;gap:24px}
   .hero .copy,.hero .art,.peg{grid-column:1/-1!important;grid-row:auto!important;margin:0!important}
   .h-sign h1{font-size:68px}
-  .h-sign .art{order:-1;max-width:220px;justify-self:end;margin:0 -8px -64px 0!important}
+  .h-sign .art{order:-1;max-width:180px;justify-self:end;margin:0 -8px -12px 0!important}
   .board{padding:16px 16px 6px}
   .board li{grid-template-columns:1fr auto;gap:8px 12px}
   .board li .b{grid-column:1/-1;justify-self:start;min-height:44px}
   .h-poster h1{font-size:92px}
-  .h-poster .art{order:-1;max-width:220px;justify-self:end;margin:0 -40px -96px 0!important}
+  .h-poster .art{order:-1;max-width:190px;justify-self:end;margin:0 -30px -20px 0!important}
   .peg{grid-template-columns:1fr;gap:18px;padding-top:18px}
   .h-arch .art{order:-1;min-height:0;max-width:250px;padding:36px 22px 0;justify-self:center}
+  .h-arch::before{width:100%;height:320px;bottom:auto}
   .h-arch h1{font-size:72px}
   .agent .wrap{grid-template-columns:1fr}
   .visit .wrap{grid-template-columns:1fr;gap:36px}
