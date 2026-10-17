@@ -38,6 +38,7 @@
   root.style.setProperty('--text', `"${fonts.text}"`);
   if (draft) root.classList.add('is-draft');
 
+  const domain = b.domain || `${b.slug}.awning.sh`; // free plan: subdomain
   const featured = b.offers.find((o) => o.featured) || b.offers[0];
   const buyUrl = (o) => `https://api.awning.sh/x402/b/${b.slug}/${o.id}`;
   const phrase = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/.test(featured.title) ? featured.title : featured.title[0].toLowerCase() + featured.title.slice(1);
@@ -45,11 +46,14 @@
   const art = window.AWNING_ART[b.art]({ ...t, displayFont: fonts.display, textFont: fonts.text }, b.name);
   const hasPhone = !!b.phone && !draft; // free plan and drafts have no line yet
   const tel = hasPhone ? b.phone.replace(/[^+\d]/g, '') : '';
-  const domain = b.domain || `${b.slug}.awning.sh`;
   const today = b.hours[0];
   const name = hero === 'poster' ? b.name.replace(' & ', '<br>&amp; ') : b.name;
   const mark = '<svg viewBox="4 10 56 36" aria-hidden="true"><path d="M9 11.5h46a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 1 0-5Z" fill="currentColor"/><path d="M15 18 4 34a5.6 5.6 0 0 0 11.2 0l7.6-16Zm15.6 0-4.2 16a5.6 5.6 0 0 0 11.2 0l-4.2-16Zm15.6 0 7.6 16a5.6 5.6 0 0 0 11.2 0L49 18Z" fill="currentColor"/></svg>';
 
+  // favicon: the business's initial on its accent color
+  const fav = document.createElement('link'); fav.rel = 'icon';
+  fav.href = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${t.accent}"/><text x="32" y="45" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="38" fill="#fff">${b.name[0]}</text></svg>`);
+  document.head.append(fav);
   document.title = draft ? `${b.name} · preview` : `${b.name} · ${b.category} in ${b.city}`;
   document.getElementById('app').innerHTML = `
 <div class="draftbar" role="status"><span>Preview, not open yet. Only you can see this page. Tell your agent “open it” to go live.</span></div>

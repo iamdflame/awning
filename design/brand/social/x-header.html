@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Awning X header (1500x500)</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Alfa+Slab+One&family=Big+Shoulders+Display:wght@900&family=Young+Serif&family=Shrikhand&family=Rubik+Mono+One&family=Gloock&family=Bagel+Fat+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../palette.css">
+<link rel="stylesheet" href="../../landing/landing.css">
+<style>
+  html,body{width:1500px;height:500px;overflow:hidden}
+  body{background:var(--bg)}
+  .canopy{--sw:50px;height:62px;animation:none}
+  .street{position:absolute;left:0;right:0;bottom:0;height:330px}
+  .street .row{animation:none;bottom:40px;left:-60px;transform:scale(.82);transform-origin:bottom left}
+  .curb{height:40px}
+  .curb::after{top:22px}
+  .copy{position:absolute;right:64px;top:92px;text-align:right}
+  .copy h1{font-size:44px;margin:0}
+  .copy p{margin:10px 0 0;font:600 18px/1 var(--font-text);font-stretch:110%;color:var(--g-700)}
+</style>
+</head>
+<body>
+<div class="canopy"></div>
+<div class="copy"><h1 class="display">Open yours in one sentence.</h1><p>awning.sh</p></div>
+<div class="street"><div class="row" id="row"></div><div class="curb"></div></div>
+<script src="../../shared/businesses.js"></script>
+<script src="../../shared/art.js"></script>
+<script>
+  const B = window.AWNING_BUSINESSES, ART = window.AWNING_ART;
+  const artFor = (b) => ART[b.art]({ ...b.palette, displayFont: b.fonts.display, textFont: b.fonts.text }, b.name);
+  const EXTRA = [
+    { name: 'Mama Efua’s', disp: 'Shrikhand', fs: 28, wall: '#f6c8b8', trim: '#7a1f2b', sA: '#7a1f2b', sB: '#fff4ec', glass: '#2b1a1d', art: 'coffee', w: 300, h: 300 },
+    { name: 'NIGHT OWL', disp: 'Rubik Mono One', fs: 20, wall: '#262a4a', trim: '#f2c14e', sA: '#f2c14e', sB: '#262a4a', glass: '#11132a', art: 'ceramics', w: 260, h: 340 },
+    { name: 'Fold Press', disp: 'Gloock', fs: 30, wall: '#dfe8d5', trim: '#2f4a2a', sA: '#2f4a2a', sB: '#f4f7ee', glass: '#20301d', art: 'ceramics', w: 280, h: 290 },
+    { name: 'Little Fig', disp: 'Bagel Fat One', fs: 30, wall: '#7c3a6d', trim: '#ffd1e8', sA: '#ffd1e8', sB: '#7c3a6d', glass: '#3b1834', art: 'bike', w: 250, h: 320 },
+  ];
+  const fromBiz = (b, w, h) => ({ name: b.name, disp: b.fonts.display, dw: b.hero === 'poster' ? 900 : 400, fs: b.hero === 'poster' ? 34 : 30, wall: b.palette.ground, trim: b.palette.ink, sA: b.palette.stripeA, sB: b.palette.stripeB, glass: b.palette.deep, w, h, b });
+  const shopArt = (s) => s.b ? artFor(s.b) : ART[s.art]({ ground: s.wall, ink: s.trim, accent: s.sA, accent2: s.sB, deep: s.glass, displayFont: s.disp, textFont: 'Archivo' }, s.name);
+  const shops = [EXTRA[3], fromBiz(B[0], 310, 330), EXTRA[0], fromBiz(B[1], 290, 316), EXTRA[1], EXTRA[2], fromBiz(B[2], 300, 336)];
+  document.getElementById('row').innerHTML = shops.map((s) => `<span class="shop" style="--w:${s.w}px;--h:${s.h}px;--wall:${s.wall};--trim:${s.trim};--sA:${s.sA};--sB:${s.sB};--glass:${s.glass};--disp:'${s.disp}';--dw:${s.dw || 400};--fs:${s.fs}px"><span class="cornice"></span><span class="signboard">${s.name}</span><span class="aw"></span><span class="front"><span class="win">${shopArt(s)}</span><span class="door"></span></span></span>`).join('');
+</script>
+</body>
+</html>

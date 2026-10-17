@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Awning OG image (1200x630)</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Martian+Mono:wdth,wght@75..100,400..700&family=Alfa+Slab+One&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../palette.css">
+<link rel="stylesheet" href="../../landing/landing.css">
+<style>
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{background:var(--bg)}
+  .canopy{--sw:50px;height:62px;animation:none}
+  .og{position:absolute;inset:0;display:grid;grid-template-columns:590px 1fr;gap:36px;padding:0 56px}
+  .left{padding-top:112px}
+  .left img{height:34px;margin-bottom:40px}
+  .left h1{font-size:68px;margin:0 0 26px}
+  .left p{margin:0;font-size:21px;color:var(--muted);max-width:28ch;line-height:1.4}
+  .stage{margin-top:118px;position:relative;grid-column:auto;grid-row:auto}
+  .receipt ul{min-height:0}
+  .glass{aspect-ratio:auto;height:396px}
+  .mini > *, .mini > .mini-awning{opacity:1;transform:none;transition:none}
+  .sign{top:-58px;right:44px;animation:none;transform:rotate(-2deg)}
+  .receipt{right:-24px;bottom:-40px;width:250px;transform:rotate(3deg)}
+  .receipt li{max-height:none;opacity:1}
+  .receipt .total{opacity:1}
+  .mini-name{font-size:60px}
+</style>
+</head>
+<body>
+<div class="canopy"></div>
+<div class="og">
+  <div class="left">
+    <img src="../logo.svg" alt="Awning">
+    <h1 class="display">Open for business in one sentence.</h1>
+    <p>Domain, storefront, phone line and checkout, from one sentence to your AI agent.</p>
+  </div>
+  <div class="stage">
+    <div class="sign is-open"><svg class="chain" viewBox="0 0 62 60"><path d="M8 60 31 4l23 56" fill="none" stroke="var(--g-900)" stroke-width="2"/><circle cx="31" cy="4" r="3.5" fill="var(--g-900)"/></svg><div class="board"><div class="face closed">CLOSED</div><div class="face open">OPEN</div></div></div>
+    <div class="window"><div class="glass" id="glass"><div class="mini on" id="mini"></div></div><div class="sill"></div></div>
+    <div class="receipt"><h4><span>RIDGE ROAST</span><span>10:02</span></h4><ul>
+      <li class="in"><span>ridgeroast.co</span><span class="dots"></span><span>registered</span></li>
+      <li class="in"><span>phone line</span><span class="dots"></span><span>ringing</span></li>
+      <li class="in agent"><span>an agent buys</span><span class="dots"></span><span>tasting</span></li></ul>
+      <div class="total in"><small>USDC FROM AN AGENT<br>TO 0x7a3F…9c21</small><b>+5.00</b></div></div>
+  </div>
+</div>
+<script src="../../shared/businesses.js"></script>
+<script src="../../shared/art.js"></script>
+<script>
+  const b = window.AWNING_BUSINESSES[0], g = document.getElementById('glass');
+  for (const [k, v] of Object.entries(b.palette)) g.style.setProperty('--b-' + k, v);
+  g.style.setProperty('--b-display', `"${b.fonts.display}"`); g.style.setProperty('--b-text', `"${b.fonts.text}"`);
+  const art = window.AWNING_ART.coffee({ ...b.palette, displayFont: b.fonts.display, textFont: b.fonts.text }, b.name);
+  document.getElementById('mini').innerHTML = `<div class="mini-rod"><span class="nm">${b.name}</span><span>${b.domain}</span></div><div class="mini-awning"></div>
+  <div class="mini-body"><div><h3 class="mini-name">${b.name}</h3><span class="mini-pill"><i></i>Open now in Accra</span>
+  <ul class="mini-menu">${b.offers.map((o, i) => `<li class="${i === 0 ? 'sold' : ''}"><b>${o.title}</b><span>${o.price.replace(/\.00$/, '')} USDC</span></li>`).join('')}</ul></div><div class="mini-art">${art}</div></div>`;
+</script>
+</body>
+</html>
