@@ -99,6 +99,8 @@ Awning is built around PayBox's plugin contract rather than beside it:
 | Generated storefront photography | | Data deletion and retention |
 | Screening, brand-impersonation checks, quotas, reports, takedown | | Automatic cleanup after an interrupted opening |
 
+**Proven live through PayBox (real money, Base mainnet):** Ridge Roast was opened from Claude.ai through PayBox: Awning drafted it, PayBox signed the 11.06 USDC x402 payment, and Awning registered ridgeroast.shop, attached hosting and DNS, and settled only after it was live ([tx 0x285a4e…1c4c](https://basescan.org/tx/0x285a4ec62c3b18def3688289d31d5bf0853e9006aa81c58fa80e297bf1881c4c)). Ridge Roast is a demonstration shop opened by the entrant for the demo, not a customer.
+
 No users, sales or traction figures are claimed.
 
 ## 8. Built versus integrated (Draft)
@@ -141,7 +143,7 @@ Describe two or three, and only ones that were yours. Product decisions visible 
 - Live openings and sales: https://awning.sh/live
 - Status: https://awning.sh/status
 - Docs: https://awning.sh/docs
-- Repository: https://github.com/iamdflame/awning (private today: make it public before you paste this link, or leave it out)
+- Repository: https://github.com/iamdflame/awning
 - Demo video on X: paste the URL of your post once it is up
 
 ## Before you press Submit
