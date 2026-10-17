@@ -147,7 +147,7 @@ A Pro opening is a saga that runs inside the paid x402 request, between payment 
 
 **Compensation.** When a step fails, the completed steps are undone in reverse order, each with an 8 s timeout. An undo that fails marks its step `compensation_failed` and logs an error; the resource stays and needs manual cleanup. The same undo runs if settlement fails, or if the commit fails after settlement. The plan returns to `quoted` (or `opened` + `free` for an upgrade) with `last_error` set. A registered domain is not undone; it stays in Awning's registrar account, and the next opening attempt for that plan reuses it.
 
-**Deadline.** `AWNING_OPEN_DEADLINE_MS`, default 14000 ms ([`web/lib/env.ts`](../web/lib/env.ts)). See [latency budgets](#latency-budgets).
+**Deadline.** `AWNING_OPEN_DEADLINE_MS`, default 26000 ms ([`web/lib/env.ts`](../web/lib/env.ts)): paying the registrar in USDC is its own x402 round trip, so `register_domain` gets up to 22 s; `preflight` (availability, price, balance and a no-charge `dryRun` registration that catches an unverified registrar account or a spent monthly limit before any provider is touched) gets 9 s. See [latency budgets](#latency-budgets).
 
 ## x402 seller
 
@@ -285,14 +285,14 @@ Migrations are generated with drizzle-kit into `web/drizzle/` and applied automa
 | Reconciler run | 60 s function; payments stale after 3 min | `web/app/v1/cron/reconcile/route.ts`, `STALE_AFTER_MS` |
 | Facilitator `/verify`, `/settle` | 12 s each; settle up to 2 attempts | `HttpFacilitator` |
 | `authorizationState` read | 6 s per attempt | `HttpFacilitator.authorizationUsed` |
-| Opening saga | `AWNING_OPEN_DEADLINE_MS` (default 14 s), per-step caps above | `web/lib/env.ts`, `proSteps()` |
+| Opening saga | `AWNING_OPEN_DEADLINE_MS` (default 26 s), per-step caps above | `web/lib/env.ts`, `proSteps()` |
 | Each undo | 8 s | `compensate` |
 | Owner SMS after an order | waits at most 3 s | `buy` commit |
 | Refund transfer | RPC 10 s, receipt wait 20 s | `ViemRefunder` |
 | Signed authorization | 300 s | `MAX_TIMEOUT_SECONDS` |
 | PayBox proposal | at most 4 min, never past the plan's expiry; refused with under 60 s left | `proposalExpiry` |
 
-Worst case for a paid open before the commit: verify (12 s) + saga (14 s) + two settle attempts with chain checks (2 × (12 s + 6 s)) = 62 s, inside the 90 s `maxDuration`. A refund after a failed commit can add up to 30 s more. If a function is killed anyway, the reconciler finishes the payment.
+Worst case for a paid open before the commit: verify (12 s) + saga (26 s) + two settle attempts with chain checks (2 × (12 s + 6 s)) = 74 s, inside the 90 s `maxDuration`. A refund after a failed commit can add up to 30 s more. If a function is killed anyway, the reconciler finishes the payment.
 
 ## Failure modes
 

@@ -35,7 +35,7 @@ Then the business:
 9. **Offer management**: deactivate and edit offers (the `active` flag exists).
 10. **Call transcripts** for owners, with a recording disclosure at the start of each call and a retention setting.
 11. **Data deletion** on request, and a retention schedule.
-12. **Storefront photos**: show the generated photos on storefronts (they are generated and stored; the page does not use them yet).
+12. **Owner photos**: let owners replace the illustrative photos with their own (generated photos are shown today, captioned as illustrative).
 
 ## Later
 
