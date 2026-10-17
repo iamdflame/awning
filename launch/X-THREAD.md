@@ -93,3 +93,55 @@ Swap one in for the opening line of post 1 and keep the rest.
 - Every claim in the post must be visible in the video: the sentence, the PayBox approval, the live storefront, the second agent's purchase and the payment reaching the owner's wallet.
 - Don't mention the phone line as working until it is.
 - Use real numbers from your run (the domain, the price you approved). If your take used a different business, change the name and prices in posts 1 and 2.
+
+
+## Final posts (use these)
+
+Lengths are as X counts them (every link counts as 23).
+
+### Post 1: quote-post PayBox's hackathon announcement (https://x.com/PayBox/status/2111092311597744221) and attach `video/out/awning-demo-main.mp4` (246)
+
+```
+One sentence to my AI agent opened a real business.
+
+"Ridge Roast, coffee from Accra." One @PayBox approval and it was live on its own domain. Then a fresh chat found it and booked a $5 tasting, paid straight to the owner's wallet.
+
+Meet Awning 👇
+```
+
+### Reply 1: links and proof (reply to your own Post 1) (213)
+
+```
+Try it: awning.sh
+
+The shop from the video is live at ridgeroast.shop
+
+Both payments are real USDC on Base:
+opening, 11.06: basescan.org/tx/0x285a4ec62c3b18def3688289d31d5bf0853e9006aa81c58fa80e297bf1881c4c
+first sale, 5.00: basescan.org/tx/0x893b3fa685c61b25aa863309b4ff3f0a01d9b8e37be89890573cd23f4f9e7651
+```
+
+### Reply 2: how it works (269)
+
+```
+How it works: Awning is a plugin inside @PayBox.
+
+Your agent drafts the shop, prices real domains and puts up a preview. One approval opens it. The plugin never touches money: it proposes an x402 payment, PayBox asks you, and Awning settles only after the shop is live.
+```
+
+### Reply 3: for builders (266)
+
+```
+Every Awning shop is born agent-payable: each offer is an x402 endpoint in USDC on Base that pays the owner's own wallet. Awning takes no fee on sales.
+
+Docs and API: awning.sh/for-agents
+Code: github.com/iamdflame/awning
+
+Built for the @PayBox hackathon by @MoonPay.
+```
+
+### Reply under PayBox's announcement post (after Post 1 is up) (149)
+
+```
+My entry: Awning. One sentence to your agent opens a real business, on its own domain, that other agents can buy from. Demo: [paste your Post 1 link]
+```
