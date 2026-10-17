@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin:
+    name: plugin (official starter test)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: plugin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: npm install -g pnpm@11.11.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm test
+      - run: node scripts/unit.mjs
+      - name: Deterministic build
+        run: |
+          sha256sum dist/plugin.mjs | tee first.sha
+          pnpm run build
+          sha256sum -c first.sha
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin.mjs
+          path: plugin/dist/plugin.mjs
+
+  web:
+    name: web (typecheck, tests, build)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: web
+    env:
+      AWNING_FORCE_MOCKS: "1"
+      AWNING_FACILITATOR_URL: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: npm install -g pnpm@11.11.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm test
+      - run: pnpm run build
