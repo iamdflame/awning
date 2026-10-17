@@ -27,7 +27,9 @@ The film needs screen recordings that only you can make, because the payments ar
 Start recording, then:
 
 1. New chat. Type exactly and send:
-   > Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags and a $5 tasting session. Sales go to my wallet 0x… (paste your sales wallet address).
+   > Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags at $14 and a $5 tasting session. Sales go to my wallet 0x… (paste your sales wallet address).
+
+   If Claude still asks a question (a price, a detail), answer briefly and keep recording; the edit cuts it.
 2. Wait for the plan (name, offers, domains with prices). Let it sit on screen for 3 seconds.
 3. Click the **preview link**. Let the draft storefront load, scroll slowly to the offers, pause 2 seconds, go back to the chat.
 4. Type and send (use the `.shop` domain the plan lists, at the price it shows):
