@@ -21,6 +21,22 @@ function host(url: string): string {
 const isNeon = (url: string) => host(url).endsWith(".neon.tech");
 const isSupabase = (url: string) => /.supabase.(co|com)$/.test(host(url));
 
+/**
+ * postgres.js forwards unknown query parameters to the server as settings. Marketplace URLs
+ * carry hints such as `supa=base-pooler.x` or `pgbouncer=true`: keep only what Postgres knows.
+ */
+export function pgUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    for (const key of [...u.searchParams.keys()]) {
+      if (!["sslmode", "application_name", "options"].includes(key)) u.searchParams.delete(key);
+    }
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 function migrationsFolder(): string {
   return path.join(process.cwd(), "drizzle");
 }
@@ -44,7 +60,7 @@ async function init(): Promise<Db> {
     // prepare: false because transaction-mode poolers do not keep prepared statements.
     const { default: postgres } = await import("postgres");
     const { drizzle } = await import("drizzle-orm/postgres-js");
-    const client = postgres(url, { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 10 });
+    const client = postgres(pgUrl(url), { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 10 });
     const db = drizzle({ client, schema });
     if (env.autoMigrate()) {
       const { migrate } = await import("drizzle-orm/postgres-js/migrator");

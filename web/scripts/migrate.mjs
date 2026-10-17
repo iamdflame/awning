@@ -24,7 +24,9 @@ if (new URL(url).hostname.endsWith(".neon.tech")) {
   const { default: postgres } = await import("postgres");
   const { drizzle } = await import("drizzle-orm/postgres-js");
   const { migrate } = await import("drizzle-orm/postgres-js/migrator");
-  const client = postgres(url, { prepare: false, max: 1 });
+  const clean = new URL(url);
+  for (const key of [...clean.searchParams.keys()]) if (!['sslmode', 'application_name', 'options'].includes(key)) clean.searchParams.delete(key);
+  const client = postgres(clean.toString(), { prepare: false, max: 1 });
   await migrate(drizzle({ client }), { migrationsFolder });
   await client.end();
 }

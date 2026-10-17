@@ -7,6 +7,7 @@ import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
 import { sql } from "drizzle-orm";
 import postgres from "postgres";
 import * as schema from "../lib/db/schema";
+import { pgUrl } from "../lib/db/client";
 import { businessImages } from "../lib/db/images";
 
 const source = process.env.SOURCE_DATABASE_URL;
@@ -14,7 +15,7 @@ const target = process.env.TARGET_DATABASE_URL;
 if (!source || !target) throw new Error("set SOURCE_DATABASE_URL and TARGET_DATABASE_URL");
 
 const from = drizzleNeon({ client: neon(source) });
-const client = postgres(target, { prepare: false, max: 1 });
+const client = postgres(pgUrl(target), { prepare: false, max: 1 });
 const to = drizzlePg({ client });
 
 const tables = [
