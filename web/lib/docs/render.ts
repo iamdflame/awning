@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import GithubSlugger from "github-slugger";
 import type { Element, ElementContent, Root } from "hast";
@@ -22,7 +23,7 @@ import { docBySource, type Doc } from "./catalog";
  * container, code blocks and Mermaid diagrams as labelled figures.
  */
 
-export type TocEntry = { id: string; text: string; code: boolean };
+export type TocEntry = { id: string; text: string; code: boolean; method?: string };
 
 export type RenderedDoc = {
   doc: Doc;
@@ -41,7 +42,7 @@ export type RenderedDoc = {
 const SCHEMA = { ...defaultSchema, clobber: [], clobberPrefix: "" };
 
 const toHast = unified().use(remarkParse).use(remarkGfm).use(remarkRehype, { allowDangerousHtml: true }).use(rehypeRaw).use(rehypeSanitize, SCHEMA);
-const toHtml = unified().use(rehypeStringify);
+const toHtml = unified().use(rehypeStringify, { allowDangerousHtml: true }); // raw nodes: only our own diagram SVGs
 
 const CODE_LABEL: Record<string, string> = { bash: "Shell", sh: "Shell", json: "JSON", ts: "TypeScript", js: "JavaScript", http: "HTTP" };
 const DIAGRAM_KIND: Record<string, string> = {
@@ -109,6 +110,21 @@ function langOf(code: Element | undefined): string | undefined {
   return list.find((c) => c.startsWith("language-"))?.slice("language-".length);
 }
 
+/** "6. Acceptable use" → a numbered badge; "`GET /v1/health`" → a method pill + the path. */
+function decorateHeading(children: ElementContent[]): ElementContent[] {
+  const [first, ...rest] = children;
+  if (first?.type === "text") {
+    const m = /^(\d+)\.\s+/.exec(first.value);
+    if (m) return [el("span", { className: ["md-num"], ariaHidden: "true" }, [text(m[1]!)]), el("span", { className: ["sr-only"] }, [text(`${m[1]}. `)]), text(first.value.slice(m[0].length)), ...rest];
+  }
+  const kids = children.filter((c) => !blank(c));
+  if (kids.length === 1 && isEl(kids[0], "code")) {
+    const m = /^(GET|POST|PUT|PATCH|DELETE)\s+(\S.*)$/.exec(toString(kids[0]));
+    if (m) return [el("span", { className: ["md-method", m[1]!.toLowerCase()] }, [text(m[1]!)]), el("code", {}, [text(m[2]!)])];
+  }
+  return children;
+}
+
 type Ctx = { doc: Doc; slugger: GithubSlugger; toc: TocEntry[]; anchor: string | null; diagrams: number };
 
 function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
@@ -126,17 +142,25 @@ function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
       continue;
     }
 
+    if (tag === "hr") {
+      const after = nodes.slice(nodes.indexOf(node) + 1).find((n) => !blank(n));
+      if (!after || isEl(after, "h2") || explicitAnchor(after)) continue;
+    }
+
     if (tag === "h2" || tag === "h3" || tag === "h4") {
       const label = toString(node).trim();
       const github = ctx.slugger.slug(label);
       const id = ctx.anchor ?? github;
       const alias: ElementContent[] = id !== github ? [el("span", { id: github, className: ["md-alias"] }, [])] : [];
       ctx.anchor = null;
-      if (tag === "h2") ctx.toc.push({ id, text: label, code: codeOnly(node) });
+      if (tag === "h2") {
+        const m = codeOnly(node) ? /^(GET|POST|PUT|PATCH|DELETE)\s+(\S.*)$/.exec(label) : null;
+        ctx.toc.push(m ? { id, text: m[2]!, code: true, method: m[1]! } : { id, text: label, code: codeOnly(node) });
+      }
       out.push(
         el(tag, { id }, [
           ...alias,
-          ...transform(node.children, ctx),
+          ...decorateHeading(transform(node.children, ctx)),
           el("a", { href: `#${id}`, className: ["md-anchor"], ariaLabel: `Link to this section: ${label}` }, [text("#")]),
         ]),
       );
@@ -161,8 +185,15 @@ function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
     }
 
     if (tag === "table") {
-      const head = toString(node.children.find((c) => isEl(c, "thead")) ?? node).trim().replace(/\s+/g, ", ");
-      out.push(el("div", { className: ["md-table"], role: "region", tabIndex: 0, ariaLabel: `Table: ${head.slice(0, 80)}` }, [{ ...node, children: transform(node.children, ctx) }]));
+      const thead = node.children.find((c): c is Element => isEl(c, "thead"));
+      const row = thead?.children.find((c): c is Element => isEl(c, "tr"));
+      const cells = (row?.children ?? []).filter((c): c is Element => isEl(c, "th")).map((th) => toString(th).trim());
+      const cols = Math.min(Math.max(cells.length, 2), 5);
+      out.push(
+        el("div", { className: ["md-table", `cols-${cols}`], role: "region", tabIndex: 0, ariaLabel: `Table: ${cells.join(", ").slice(0, 80)}` }, [
+          { ...node, children: transform(node.children, ctx) },
+        ]),
+      );
       continue;
     }
 
@@ -173,10 +204,27 @@ function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
         ctx.diagrams += 1;
         const source = toString(node).replace(/\n$/, "");
         const first = source.trim().split(/\s+/)[0] ?? "";
+        const kind = DIAGRAM_KIND[first] ?? "Mermaid";
+        const caption = el("figcaption", {}, [el("span", {}, [text("Diagram")]), el("span", {}, [text(kind)])]);
+        const pre = el("pre", { tabIndex: 0 }, [el("code", {}, [text(source)])]);
+        const svg = diagramSvg(source);
+        if (!svg) {
+          // Not rendered yet (or changed since): the source itself, readable.
+          out.push(el("figure", { className: ["md-diagram"] }, [caption, pre]));
+          continue;
+        }
         out.push(
-          el("figure", { className: ["md-diagram"] }, [
-            el("figcaption", {}, [el("span", {}, [text("Diagram")]), el("span", {}, [text(DIAGRAM_KIND[first] ?? "Mermaid")])]),
-            el("pre", { tabIndex: 0 }, [el("code", {}, [text(source)])]),
+          el("figure", { className: ["md-diagram", "has-svg"] }, [
+            caption,
+            el("div", { className: ["md-svg"], style: `--w:${Math.round(svg.width)}px`, role: "img", tabIndex: 0, ariaLabel: `${kind} diagram. Its Mermaid source follows.` }, [
+              { type: "raw", value: svg.markup } as unknown as ElementContent,
+            ]),
+            el("div", { className: ["md-diagram-foot"] }, [
+              el("details", {}, [el("summary", {}, [text("Mermaid source")]), pre]),
+              el("span", { className: ["md-diagram-tools"] }, [
+                el("a", { href: `/diagrams/${svg.key}.svg`, target: "_blank", rel: ["noopener"] }, [text("Open full size")]),
+              ]),
+            ]),
           ]),
         );
         continue;
@@ -192,6 +240,27 @@ function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
 }
 
 const html = (children: ElementContent[]) => toHtml.stringify({ type: "root", children } as Root);
+
+/** Must match key() in design/tools/diagrams.mjs. */
+export function diagramKey(source: string): string {
+  return createHash("sha256").update(source.replace(/\r\n/g, "\n").replace(/\s+$/, "")).digest("hex").slice(0, 12);
+}
+
+/**
+ * The static SVG design/tools/diagrams.mjs rendered for this exact Mermaid source
+ * (web/public/diagrams/<key>.svg), or null. The SVG is our own build output (Mermaid with
+ * securityLevel strict, from our own docs), inlined so it uses the page's fonts; CSS sizes it.
+ */
+function diagramSvg(source: string): { key: string; markup: string; width: number } | null {
+  const key = diagramKey(source);
+  const file = path.join(process.cwd(), "public", "diagrams", `${key}.svg`);
+  if (!existsSync(file)) return null;
+  const raw = readFileSync(file, "utf8").trimStart();
+  const width = Number(/viewBox="[-\d.]+ [-\d.]+ ([\d.]+)/.exec(raw)?.[1] ?? 0);
+  if (!width || !/^<svg[\s>]/.test(raw)) return null;
+  const markup = raw.replace(/^<svg([^>]*)>/, (_, attrs: string) => `<svg${attrs.replace(/\s(width|style)="[^"]*"/g, "")} aria-hidden="true" focusable="false">`);
+  return { key, markup, width };
+}
 
 /** Render Markdown that lives at `doc.source` (repo path). Pure; used by tests directly. */
 export function renderMarkdown(markdown: string, doc: Doc): RenderedDoc {

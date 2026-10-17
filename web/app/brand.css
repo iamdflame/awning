@@ -127,7 +127,10 @@ img,svg{display:block;max-width:100%}
 .foot .in{display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
 .foot .brandcol{grid-column:1/span 5}
 .foot .brandcol img{height:32px;width:auto;margin-bottom:18px}
-.foot nav{grid-column:7/span 6;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 24px}
+.foot nav{grid-column:7/span 6;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-content:start}
+.foot nav .col{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.foot nav .col p{margin:0 0 8px;font-weight:600;font-size:13px;color:oklch(0.97 0.012 105/.5)}
+.foot nav .col a{display:inline-flex;align-items:center;min-height:32px}
 .foot nav a{text-decoration:none;color:oklch(0.97 0.012 105/.85)}
 .foot nav a:hover{color:var(--c-50)}
 .foot .base{grid-column:1/-1;border-top:1px solid oklch(1 0 0/.1);margin-top:40px;padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13.5px}
@@ -139,7 +142,8 @@ img,svg{display:block;max-width:100%}
   .rod .logo img{height:25px}
   .canopy{--sw:39px;height:52px}
   .foot .brandcol,.foot nav{grid-column:1/-1}
-  .foot nav{grid-template-columns:1fr 1fr;margin-top:24px}
+  .foot nav{grid-template-columns:1fr 1fr;margin-top:24px;row-gap:32px}
+  .foot nav .col a{min-height:44px}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -153,3 +157,4 @@ img,svg{display:block;max-width:100%}
 main h1:not([class]){font-family:var(--font-display);font-stretch:118%;font-weight:800;letter-spacing:-.035em;line-height:.96;font-size:var(--step-h2);margin:0 0 18px;text-wrap:balance}
 .rod nav a[aria-current="page"]{opacity:1;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
 .foot .brandcol p{max-width:34ch}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

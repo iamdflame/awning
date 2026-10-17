@@ -1,7 +1,7 @@
 import { fontVars } from "./fonts";
 import "./brand.css";
 
-type Current = "for-agents" | "directory" | "live" | "report";
+type Current = "for-agents" | "directory" | "live" | "report" | "docs" | "status";
 
 /**
  * The canopy that crowns every awning.sh page: the green rod with the logo and
@@ -35,6 +35,9 @@ export function SiteHeader({ home = false, current }: { home?: boolean; current?
               <a href="/directory" {...cur("directory")}>
                 Directory
               </a>
+              <a href="/docs" {...cur("docs")}>
+                Docs
+              </a>
               <a className="btn btn-primary" href={at("#open")}>
                 Open yours
               </a>
@@ -56,12 +59,27 @@ export function SiteFooter() {
           <p>Real businesses, opened in one sentence, buyable by people and agents. A PayBox plugin.</p>
         </div>
         <nav aria-label="Footer">
-          <a href="/for-agents">For agents</a>
-          <a href="/live">Live feed</a>
-          <a href="/directory">Directory</a>
-          <a href="/#pricing">Pricing</a>
-          <a href="/v1/health">Status</a>
-          <a href="/report">Report a business</a>
+          <div className="col">
+            <p>Product</p>
+            <a href="/#how">How it works</a>
+            <a href="/#pricing">Pricing</a>
+            <a href="/live">Opened today</a>
+            <a href="/directory">Directory</a>
+          </div>
+          <div className="col">
+            <p>Developers</p>
+            <a href="/for-agents">For agents</a>
+            <a href="/docs">Docs</a>
+            <a href="/docs/api">API reference</a>
+            <a href="/status">Status</a>
+          </div>
+          <div className="col">
+            <p>Company</p>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/security">Security</a>
+            <a href="/report">Report a business</a>
+          </div>
         </nav>
         <div className="base">
           <span>© 2026 Awning</span>

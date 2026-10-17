@@ -35,7 +35,7 @@ describe("document rendering", () => {
   const terms = renderDoc(docBySlug("terms")!);
 
   it("lands /terms#acceptable-use on the Acceptable use heading, and keeps GitHub's id working", () => {
-    expect(terms.body).toMatch(/<h2 id="acceptable-use"><span id="6-acceptable-use" class="md-alias"><\/span>6\. Acceptable use/);
+    expect(terms.body).toMatch(/<h2 id="acceptable-use"><span id="6-acceptable-use" class="md-alias"><\/span><span class="md-num" aria-hidden="true">6<\/span><span class="sr-only">6\. <\/span>Acceptable use/);
     expect(terms.toc.map((t) => t.id)).toContain("acceptable-use");
     expect(terms.updated).toBe("2026-10-17");
     expect(terms.preface).not.toMatch(/Last updated/);
@@ -54,7 +54,8 @@ describe("document rendering", () => {
         if (href.startsWith("#")) expect(own.has(decodeURIComponent(href.slice(1))), `${doc.slug} ${href}`).toBe(true);
         else if (href.startsWith("/")) {
           const [route, hash] = href.split("#");
-          expect(ROUTES.has(route!), `${doc.slug} ${href}`).toBe(true);
+          if (route!.startsWith("/diagrams/")) expect(existsSync(path.join(web, "public", route!)), `${doc.slug} ${href}`).toBe(true);
+          else expect(ROUTES.has(route!), `${doc.slug} ${href}`).toBe(true);
           if (hash) {
             const target = DOCS.find((d) => d.route === route);
             if (target) expect(ids(renderDoc(target).body), `${doc.slug} → ${href}`).toContain(hash);
@@ -78,14 +79,14 @@ describe("document rendering", () => {
   it("renders Mermaid as a labelled, readable figure (no client-side library)", () => {
     const arch = renderDoc(docBySlug("architecture")!);
     expect(arch.diagrams).toBe(4);
-    expect(arch.body).toContain('<figure class="md-diagram">');
+    expect(arch.body).toMatch(/<figure class="md-diagram( has-svg)?">/);
     expect(arch.body).not.toContain("language-mermaid");
     expect(arch.body).toContain("sequenceDiagram");
   });
 
   it("wraps tables in their own scroll container", () => {
     const tm = renderDoc(docBySlug("threat-model")!);
-    expect(tm.body).toMatch(/<div class="md-table" role="region" tabindex="0" aria-label="Table: [^"]+"><table>/);
+    expect(tm.body).toMatch(/<div class="md-table cols-4" role="region" tabindex="0" aria-label="Table: Threat, Example, Mitigation, Status"><table>/);
     expect(tm.body).not.toMatch(/<table>(?![\s\S]*?<\/table>)/);
   });
 
