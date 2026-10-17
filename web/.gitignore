@@ -8,3 +8,8 @@ node_modules/
 !.env.example
 coverage/
 .vercel/
+
+# Agent skill files installed by marketplace CLIs
+.agents/
+.claude/
+skills-lock.json
