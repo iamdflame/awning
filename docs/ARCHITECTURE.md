@@ -95,7 +95,7 @@ sequenceDiagram
   participant R as Porkbun
   participant T as Twilio
   P->>A: POST /v1/plan (8 s client timeout)
-  A->>A: screen the sentence; check the wallet's plan quota (block → 422 / 429, nothing stored)
+  A->>A: screen the sentence, check the wallet's plan quota (block → 422 / 429, nothing stored)
   A->>A: template draft (instant)
   par in parallel
     A->>R: checkDomain(template name candidates), 8 s
@@ -175,7 +175,7 @@ sequenceDiagram
   S->>DB: key seen? → replay stored response (or 409 in progress)
   S->>S: match scheme, network, asset, amount, payTo, validity window
   S->>F: /verify
-  S->>DB: insert key, status working (unique; a concurrent duplicate loses)
+  S->>DB: insert key, status working (unique: a concurrent duplicate loses)
   S->>S: work (saga, or order row)
   S->>F: /settle (only after the work succeeded)
   alt facilitator answer is not a clean success
