@@ -1,4 +1,5 @@
 import { and, eq, lt, or } from "drizzle-orm";
+import { getAddress, isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 import { adapters } from "../adapters";
 import { apiError, apiUrl, json, ownerTokenFor } from "../api";
@@ -25,7 +26,8 @@ function openedBusinessView(b: BusinessRow) {
 }
 
 function treasury(): string | null {
-  return env.treasuryAddress() ?? null;
+  const t = env.treasuryAddress();
+  return t && isAddress(t) && t !== zeroAddress ? getAddress(t) : null;
 }
 
 type OpenQuote = { plan: PlanRow; business: BusinessRow; domain: PlanDomain; charge: Charge; quote: Record<string, unknown> };

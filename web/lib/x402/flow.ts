@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { getAddress } from "viem";
 import type { SettleResponse } from "@x402/core/types";
 import { db, schema } from "../db/client";
 import type { PaymentStatus, StoredResponse } from "../db/schema";
@@ -140,7 +141,7 @@ export async function handlePaidRequest(o: PaidFlowOptions): Promise<Response> {
     return finish(match.key, "failed", { status: 402, body, headers: { "PAYMENT-REQUIRED": challenge.headers.get("PAYMENT-REQUIRED") ?? "" } }, { error: settled.reason });
   }
 
-  const info: SettleInfo = { tx: settled.response?.transaction || null, payer: match.payer, network: BASE_NETWORK, confirmed: settled.state === "settled" };
+  const info: SettleInfo = { tx: settled.response?.transaction || null, payer: getAddress(match.payer), network: BASE_NETWORK, confirmed: settled.state === "settled" };
   const settleResponse: SettleResponse = settled.response ?? { success: true, transaction: "", network: BASE_NETWORK, payer: match.payer };
   const headers = paymentResponseHeaders(settleResponse);
 

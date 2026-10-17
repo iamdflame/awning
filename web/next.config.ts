@@ -9,6 +9,8 @@ if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // A second local instance (e.g. with the mock facilitator) needs its own build dir.
+  distDir: process.env.AWNING_NEXT_DIST || ".next",
   poweredByHeader: false,
   // PGlite ships WASM + data files resolved relative to its own module URL.
   serverExternalPackages: ["@electric-sql/pglite"],

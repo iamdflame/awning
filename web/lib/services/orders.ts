@@ -29,7 +29,7 @@ export function fulfillmentFor(b: BusinessRow, offer: OfferRow, orderId: string,
   const what = qty > 1 ? `${qty} × ${offer.title}` : offer.title;
   switch (offer.kind) {
     case "product":
-      return { kind: "product", code, url, message: `Order ${code} confirmed: ${what}. ${b.name} has been notified and will arrange delivery${contact}. Include a shipping address in buyerNote if you have not.${reach}` };
+      return { kind: "product", code, url, message: `Order ${code} confirmed: ${what}. ${b.name} has been notified and will contact you${contact} to arrange pickup or delivery.${reach}` };
     case "service":
       return { kind: "service", code, url, message: `Order ${code} confirmed: ${what}. ${b.name} will contact you${contact} to get started.${reach}` };
     case "booking":
