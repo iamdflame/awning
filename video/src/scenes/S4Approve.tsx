@@ -57,6 +57,8 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
           position: "absolute",
           left: 74,
           top: 90,
+          width: FW,
+          height: FH + 62,
           transformOrigin: "50% 0%",
           transform: `translate(${lean * (960 - 74 - FW / 2)}px, ${lean * 170}px) scale(${1 + lean * 0.62})`,
         }}

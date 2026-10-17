@@ -26,7 +26,7 @@ export const Rise: React.FC<{ at: number; children: string; stagger?: number; st
             const i = k++;
             const p = spring({ frame: frame - at - i * stagger, fps, config: { damping: 16, mass: 0.7, stiffness: 140 } });
             return (
-              <span key={wi} style={{ display: "inline-block", overflow: "hidden", verticalAlign: "top", paddingBottom: "0.12em", marginBottom: "-0.12em" }}>
+              <span key={wi} style={{ display: "inline-block", overflow: "hidden", verticalAlign: "top", paddingTop: "0.14em", marginTop: "-0.14em", paddingBottom: "0.14em", marginBottom: "-0.14em" }}>
                 <span style={{ display: "inline-block", transform: `translateY(${(1 - p) * 105 + leave * -105}%)`, ...wordStyle?.(i, w) }}>{w}</span>
                 {wi < line.split(" ").length - 1 ? <span style={{ display: "inline-block", width: "0.26em" }} /> : null}
               </span>

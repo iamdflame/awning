@@ -80,7 +80,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <Sfx src={assets.sfx.print} at={tOrders - 2} volume={0.24} />
 
       {/* the owner, in the same chat */}
-      <div style={{ position: "absolute", left: 70, top: 108, opacity: 1 - out }}>
+      <div style={{ position: "absolute", left: 70, top: 108, transform: `translateX(${out * -1960}px)` }}>
         <Sequence from={0} durationInFrames={slotOrders} layout="none">
           <RecordingBeat who="owner2" beat="p5-offer" file={o2} width={FW} height={FH} slot={slotOrders} />
         </Sequence>
@@ -98,11 +98,11 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
           <PromptBubble who="owner2" beat="p6-orders" real slot={slotDir - slotOrders} width={700} size={34} style={{ position: "absolute", left: 120, top: 640 }} />
         </Sequence>
       ) : null}
-      <div style={{ position: "absolute", left: 1300, top: 120, opacity: (1 - out) * interpolate(f, [tSub - 14, tSub - 4], [0, 1], clamp), transform: `translateY(${interpolate(f, [tSub - 14, tSub], [24, 0], { ...clamp, easing: EASE.out })}px) rotate(-1.5deg)` }}>
+      <div style={{ position: "absolute", left: 1300, top: 120, opacity: interpolate(f, [tSub - 14, tSub - 4], [0, 1], clamp), transform: `translate(${out * -1960}px, ${interpolate(f, [tSub - 14, tSub], [24, 0], { ...clamp, easing: EASE.out })}px) rotate(-1.5deg)` }}>
         <MenuBoard offers={shop.offers} addAt={tSub + 2} mock={shop.mock} palette={shop.palette} />
       </div>
       {f >= tOrders - 8 && f < slotDir + 10 ? (
-        <div style={{ position: "absolute", left: 1330, top: 470, opacity: 1 - out }}>
+        <div style={{ position: "absolute", left: 1330, top: 470, transform: `translateX(${out * -1960}px)` }}>
           <Receipt
             width={520}
             size={19}
@@ -119,9 +119,9 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
 
       {/* every shop is listed where any agent can find it */}
       {f >= slotDir - 8 ? (
-        <div style={{ position: "absolute", left: 230, top: 70, opacity: out * interpolate(f, [slotLive - 4, slotLive + 8], [1, 0], clamp) }}>
+        <div style={{ position: "absolute", left: 230, top: 70, transform: `translateX(${(1 - out) * 1960}px)`, opacity: interpolate(f, [slotLive - 4, slotLive + 8], [1, 0], clamp) }}>
           <Sequence from={slotDir} durationInFrames={Math.max(1, dirResults - slotDir + 4)} layout="none">
-            <ProductClip shot={assets.capture.shots["directory"]} width={1460} height={821} startSec={1.3} cam={[{ at: 0, x: 0.5, y: 0.5, z: 1.04 }, { at: 30, x: 0.66, y: 0.5, z: 1.5, ease: "inOut" }]} label="awning.sh/directory" />
+            <ProductClip shot={assets.capture.shots["directory"]} width={1460} height={821} startSec={1.3} cam={[{ at: 0, x: 0.5, y: 0.5, z: 1.0 }, { at: 40, x: 0.55, y: 0.56, z: 1.12, ease: "inOut" }]} label="awning.sh/directory" />
           </Sequence>
           <Sequence from={dirResults} layout="none">
             <ProductClip shot={assets.capture.shots["directory-results"]} width={1460} height={821} startSec={0.4} cam={[{ at: 0, x: 0.5, y: 0.45, z: 1 }, { at: 50, x: 0.38, y: 0.5, z: 1.25, ease: "inOut" }]} label="directory results" />
@@ -138,7 +138,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
               width={1460}
               height={821}
               startSec={assets.capture.shots["live"]?.source === "live" ? 1.0 : 5.0}
-              cam={[{ at: 0, x: 0.62, y: 0.42, z: 1.2 }, { at: Math.max(16, tReceipt - slotLive + 6), x: 0.62, y: 0.36, z: 1.75, ease: "inOut" }, { at: Math.max(40, tChain - slotLive + 6), x: 0.6, y: 0.38, z: 2.1, ease: "inOut" }]}
+              cam={[{ at: 0, x: 0.66, y: 0.42, z: 1.25 }, { at: Math.max(16, tReceipt - slotLive + 6), x: 0.67, y: 0.37, z: 1.8, ease: "inOut" }, { at: Math.max(40, tChain - slotLive + 6), x: 0.66, y: 0.38, z: 2.15, ease: "inOut" }]}
               label="awning.sh/live"
             />
           </Sequence>

@@ -68,9 +68,9 @@ async function video(id, file) {
     audioCodec: "aac",
     audioBitrate: "192k",
     scale: preview ? 0.5 : 1,
-    concurrency: null,
-    // the product captures are 3072x1728: give frame extraction more than the default 2 threads
-    offthreadVideoThreads: 6,
+    // 3072x1728 product captures: fewer tabs at once and a patient frame timeout keep extraction steady
+    concurrency: 6,
+    timeoutInMilliseconds: 120000,
     chromiumOptions: { gl: "angle" },
     onProgress: ({ progress }) => {
       const p = Math.floor(progress * 20);
@@ -88,6 +88,6 @@ if (what === "main" || what === "all") await video("Main", "awning-demo-main.mp4
 if (what === "cut30" || what === "all") await video("Cut30", "awning-demo-30s.mp4");
 if (what === "thumb" || what === "all") {
   const comp = await selectComposition({ serveUrl, id: "Thumbnail", inputProps: {} });
-  await renderStill({ serveUrl, composition: comp, inputProps: comp.props, output: path.join(OUT, "thumbnail.png"), frame: 0, chromiumOptions: { gl: "angle" } });
+  await renderStill({ serveUrl, composition: comp, inputProps: comp.props, output: path.join(OUT, "thumbnail.png"), frame: 0, timeoutInMilliseconds: 120000, chromiumOptions: { gl: "angle" } });
   console.log("Thumbnail → out/thumbnail.png");
 }

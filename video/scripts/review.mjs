@@ -35,6 +35,6 @@ else
     for (const fr of fractions) jobs.push({ name: `${s.id}-${Math.round(fr * 100)}`, frame: Math.min(comp.durationInFrames - 1, s.from + Math.round(s.frames * fr)) });
   }
 for (const j of jobs) {
-  await renderStill({ serveUrl, composition: comp, frame: j.frame, output: path.join(out, `${j.name}.png`), scale, inputProps: comp.props, chromiumOptions: { gl: "angle" } });
+  await renderStill({ serveUrl, composition: comp, frame: j.frame, output: path.join(out, `${j.name}.png`), scale, inputProps: comp.props, timeoutInMilliseconds: 120000, chromiumOptions: { gl: "angle" } });
   console.log(`  still ${j.name} @${j.frame}`);
 }

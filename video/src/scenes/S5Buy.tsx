@@ -103,7 +103,7 @@ export const S5Buy: React.FC<SceneProps> = ({ timing, take, assets }) => {
           style={{
             position: "absolute",
             left: interpolate(liveIn, [0, 1], [560, 1300]),
-            top: interpolate(liveIn, [0, 1], [118, 150]),
+            top: interpolate(liveIn, [0, 1], [190, 150]),
             transform: `scale(${interpolate(liveIn, [0, 1], [1, 0.7])})`,
             transformOrigin: "top left",
             zIndex: 5,

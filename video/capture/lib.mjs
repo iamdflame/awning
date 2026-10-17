@@ -194,7 +194,7 @@ export async function captureStepped(browser, shot, { base, source, dsf = 2, qua
   fs.mkdirSync(path.join(OUT, "stills"), { recursive: true });
   const file = path.join(OUT, `${shot.id}.mp4`);
   const tmp = file + ".part.mp4";
-  const ff = spawn(ffmpegPath(), ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["pipe", "inherit", "inherit"] });
+  const ff = spawn(ffmpegPath(), ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-g", "30", "-pix_fmt", "yuv420p", "-movflags", "+faststart", tmp], { stdio: ["pipe", "inherit", "inherit"] });
   const ffDone = new Promise((res, rej) => ff.on("exit", (c) => (c === 0 ? res() : rej(new Error("ffmpeg exit " + c)))));
   const write = (buf) => new Promise((res) => (ff.stdin.write(buf) ? res() : ff.stdin.once("drain", res)));
 
