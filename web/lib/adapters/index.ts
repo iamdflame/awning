@@ -21,7 +21,7 @@ const WHY: Record<keyof Adapters, string> = {
   hosting: "VERCEL_TOKEN/VERCEL_PROJECT_ID not set — custom domains are not attached",
   telephony: "TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN not set — fictional 555-01xx numbers",
   receptionist: "ELEVENLABS_API_KEY not set — phone answers with the TwiML receptionist",
-  drafter: "neither ANTHROPIC_API_KEY nor AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — deterministic template drafts",
+  drafter: "no ANTHROPIC_API_KEY, OPENROUTER_API_KEY or AI Gateway credentials — deterministic template drafts",
   imager: "no AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — storefronts use their drawn poster art",
   notifier: "Twilio not configured — owner notifications are logged",
   refunder: "treasury key missing or not matching AWNING_TREASURY_ADDRESS — refunds unavailable (never simulated with real payments)",

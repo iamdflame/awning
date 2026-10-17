@@ -34,9 +34,9 @@ const SYSTEM = `You draft storefronts for real small businesses from one sentenc
 Rules:
 - Use only facts the owner gave. Never invent awards, reviews, years in business, certifications, addresses or claims you cannot know.
 - name: the business name the owner gave; if none, a short, plausible, original name (2-3 words).
-- tagline: under 70 characters, plain and specific.
-- description: 2-4 short sentences in plain language describing what the business sells and how buying works.
-- offers: 3-5 things a customer can buy today. Keep every price the owner stated exactly. Other prices must be realistic local prices in USD (whole dollars or .50). kind is one of product, service, booking, digital, subscription.
+- tagline: under 60 characters, plain and specific.
+- description: 2 short sentences in plain language: what the business sells, and how buying works.
+- offers: 3-4 things a customer can buy today, each with a one-line description (at most 12 words). Keep every price the owner stated exactly. Other prices must be realistic local prices in USD (whole dollars or .50). kind is one of product, service, booking, digital, subscription.
 - city: only if the owner mentioned a place, else null.
 - category: one of the provided categories.
 - palette: four hex colours (primary, accent, ink, paper) that suit the business; ink on paper must be easy to read (dark ink, light paper).`;
@@ -222,6 +222,53 @@ export class GatewayDrafter implements Drafter {
   }
 }
 
+/**
+ * OpenRouter chat completions (OpenAI-compatible): Claude without an Anthropic
+ * account. Default model anthropic/claude-haiku-5.5 with reasoning switched off
+ * (measured 2.7–4.9 s for a full draft, vs 4.8–10.8 s for Sonnet 5.5, which
+ * cannot run without reasoning), routed to the lowest-latency provider.
+ */
+export const OPENROUTER_URL = "https://openrouter.ai/api/v1";
+
+export class OpenRouterDrafter implements Drafter {
+  readonly name = "openrouter";
+  readonly mock = false;
+  constructor(
+    private readonly apiKey: string,
+    private readonly model: string,
+  ) {}
+
+  async draft(input: DraftInput, signal?: AbortSignal): Promise<BusinessDraft> {
+    const res = await http(`${OPENROUTER_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${this.apiKey}`,
+        "content-type": "application/json",
+        "http-referer": "https://awning.sh",
+        "x-title": "Awning",
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: "system", content: `${SYSTEM}
+Answer with one JSON object that matches the draft_business schema, nothing else.` },
+          { role: "user", content: userMessage(input) },
+        ],
+        response_format: GATEWAY_FORMAT,
+        reasoning: { enabled: false },
+        provider: { sort: "latency" },
+        max_tokens: 900,
+        temperature: 0.6,
+        stream: false,
+      }),
+      signal,
+      timeoutMs: 15000,
+    });
+    if (!res.ok) throw new ProviderError("openrouter", `chat completion failed (${res.status}): ${excerpt(res.text)}`, res.status);
+    return parseGatewayDraft(res.json);
+  }
+}
+
 export class TemplateDrafter implements Drafter {
   readonly name = "template";
   readonly mock = true;
@@ -308,10 +355,12 @@ export async function draftBusiness(drafter: Drafter, input: DraftInput): Promis
   return { draft: finalizeDraft(templateDraft(input), input), source: "template" };
 }
 
-/** Anthropic when ANTHROPIC_API_KEY is set; else the AI Gateway when it has credentials; else the template. */
+/** Anthropic when ANTHROPIC_API_KEY is set; else OpenRouter; else the AI Gateway when it has credentials; else the template. */
 export function makeDrafter(): Drafter {
   const key = env.anthropicKey();
   if (key) return new AnthropicDrafter(key, env.anthropicModel());
+  const openRouter = env.openRouterKey();
+  if (openRouter) return new OpenRouterDrafter(openRouter, env.openRouterModel());
   if (gatewayConfigured()) return new GatewayDrafter(gatewayEnv.llmModel());
   return new TemplateDrafter();
 }

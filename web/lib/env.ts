@@ -34,8 +34,10 @@ export const env = {
   baseRpcUrl: () => str("BASE_RPC_URL") ?? "https://mainnet.base.org",
   anthropicKey: () => str("ANTHROPIC_API_KEY"),
   anthropicModel: () => str("AWNING_LLM_MODEL") ?? "claude-sonnet-5-5",
+  openRouterKey: () => str("OPENROUTER_API_KEY") ?? str("OPEN_ROUTER_API_KEY"),
+  openRouterModel: () => str("AWNING_OPENROUTER_MODEL") ?? "anthropic/claude-haiku-5.5",
   /** Budget for the LLM draft inside POST /v1/plan; on timeout the template draft is used. */
-  llmTimeoutMs: () => Number(str("AWNING_LLM_TIMEOUT_MS") ?? 4500),
+  llmTimeoutMs: () => Number(str("AWNING_LLM_TIMEOUT_MS") ?? 5000),
   porkbunKey: () => str("PORKBUN_API_KEY"),
   porkbunSecret: () => str("PORKBUN_SECRET_KEY"),
   porkbunPayWith: () => (str("PORKBUN_PAY_WITH") === "usdc" ? "usdc" : "credit") as "usdc" | "credit",
