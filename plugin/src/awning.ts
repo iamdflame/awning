@@ -96,9 +96,25 @@ export function apiMessage(data: unknown): string | undefined {
     : record.error && typeof record.error === "object" && typeof (record.error as Record<string, unknown>).message === "string"
       ? (record.error as Record<string, string>).message
       : undefined;
-  if (!raw) return undefined;
-  const clean = raw.replace(/[\u0000-\u001f\u007f]+/g, " ").trim();
-  return clean.length > 200 ? `${clean.slice(0, 197)}...` : clean;
+  return oneLine(raw, 200) ?? undefined;
+}
+
+const LINE_BREAKING = /[\p{Cc}\p{Zl}\p{Zp}]+/gu;
+// Format (zero-width, bidi, tag), private-use and lone-surrogate characters, and variation selectors:
+// invisible to a person reading the text, so they could hide instructions from them.
+const INVISIBLE = /[\p{Cf}\p{Co}\p{Cs}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]+/gu;
+
+/**
+ * Untrusted free text (written by a buyer, or relayed from the API) reduced to one visible line:
+ * control and invisible characters removed, whitespace collapsed, at most `max` characters.
+ * Returns null when nothing visible is left.
+ */
+export function oneLine(raw: string | null | undefined, max: number): string | null {
+  if (typeof raw !== "string") return null;
+  const clean = raw.replace(LINE_BREAKING, " ").replace(INVISIBLE, "").replace(/\s+/g, " ").trim();
+  if (!clean) return null;
+  const chars = Array.from(clean);
+  return chars.length > max ? `${chars.slice(0, max - 3).join("")}...` : clean;
 }
 
 /** Machine-readable error code from an API error body ({ error: "policy_blocked", message: "..." }). */
@@ -153,6 +169,11 @@ export function parseApi<T>(schema: { safeParse(value: unknown): { success: true
 
 const DECIMAL = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/;
 
+/** Awning offer prices: whole cents from 0.01 to 10,000 USDC, in atomic units. */
+export const ATOMIC_PER_CENT = 10_000n;
+export const MIN_OFFER_ATOMIC = ATOMIC_PER_CENT;
+export const MAX_OFFER_ATOMIC = 10_000_000_000n;
+
 /** Converts a USD/USDC amount (decimal string or JSON number) into atomic USDC (6 decimals) without floats. */
 export function usdToAtomic(value: number | string): string {
   let text: string;
@@ -191,9 +212,13 @@ export function totalAtomic(unitAtomic: string, qty: number): string {
 
 // ---------------------------------------------------------------- live x402 quote
 
+/**
+ * `unverified` carries what Awning answered instead of a usable 402: the HTTP `status`, plus the
+ * API's `code` and human `message` when it sent them. No `status` means the request itself failed.
+ */
 export type LiveQuote =
   | { state: "verified"; amount: string; payTo: string | null }
-  | { state: "unverified" }
+  | { state: "unverified"; status?: number; code?: string; message?: string }
   | { state: "incompatible" };
 
 function decodeBase64Json(value: string): unknown {
@@ -203,15 +228,20 @@ function decodeBase64Json(value: string): unknown {
 /**
  * Reads the amount Awning's x402 endpoint asks for in an unpaid 402 response
  * (x402 v2 `PAYMENT-REQUIRED` header, or a v1 JSON body). Only an "exact" USDC-on-Base
- * requirement counts. Anything else that is not a 402 is "unverified".
+ * requirement counts. Any other answer is "unverified", with the API's code and message when present.
  */
 export function readQuote(response: ApiResponse): LiveQuote {
-  if (response.status !== 402) return { state: "unverified" };
+  const unverified = (): LiveQuote => {
+    const code = apiCode(response.data);
+    const message = apiMessage(response.data);
+    return { state: "unverified", status: response.status, ...(code ? { code } : {}), ...(message ? { message } : {}) };
+  };
+  if (response.status !== 402) return unverified();
   const header = response.headers.get("payment-required");
   const challenge = (header ? decodeBase64Json(header) : undefined) ?? response.data;
-  if (!challenge || typeof challenge !== "object") return { state: "unverified" };
+  if (!challenge || typeof challenge !== "object") return unverified();
   const accepts = (challenge as { accepts?: unknown }).accepts;
-  if (!Array.isArray(accepts) || accepts.length === 0) return { state: "unverified" };
+  if (!Array.isArray(accepts) || accepts.length === 0) return unverified();
   for (const entry of accepts) {
     if (!entry || typeof entry !== "object") continue;
     const requirement = entry as Record<string, unknown>;
