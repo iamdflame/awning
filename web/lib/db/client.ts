@@ -11,6 +11,16 @@ type Holder = { promise?: Promise<Db>; kind?: string; close?: () => Promise<void
 const g = globalThis as unknown as { __awningDb?: Holder };
 const holder: Holder = (g.__awningDb ??= {});
 
+function host(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+const isNeon = (url: string) => host(url).endsWith(".neon.tech");
+const isSupabase = (url: string) => /.supabase.(co|com)$/.test(host(url));
+
 function migrationsFolder(): string {
   return path.join(process.cwd(), "drizzle");
 }
@@ -18,15 +28,30 @@ function migrationsFolder(): string {
 async function init(): Promise<Db> {
   const url = env.databaseUrl();
   if (url && env.dbMode() !== "memory") {
-    const { neon } = await import("@neondatabase/serverless");
-    const { drizzle } = await import("drizzle-orm/neon-http");
-    const client = neon(url);
+    if (isNeon(url)) {
+      // Neon over HTTP: one request per query, nothing to pool in a serverless function.
+      const { neon } = await import("@neondatabase/serverless");
+      const { drizzle } = await import("drizzle-orm/neon-http");
+      const db = drizzle({ client: neon(url), schema });
+      if (env.autoMigrate()) {
+        const { migrate } = await import("drizzle-orm/neon-http/migrator");
+        await migrate(db, { migrationsFolder: migrationsFolder() });
+      }
+      holder.kind = "postgres (neon)";
+      return db as unknown as Db;
+    }
+    // Any other Postgres (Supabase): postgres.js through the provider's transaction pooler.
+    // prepare: false because transaction-mode poolers do not keep prepared statements.
+    const { default: postgres } = await import("postgres");
+    const { drizzle } = await import("drizzle-orm/postgres-js");
+    const client = postgres(url, { prepare: false, max: 3, idle_timeout: 20, connect_timeout: 10 });
     const db = drizzle({ client, schema });
     if (env.autoMigrate()) {
-      const { migrate } = await import("drizzle-orm/neon-http/migrator");
+      const { migrate } = await import("drizzle-orm/postgres-js/migrator");
       await migrate(db, { migrationsFolder: migrationsFolder() });
     }
-    holder.kind = "postgres";
+    holder.kind = isSupabase(url) ? "postgres (supabase)" : "postgres";
+    holder.close = () => client.end({ timeout: 5 });
     return db as unknown as Db;
   }
 

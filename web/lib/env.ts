@@ -26,7 +26,8 @@ export const env = {
   treasuryPrivateKey: () => str("AWNING_TREASURY_PRIVATE_KEY"),
   pluginKey: () => str("AWNING_PLUGIN_KEY"),
   ownerTokenSecret: () => str("AWNING_OWNER_TOKEN_SECRET"),
-  databaseUrl: () => str("DATABASE_URL"),
+  /** AWNING_DATABASE_URL wins (explicit cutover, e.g. to Supabase), else DATABASE_URL. */
+  databaseUrl: () => str("AWNING_DATABASE_URL") ?? str("DATABASE_URL"),
   dbMode: () => str("AWNING_DB"), // "memory" → in-memory PGlite (tests)
   pgliteDir: () => str("AWNING_PGLITE_DIR"),
   autoMigrate: () => str("AWNING_AUTO_MIGRATE") !== "0",
