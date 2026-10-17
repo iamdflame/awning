@@ -14,6 +14,7 @@ import { centsToAtomic, parseOfferPrice, proTotalAtomic } from "../money";
 import { receptionistName, receptionistPrompt } from "../plan/receptionist";
 import { allocateSlug, getBusinessById, offersFor, skuFrom, slugify } from "./businesses";
 import { planView } from "./views";
+import { PolicyError, assertPlanQuota, screenBusiness, screenText } from "../policy";
 
 export const planInputSchema = z.object({
   sentence: z.string().trim().min(3, "sentence is too short").max(600, "sentence must be at most 600 characters"),
@@ -91,6 +92,10 @@ async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, ms: number
  */
 export async function createPlan(input: PlanInput) {
   const startedAt = Date.now();
+  // Acceptable use first: nothing is drafted, checked or stored for a prohibited business.
+  const pre = screenText(input.sentence);
+  if (!pre.ok) throw new PolicyError(pre);
+  await assertPlanQuota(input.ownerWallet);
   const a = adapters();
   const draftInput = { sentence: input.sentence, ownerName: input.ownerName, country: input.country };
   const country = countryCode(input.country);
@@ -140,6 +145,9 @@ export async function createPlan(input: PlanInput) {
       }
     }
   }
+  // Screen exactly what will be published (name, copy, offers); catches brand impersonation in the name.
+  const post = screenBusiness(draft);
+  if (!post.ok) throw new PolicyError(post);
   const { primary, variants } = domainSet;
   const [checks, phoneCandidates] = await Promise.all([domainSet.checks, phoneSearch]);
 

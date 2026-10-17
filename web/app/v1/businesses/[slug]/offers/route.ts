@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiError, handler, json, parseBody, publicJson, requirePluginKey, verifyOwnerToken } from "@/lib/api";
 import { parseOfferPrice } from "@/lib/money";
+import { screenText } from "@/lib/policy";
 import { addOffer, getBusinessBySlug, offersFor } from "@/lib/services/businesses";
 import { offerBuyUrl, offerView } from "@/lib/services/views";
 
@@ -32,6 +33,9 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ slug: 
   }
   const body = await parseBody(req, schema);
   if (!body.ok) return body.response;
+  if (b.status === "suspended") return apiError(403, "business_suspended", `${b.name} is under review; offers can't be changed.`);
+  const screened = screenText(`${body.data.title} ${body.data.description}`);
+  if (!screened.ok) return apiError(422, "policy_blocked", screened.reason, { category: screened.category });
   let priceAtomic: bigint;
   try {
     priceAtomic = parseOfferPrice(body.data.priceUsd);

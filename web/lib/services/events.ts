@@ -1,6 +1,6 @@
-import { desc, eq, max } from "drizzle-orm";
+import { desc, eq, inArray, max } from "drizzle-orm";
 import { db, schema } from "../db/client";
-import type { EventType } from "../db/schema";
+import { PUBLIC_EVENT_TYPES, type EventType } from "../db/schema";
 import { newId } from "../ids";
 import { eventView } from "./views";
 
@@ -19,7 +19,11 @@ export async function emitEvent(e: { type: EventType; slug: string; name: string
 
 export async function recentEvents(limit = 50) {
   const d = await db();
-  const rows = await d.select().from(schema.events).orderBy(desc(schema.events.at), desc(schema.events.id)).limit(Math.min(Math.max(limit, 1), 200));
+  const rows = await d
+    .select()
+    .from(schema.events)
+    .where(inArray(schema.events.type, [...PUBLIC_EVENT_TYPES]))
+    .orderBy(desc(schema.events.at), desc(schema.events.id)).limit(Math.min(Math.max(limit, 1), 200));
   return rows.map(eventView);
 }
 

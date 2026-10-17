@@ -51,6 +51,10 @@ export const env = {
   elevenLabsVoiceId: () => str("ELEVENLABS_VOICE_ID"),
   planTtlSeconds: () => Number(str("AWNING_PLAN_TTL_SECONDS") ?? 1800),
   openDeadlineMs: () => Number(str("AWNING_OPEN_DEADLINE_MS") ?? 20000),
+  /** Trust & safety: per-wallet limits and the operator key for takedowns. */
+  planLimitPerHour: () => Number(str("AWNING_PLAN_LIMIT_PER_HOUR") ?? 12),
+  freeOpensPerDay: () => Number(str("AWNING_FREE_OPENS_PER_DAY") ?? 3),
+  adminKey: () => str("AWNING_ADMIN_KEY"),
 };
 
 /** Public URL of a business: custom domain when it has one, else the free subdomain. */

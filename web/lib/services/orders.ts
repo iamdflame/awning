@@ -46,6 +46,7 @@ type BuyQuote = { business: BusinessRow; offer: OfferRow; qty: number; charge: C
 export async function quoteBuy(slug: string, sku: string, body: z.infer<typeof buyBodySchema>, url: URL): Promise<BuyQuote | Response> {
   const business = await getBusinessBySlug(slug);
   if (!business) return apiError(404, "business_not_found", `No business ${slug}`);
+  if (business.status === "suspended") return apiError(403, "business_suspended", `${business.name} is under review; its checkout is paused and nothing was charged`);
   if (business.status !== "live") return apiError(409, "business_not_open", `${business.name} is not open yet`);
   const offer = await getOffer(business.id, sku);
   if (!offer || !offer.active) return apiError(404, "offer_not_found", `${business.name} has no offer ${sku}`);

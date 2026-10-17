@@ -13,6 +13,7 @@ import { MAX_TIMEOUT_SECONDS } from "../x402/constants";
 import { handlePaidRequest, replayIfSeen, type SettleInfo, type WorkResult } from "../x402/flow";
 import type { Charge } from "../x402/seller";
 import { getBusinessById } from "./businesses";
+import { RateLimitError, assertFreeOpenQuota } from "../policy";
 import { emitEvent } from "./events";
 import { getPlan } from "./plans";
 import { proReadiness } from "./readiness";
@@ -39,6 +40,7 @@ export async function quoteOpen(planId: string, body: z.infer<typeof openBodySch
   if (!plan) return apiError(404, "plan_not_found", `No plan ${planId}`);
   const business = await getBusinessById(plan.businessId);
   if (!business) return apiError(404, "plan_not_found", `Plan ${planId} has no business`);
+  if (business.status === "suspended") return apiError(403, "business_suspended", `${business.name} is under review and can't be opened.`);
   const payTo = treasury();
   if (!payTo) return apiError(503, "misconfigured", "AWNING_TREASURY_ADDRESS is not configured");
   const alreadyPro = plan.status === "opened" && plan.openPackage === "pro";
@@ -338,6 +340,13 @@ export async function openFree(planId: string): Promise<Response> {
     json({ business: openedBusinessView(b), ownerToken: ownerTokenFor(b.id, b.ownerTokenVersion), alreadyOpen: true, steps: [] });
 
   if (business.status === "live") return already(business);
+  if (business.status === "suspended") return apiError(403, "business_suspended", `${business.name} is under review and can't be opened.`);
+  try {
+    await assertFreeOpenQuota(business.ownerWallet);
+  } catch (err) {
+    if (err instanceof RateLimitError) return json({ error: "rate_limited", message: err.message }, { status: 429, headers: { "retry-after": String(err.retryAfterSeconds) } });
+    throw err;
+  }
 
   const d = await db();
   const claimed = await d

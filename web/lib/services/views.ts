@@ -1,4 +1,4 @@
-import type { BusinessRow, EventRow, OfferRow, OrderRow, PlanRow } from "../db/schema";
+import type { BusinessRow, EventRow, OfferRow, OrderRow, PlanRow, PublicEventType } from "../db/schema";
 import { businessUrl, env, subdomainUrl } from "../env";
 import { atomicToUsd, atomicToUsdString, PRO_FEE_ATOMIC } from "../money";
 import { apiUrl } from "../api";
@@ -136,9 +136,10 @@ export function orderView(o: OrderRow) {
   };
 }
 
+/** Public feed view; callers only pass public event rows (see recentEvents). */
 export function eventView(e: EventRow) {
   return {
-    type: e.type,
+    type: e.type as PublicEventType,
     at: e.at.toISOString(),
     slug: e.slug,
     name: e.name,

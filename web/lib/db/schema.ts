@@ -18,7 +18,8 @@ export type Palette = { primary: string; accent: string; ink: string; paper: str
 export type OfferKind = "product" | "service" | "booking" | "digital" | "subscription";
 
 export type PlanStatus = "quoted" | "opening" | "opened";
-export type BusinessStatus = "draft" | "live";
+/** suspended: checkout paused and delisted after reports or an operator takedown. */
+export type BusinessStatus = "draft" | "live" | "suspended";
 export type PackageId = "free" | "pro";
 
 export type PlanDomain = {
@@ -171,7 +172,10 @@ export const orders = pgTable(
 
 export type Fulfillment = { kind: OfferKind; message: string; code?: string; url?: string };
 
-export type EventType = "opened" | "order" | "call";
+/** Public feed types first; report and moderation events are internal (never in /v1/live). */
+export type EventType = "opened" | "order" | "call" | "report" | "moderation";
+export const PUBLIC_EVENT_TYPES = ["opened", "order", "call"] as const;
+export type PublicEventType = (typeof PUBLIC_EVENT_TYPES)[number];
 
 export const events = pgTable(
   "events",
