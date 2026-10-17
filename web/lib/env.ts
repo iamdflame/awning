@@ -35,7 +35,7 @@ export const env = {
   anthropicKey: () => str("ANTHROPIC_API_KEY"),
   anthropicModel: () => str("AWNING_LLM_MODEL") ?? "claude-sonnet-5-5",
   /** Budget for the LLM draft inside POST /v1/plan; on timeout the template draft is used. */
-  llmTimeoutMs: () => Number(str("AWNING_LLM_TIMEOUT_MS") ?? 6500),
+  llmTimeoutMs: () => Number(str("AWNING_LLM_TIMEOUT_MS") ?? 4500),
   porkbunKey: () => str("PORKBUN_API_KEY"),
   porkbunSecret: () => str("PORKBUN_SECRET_KEY"),
   porkbunPayWith: () => (str("PORKBUN_PAY_WITH") === "usdc" ? "usdc" : "credit") as "usdc" | "credit",

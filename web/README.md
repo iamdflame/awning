@@ -49,7 +49,7 @@ Full list with comments: [`../.env.example`](../.env.example). Every provider is
 | `AWNING_FACILITATOR_URL` | x402 `/verify` + `/settle` | PayAI `https://facilitator.payai.network`; `mock` = local signature check, no settlement (dev/test only) |
 | `BASE_RPC_URL` | Refund transfers, on-chain `authorizationState` checks | `https://mainnet.base.org` |
 | `DATABASE_URL` | Neon/Postgres (`@neondatabase/serverless`, drizzle) | PGlite in `web/.data/` |
-| `ANTHROPIC_API_KEY`, `AWNING_LLM_MODEL`, `AWNING_LLM_TIMEOUT_MS` | Business drafts (`claude-sonnet-5-5`, forced tool call → strict JSON, validated and normalised); domain checks run in parallel; over budget (default 6500 ms) or on error → template | deterministic template drafter |
+| `ANTHROPIC_API_KEY`, `AWNING_LLM_MODEL`, `AWNING_LLM_TIMEOUT_MS` | Business drafts (`claude-sonnet-5-5`, forced tool call → strict JSON, validated and normalised); domain checks run in parallel; over budget (default 4500 ms; the whole plan stays under ~6.5 s because the plugin waits 8 s) or on error → template | deterministic template drafter |
 | `PORKBUN_API_KEY`, `PORKBUN_SECRET_KEY`, `PORKBUN_PAY_WITH` | Availability/price, registration, DNS (`credit` or `usdc` over x402) | deterministic mock registrar with snapshot prices |
 | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | Attach custom domains to the project | mock hosting |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Buy local numbers, TwiML receptionist, owner SMS | fictional `+1 202 555 01xx` numbers, logged notifications |

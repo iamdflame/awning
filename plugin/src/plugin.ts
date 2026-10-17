@@ -4,7 +4,7 @@ import * as z from "zod/v4";
 
 import { x402OutputSchema } from "./paybox.js";
 import {
-  AwningError, CHAIN, USDC_BASE, apiBase, apiRequest, buyBody, buyPath, expectOk, fetchQuote, formatUsdc,
+  AwningError, CHAIN, PLAN_TIMEOUT_MS, USDC_BASE, apiBase, apiRequest, buyBody, buyPath, expectOk, fetchQuote, formatUsdc,
   openBody, openPath, parseApi, proposalExpiry, proposeBuy, proposeOpen, totalAtomic, usdToAtomic,
 } from "./awning.js";
 import {
@@ -141,7 +141,7 @@ function createServer() {
     outputSchema: planOutput,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   }, async (input) => guard(async () => {
-    const plan = parseApi(upPlan, expectOk(await apiRequest("/v1/plan", { method: "POST", body: input })));
+    const plan = parseApi(upPlan, expectOk(await apiRequest("/v1/plan", { method: "POST", body: input, timeoutMs: PLAN_TIMEOUT_MS })));
     const structured: z.infer<typeof planOutput> = {
       planId: plan.planId,
       expiresAt: plan.expiresAt,

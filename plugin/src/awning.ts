@@ -6,6 +6,8 @@ export const CHAIN = "eip155:8453" as const;
 export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 export const DEFAULT_API_URL = "https://api.awning.sh";
 export const FETCH_TIMEOUT_MS = 4_000;
+/** awning_plan drafts with an LLM server-side (bounded at ~6.5 s); still well inside the 10 s sandbox budget. */
+export const PLAN_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_CHARS = 1_000_000;
 const DEFAULT_PROPOSAL_TTL_MS = 240_000;
 const MIN_APPROVAL_WINDOW_MS = 60_000;
@@ -44,10 +46,11 @@ type RequestOptions = {
   body?: unknown;
   ownerToken?: string;
   query?: Record<string, string | number | undefined>;
+  timeoutMs?: number;
 };
 
 /**
- * One bounded request to the Awning API: 4 s timeout, no redirects, JSON only.
+ * One bounded request to the Awning API: 4 s timeout by default, no redirects, JSON only.
  * PayBox adds the brokered `x-awning-plugin-key` header at egress; this code never reads or sends it.
  */
 export async function apiRequest(path: string, options: RequestOptions = {}): Promise<ApiResponse> {
@@ -65,14 +68,14 @@ export async function apiRequest(path: string, options: RequestOptions = {}): Pr
       method: options.method ?? "GET",
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      signal: AbortSignal.timeout(options.timeoutMs ?? FETCH_TIMEOUT_MS),
       redirect: "error",
     });
     text = await response.text();
   } catch (error) {
     const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
     throw new AwningError(timedOut
-      ? `Awning (${apiHost()}) did not answer within 4 seconds. Nothing was changed or paid; retry once, then try again later.`
+      ? `Awning (${apiHost()}) did not answer within ${Math.round((options.timeoutMs ?? FETCH_TIMEOUT_MS) / 1000)} seconds. Nothing was changed or paid; retry once, then try again later.`
       : `Could not reach Awning (${apiHost()}). Nothing was changed or paid. If this keeps happening, the plugin owner should check that ${apiHost()} is an allowed network host in the PayBox portal.`);
   }
   if (text.length > MAX_RESPONSE_CHARS) throw new AwningError("Awning returned an unexpectedly large response. Nothing was paid; try again later.");

@@ -90,6 +90,7 @@ async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, ms: number
  * external resource is created (registrar/phone calls here are read-only).
  */
 export async function createPlan(input: PlanInput) {
+  const startedAt = Date.now();
   const a = adapters();
   const draftInput = { sentence: input.sentence, ownerName: input.ownerName, country: input.country };
   const country = countryCode(input.country);
@@ -130,7 +131,8 @@ export async function createPlan(input: PlanInput) {
     source = "llm";
     const label = domainCandidates(slugify(llm.name), llm.city).label;
     if (label !== firstCheck.label) {
-      const second = checkFor(llm.name, llm.city, 3500);
+      // The plugin waits 8 s for this response; keep the whole plan under ~6.5 s.
+      const second = checkFor(llm.name, llm.city, Math.max(1200, 6500 - (Date.now() - startedAt)));
       if ((await second.checks).length) domainSet = second;
       else {
         draft = template;
