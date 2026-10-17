@@ -25,9 +25,9 @@ export function shopFacts(assets: Assets) {
 }
 
 export function saleFacts(assets: Assets) {
+  // only a real sale from awning.sh: until the buyer's take exists there is no transaction to print
   const liveSale = assets.capture.live?.events?.find((e) => e.type === "order" && e.slug === BUSINESS.slug);
-  const localSale = assets.capture.local?.events?.find((e) => e.type === "order");
-  const ev = liveSale ?? localSale;
+  const ev = liveSale;
   const shop = shopFacts(assets);
   return {
     mock: !liveSale,

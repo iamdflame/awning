@@ -30,6 +30,15 @@ const getJson = async (u) => {
   }
 };
 
+async function answers(u) {
+  try {
+    const r = await fetch(u, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(12000) });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 const health = await getJson(`${API}/v1/health`);
 if (!health?.ok) {
   console.error(`${API}/v1/health does not answer ok. Set AWNING_BASE to a reachable deployment, or try again.`);
@@ -57,7 +66,12 @@ async function plan(shot) {
   if (shot.id === "live" && liveEvents.some((e) => e.type === "order") && !forceLocal) return { base: LIVE, source: "live", noSale: true };
   if (shot.where === "shop") {
     const real = !forceLocal && !shot.draft && (await getJson(`${API}/v1/businesses/${shot.shop}`))?.business;
-    if (real?.url) return { url: real.url, source: "live", data: { ...real, ownerToken: undefined } };
+    if (real?.url) {
+      // the shop's own domain when it answers (a new domain can take a while to resolve), else its awning.sh address
+      const sub = `https://${real.slug}.awning.sh`;
+      const url = (await answers(real.url)) ? real.url : sub;
+      return { url, source: "live", data: { ...real, ownerToken: undefined } };
+    }
     if (shot.draft && process.env.DRAFT_URL && !forceLocal) return { url: process.env.DRAFT_URL, source: "live" };
     const L = await useLocal();
     const b = Object.values(L.seeded.businesses).find((x) => (shot.draft ? x.status === "draft" : x.status === "live" && /ridge/i.test(x.name ?? "")));

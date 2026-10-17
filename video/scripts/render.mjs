@@ -24,8 +24,10 @@ const preview = args.includes("--preview");
 fs.mkdirSync(OUT, { recursive: true });
 
 if (!args.includes("--skip-prepare")) {
-  const r = spawnSync(process.execPath, [path.join(here, "captions.mjs")], { stdio: "inherit", cwd: VIDEO });
-  if (r.status !== 0) process.exit(r.status ?? 1);
+  for (const step of ["captions.mjs", "prep-rec.mjs"]) {
+    const r = spawnSync(process.execPath, [path.join(here, step)], { stdio: "inherit", cwd: VIDEO });
+    if (r.status !== 0) process.exit(r.status ?? 1);
+  }
 }
 
 console.log("bundling…");

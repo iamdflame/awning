@@ -1,88 +1,322 @@
 {
-  "about": "Edit list for the founder's three screen recordings (launch/RECORDING-RUNBOOK.md): public/rec/owner.mp4 (Claude: P1, the plan, the preview, P2, the PayBox approval, the live storefront), public/rec/buyer.mp4 (a different agent: Claude Code in Windows Terminal, connected to PayBox over MCP, same PayBox account, paying the shop's separate sales wallet: P3, the tool calls, the 5.00 USDC approval, the confirmation) and public/rec/owner-2.mp4 (Claude: P5, P6). All times are seconds in that recording; every rect is [x, y, width, height] as fractions of the recording frame (0-1). A beat plays its segments in order at normal speed: cut the waits, never speed anything up. A beat with no segments keeps its placeholder card in the film. 'crop' is the part of the recording shown inside the film's frame (the defaults cut Chrome's tabs and address bar, or the terminal's tab bar, at the top and the Windows taskbar at the bottom of a full-screen 1920x1080 recording). 'frame' is the window the film draws around it (browser, or terminal for the buyer); 'url' is what the browser frame's address bar shows, 'title' the terminal's tab. 'zoom' keys frame a rect by that time (the film keeps 16:9 around it; null goes back to the whole page); 'blur' hides a rect between two times (the owner token awn_ot_... wherever it shows); 'type' marks when the prompt's first and last characters were typed, so the big caption types in step; 'approve' rings the PayBox approval at that moment, with a chime. Read the times off any player that shows seconds (VLC: View > Status bar, or MPC-HC), then run npm run render:main.",
+  "about": "Edit list for the founder's screen recordings (launch/RECORDING-RUNBOOK.md): owner (rec/owner1.mp4: Claude.ai with PayBox, the real Ridge Roast opening), buyer (rec/buyer.mp4: a fresh Claude.ai chat on the same PayBox account, which knows nothing about the shop: awning_find, awning_buy, the PayBox panel for 5.00 USDC, the confirmation) and owner2 (rec/owner-2.mp4: Claude, P5 and P6). All times are seconds in that recording; every rect is [x, y, width, height] as fractions of the recording frame (0-1). A beat plays its segments in order at normal speed: waits are cut, nothing is sped up. A beat with no segments keeps its placeholder card in the film. 'crop' is the part of the recording the film may show (it cuts the browser's tabs and address bar; the film draws its own window). 'theme' dark draws a dark window to match a dark-mode recording; 'url' is what the film's address bar shows (per beat when the recording switches tabs). 'zoom' keys move the camera: from 'at' it frames 'rect' over 'dur' seconds (0 = a cut on a page change; rect null = the whole page; 'pad' adds air). 'blur' boxes are opaque redactions over anything private (the owner token awn_ot_... wherever it shows), from 'from' to 'to'. 'mark' draws a tomato underline under a line from 'at'. 'focus' dims everything outside a rect (a spotlight; nothing is altered). 'fade' softens the window's left/right edges where the camera crops lines of text. 'type' marks the prompt being typed (paste = it appeared at once). 'approve' rings the PayBox approval at that moment, with a chime. Read times off any player that shows seconds, or run npm run edl-helper -- owner --from 200 --to 240 --every 0.5 --crop 480,100,960,980 for timestamped contact sheets.",
   "owner": {
-    "file": "rec/owner.mp4",
+    "file": "rec/owner1.mp4",
     "url": "claude.ai",
+    "theme": "dark",
     "crop": [
       0,
-      0.075,
+      0.1,
       1,
-      0.88
+      0.9
     ],
     "beats": {
       "p1-type": {
-        "what": "A new chat with PayBox connected. P1 typed and sent.",
-        "segments": [],
+        "what": "A new chat with PayBox connected; P1 (with the wallet and 'open it with Pro at ridgeroast.shop') pasted at 6.65 s and sent at 14.8 s. The 7 s pause before sending is cut.",
+        "segments": [
+          [
+            5.4,
+            7.6
+          ],
+          [
+            14.2,
+            16.63
+          ]
+        ],
         "type": {
-          "start": null,
-          "end": null,
-          "prompt": "P1"
+          "start": 6.65,
+          "end": 6.65,
+          "prompt": "P1",
+          "paste": true
         },
-        "zoom": [],
+        "zoom": [
+          {
+            "at": 5.4,
+            "rect": [
+              0.2917,
+              0.4213,
+              0.4167,
+              0.2778
+            ],
+            "dur": 0
+          },
+          {
+            "at": 5.6,
+            "rect": [
+              0.2979,
+              0.512,
+              0.3828,
+              0.0963
+            ],
+            "pad": 1.02,
+            "dur": 1.9
+          },
+          {
+            "at": 14.2,
+            "rect": [
+              0.2979,
+              0.512,
+              0.3828,
+              0.0963
+            ],
+            "pad": 1.02,
+            "dur": 0
+          },
+          {
+            "at": 14.84,
+            "rect": [
+              0.3521,
+              0.2056,
+              0.3802,
+              0.1019
+            ],
+            "pad": 1.02,
+            "dur": 0
+          }
+        ],
         "blur": []
       },
       "plan": {
-        "what": "awning_plan answers: the name, the offers with prices, the domains with totals, the preview link. Hold 3 s.",
-        "segments": [],
-        "zoom": [],
-        "blur": []
+        "what": "awning_plan's answer (the PayBox tool permissions and 40 s of loading are cut): the draft with its offers, then the three real domain quotes.",
+        "segments": [
+          [
+            57.45,
+            59.6
+          ],
+          [
+            69.35,
+            70.65
+          ]
+        ],
+        "zoom": [
+          {
+            "at": 57.45,
+            "rect": [
+              0.2708,
+              0.563,
+              0.3646,
+              0.1389
+            ],
+            "pad": 1.1,
+            "dur": 0
+          },
+          {
+            "at": 57.6,
+            "rect": [
+              0.2708,
+              0.6204,
+              0.3594,
+              0.0741
+            ],
+            "pad": 1.1,
+            "dur": 1.9
+          },
+          {
+            "at": 69.35,
+            "rect": [
+              0.2708,
+              0.5074,
+              0.3125,
+              0.1065
+            ],
+            "pad": 1.1,
+            "dur": 0
+          }
+        ],
+        "mark": [
+          {
+            "at": 69.7,
+            "rect": [
+              0.2974,
+              0.562,
+              0.151,
+              0.0222
+            ]
+          }
+        ],
+        "blur": [],
+        "fade": {
+          "right": 0.08
+        }
       },
       "preview": {
-        "what": "The preview link opened: the draft storefront with the 'Preview, not open yet' ribbon, scrolled to the offers.",
-        "url": null,
-        "segments": [],
-        "zoom": [],
+        "what": "The private preview at ridge-roast.awning.sh: caution tape, the canopy rolled up, 'Opening soon'.",
+        "url": "ridge-roast.awning.sh",
+        "segments": [
+          [
+            101.3,
+            105.6
+          ]
+        ],
+        "zoom": [
+          {
+            "at": 101.3,
+            "rect": null,
+            "dur": 0
+          },
+          {
+            "at": 101.5,
+            "rect": [
+              0.1563,
+              0.1019,
+              0.6875,
+              0.5556
+            ],
+            "dur": 4
+          }
+        ],
         "blur": []
       },
       "p2-approve": {
-        "what": "P2 typed and sent; awning_open proposes; the PayBox approval shows the amount in USDC on Base; approved with the passkey.",
-        "segments": [],
-        "type": {
-          "start": null,
-          "end": null,
-          "prompt": "P2"
-        },
+        "what": "The PayBox signing panel in the chat: $11.06 to api.awning.sh/x402/open/... 'Sending payment...' turns to 'Payment sent' at 228.07 s (the founder approved in PayBox; the 22 s wait and the reopen request are cut).",
+        "segments": [
+          [
+            226.8,
+            229.03
+          ]
+        ],
         "approve": {
-          "at": null,
+          "at": 228.07,
           "rect": [
-            0.36,
-            0.3,
-            0.28,
-            0.42
+            0.2604,
+            0.3935,
+            0.4792,
+            0.2204
           ]
         },
-        "zoom": [],
-        "blur": []
+        "zoom": [
+          {
+            "at": 226.8,
+            "rect": [
+              0.2708,
+              0.3981,
+              0.4583,
+              0.2093
+            ],
+            "pad": 1.05,
+            "dur": 0
+          }
+        ],
+        "blur": [],
+        "focus": [
+          {
+            "from": 226.8,
+            "to": 229.1,
+            "rect": [
+              0.2604,
+              0.3935,
+              0.4792,
+              0.2204
+            ],
+            "dim": 0.82
+          }
+        ]
       },
       "live-answer": {
-        "what": "The paid response: 'live at ...', the steps, the awning.sh address (liveNowAt). Blur the owner token if it shows.",
-        "segments": [],
-        "zoom": [],
-        "blur": []
+        "what": "The paid result: 'Ridge Roast is live on Pro. The 11.06 USDC payment went through and settled on Base.', then the Storefront line with https://ridgeroast.shop. The owner token two lines below is redacted.",
+        "segments": [
+          [
+            302,
+            306.4
+          ]
+        ],
+        "zoom": [
+          {
+            "at": 302,
+            "rect": [
+              0.2562,
+              0.2833,
+              0.3448,
+              0.037
+            ],
+            "pad": 1,
+            "dur": 0
+          },
+          {
+            "at": 303.85,
+            "rect": [
+              0.2562,
+              0.3352,
+              0.3448,
+              0.037
+            ],
+            "pad": 1,
+            "dur": 0.6
+          }
+        ],
+        "mark": [
+          {
+            "at": 304.6,
+            "rect": [
+              0.3375,
+              0.3296,
+              0.1021,
+              0.0204
+            ]
+          }
+        ],
+        "blur": [
+          {
+            "from": 295,
+            "to": 313.2,
+            "rect": [
+              0.3438,
+              0.5889,
+              0.2839,
+              0.0389
+            ],
+            "label": "owner token hidden"
+          }
+        ],
+        "fade": {
+          "right": 0.1
+        }
       },
       "live-store": {
-        "what": "The awning.sh address opened: the live storefront, scrolled from the top to the 'Buy with your AI agent' box.",
-        "url": null,
-        "segments": [],
-        "zoom": [],
+        "what": "The storefront, live (ridge-roast.awning.sh while ridgeroast.shop's DNS propagates): canopy down, 'Open for orders in Accra', Buy and Book.",
+        "url": "ridge-roast.awning.sh",
+        "segments": [
+          [
+            313.6,
+            316.2
+          ]
+        ],
+        "zoom": [
+          {
+            "at": 313.6,
+            "rect": null,
+            "dur": 0
+          },
+          {
+            "at": 313.7,
+            "rect": [
+              0.0938,
+              0.1111,
+              0.7292,
+              0.7037
+            ],
+            "dur": 2.5
+          }
+        ],
         "blur": []
       }
-    }
+    },
+    "bg": "#141414"
   },
   "buyer": {
     "file": "rec/buyer.mp4",
-    "frame": "terminal",
-    "title": "Claude Code",
-    "url": "terminal",
+    "url": "claude.ai",
+    "theme": "dark",
+    "bg": "#141414",
     "crop": [
       0,
-      0.04,
+      0.1,
       1,
-      0.915
+      0.9
     ],
     "beats": {
       "p3-find": {
-        "what": "Claude Code in Windows Terminal (a different agent; same PayBox account). P3 typed and sent; PayBox discover_plugins / use_plugin, then Awning awning_find: Ridge Roast and the $5 tasting.",
+        "what": "A fresh Claude.ai chat (same PayBox account; it knows nothing about Ridge Roast). P3 typed and sent; awning_find returns Ridge Roast and the $5 tasting.",
         "segments": [],
         "type": {
           "start": null,
@@ -93,7 +327,7 @@
         "blur": []
       },
       "p4-buy": {
-        "what": "P4 typed and sent; awning_buy proposes; the PayBox approval for 5.00 USDC to the owner's sales wallet (a browser or passkey prompt may appear); approved; the confirmation with the order code.",
+        "what": "P4 typed and sent; awning_buy proposes; the PayBox panel shows 5.00 USDC to the owner's sales wallet; approved ('Payment sent'); the confirmation with the order code.",
         "segments": [],
         "type": {
           "start": null,
@@ -103,10 +337,10 @@
         "approve": {
           "at": null,
           "rect": [
-            0.36,
-            0.3,
-            0.28,
-            0.42
+            0.2604,
+            0.3935,
+            0.4792,
+            0.2204
           ]
         },
         "zoom": [],

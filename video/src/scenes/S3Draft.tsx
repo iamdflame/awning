@@ -3,7 +3,7 @@ import { Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Receipt, type ReceiptLine } from "../brand/Paper";
 import { C, EASE, FONT } from "../brand/tokens";
 import { ProductClip } from "../components/ProductClip";
-import { PromptBubble, RecordingBeat, beatIsReal } from "../components/Recording";
+import { RecordingBeat, beatIsReal } from "../components/Recording";
 import { Stamp } from "../components/Kinetic";
 import { BUSINESS } from "../story";
 import { Ground, Sfx, Voice, wordsOf, type SceneProps } from "./common";
@@ -16,8 +16,9 @@ const FH = Math.round((FW * 9) / 16);
 /**
  * vo-03 "Here's Ridge Roast, a coffee roaster in Accra. Awning names it, prices the offers, checks
  * real domains, and puts up a private preview. Nothing is paid yet."
- * The owner's take (P1, the plan) on the left; the plan prints as a receipt on the right, line by
- * line with the voice; then the private preview with its caution-tape ribbon. Paid so far: 0.00.
+ * The founder's take on the left (the prompt pasted and sent; awning_plan's draft with its offers;
+ * the three real domain quotes, the chosen one underlined; the private preview with its caution
+ * tape); the plan prints as a receipt on the right, line by line with the voice. Paid so far: 0.00.
  */
 export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const f = useCurrentFrame();
@@ -35,15 +36,15 @@ export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const slotPlan = tNames - 6;
   const slotPreview = tPuts - 6;
   const ownerFile = assets.rec.owner;
-  const p1Real = beatIsReal("owner", "p1-type", ownerFile);
   const previewReal = beatIsReal("owner", "preview", ownerFile);
   const draft = assets.capture.shots["draft"];
 
   const offers = shop.offers.slice(0, 3);
+  // the plan's three real domain quotes; the one the owner chose prints in green
   const lines: ReceiptLine[] = [
     { l: "name", r: shop.name, at: tNames, tone: "strong" },
     ...offers.map((o, i) => ({ l: o.title.length > 22 ? o.title.slice(0, 21) + "…" : o.title, r: o.price, at: tPrices + 4 + i * 5 })),
-    { l: BUSINESS.domain, r: `${BUSINESS.openTotalUsdc} USDC`, at: tChecks + 4, tone: "green" as const },
+    ...BUSINESS.domains.map((d, i) => ({ l: d.domain, r: `${d.usdc} USDC`, at: tChecks + 2 + i * 5, tone: d.domain === BUSINESS.domain ? ("green" as const) : ("muted" as const) })),
     { l: "preview", r: "private", at: tPrivate },
   ];
   const nameIn = interpolate(f, [tHere - 4, tHere + 10], [0, 1], { ...clamp, easing: EASE.out });
@@ -71,11 +72,6 @@ export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
           )}
         </Sequence>
       </div>
-      {p1Real ? (
-        <Sequence from={6} durationInFrames={slotPlan - 6} layout="none">
-          <PromptBubble who="owner" beat="p1-type" real slot={slotPlan} width={1000} size={34} style={{ position: "absolute", left: 120, top: 560 }} />
-        </Sequence>
-      ) : null}
 
       {/* right: the business, then the plan as a receipt */}
       <div style={{ position: "absolute", left: 1220, top: 88, width: 640, opacity: nameIn, transform: `translateY(${(1 - nameIn) * 18}px)` }}>
@@ -85,10 +81,10 @@ export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
         </div>
       </div>
       {f >= tNames - 10 ? (
-        <div style={{ position: "absolute", left: 1222, top: 262 }}>
+        <div style={{ position: "absolute", left: 1222, top: 250 }}>
           <Receipt
             width={640}
-            size={23}
+            size={22}
             rotate={1.2}
             head={["AWNING_PLAN", shop.mock ? "LOCAL MOCK" : "DRAFT"]}
             lines={lines}
@@ -97,7 +93,7 @@ export const S3Draft: React.FC<SceneProps> = ({ timing, take, assets }) => {
         </div>
       ) : null}
       {f >= tNothing ? (
-        <div style={{ position: "absolute", left: 1350, top: 730 }}>
+        <div style={{ position: "absolute", left: 1300, top: 760 }}>
           <Stamp at={tNothing + 6} size={34} rotate={-9}>
             Nothing paid yet
           </Stamp>

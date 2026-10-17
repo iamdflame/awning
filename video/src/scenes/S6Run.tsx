@@ -72,6 +72,8 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const slotLive = tPublic - 10;
   const dirResults = tFind - 4;
   const out = interpolate(f, [slotDir - 6, slotDir + 8], [0, 1], { ...clamp, easing: EASE.inOut });
+  // the public receipt: awning.sh/live with its real sale once one exists, else with the real opening
+  const liveShot = assets.capture.shots["live"]?.source === "live" ? assets.capture.shots["live"] : assets.capture.shots["live-real"] ?? assets.capture.shots["live"];
 
   return (
     <Ground>
@@ -107,7 +109,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
             width={520}
             size={19}
             rotate={1.5}
-            head={["AWNING_ORDERS", sale.mock ? "LOCAL MOCK" : BUSINESS.name.toUpperCase()]}
+            head={["AWNING_ORDERS", sale.mock ? "TAKE PENDING" : BUSINESS.name.toUpperCase()]}
             lines={[
               { l: BUSINESS.tasting.title, r: `${sale.amount} paid`, at: tOrders, tone: "strong" },
               ...(sale.txShort ? [{ l: "tx", r: sale.txShort, at: tOrders + 6, tone: "muted" as const }] : []),
@@ -134,10 +136,10 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
         <div style={{ position: "absolute", left: 230, top: 70, opacity: interpolate(f, [slotLive - 4, slotLive + 8], [0, 1], clamp) }}>
           <Sequence from={slotLive} layout="none">
             <ProductClip
-              shot={assets.capture.shots["live"]}
+              shot={liveShot}
               width={1460}
               height={821}
-              startSec={assets.capture.shots["live"]?.source === "live" ? 1.0 : 5.0}
+              startSec={liveShot?.source === "live" ? 1.6 : 5.0}
               cam={[{ at: 0, x: 0.66, y: 0.42, z: 1.25 }, { at: Math.max(16, tReceipt - slotLive + 6), x: 0.67, y: 0.37, z: 1.8, ease: "inOut" }, { at: Math.max(40, tChain - slotLive + 6), x: 0.66, y: 0.38, z: 2.15, ease: "inOut" }]}
               label="awning.sh/live"
             />

@@ -57,7 +57,8 @@ export const directoryResults = {
   duration: 5,
   settle: 1600,
   cursor: [[0, 1226, 452], [2.0, 700, 760, "inOut"]],
-  scroll: [[0, 0], [0.6, 0], [3.6, { sel: ".dir-card", align: "center", offset: 60 }, "glide"]],
+  // down until the first shop's card sits whole under the search box
+  scroll: [[0, 0], [0.6, 0], [3.6, { sel: ".dir-card", align: "bottom", offset: 50 }, "glide"]],
   stills: [{ at: 4.8, name: "directory-results" }],
 };
 
@@ -81,6 +82,26 @@ export const live = {
   actions: [{ at: 1.0, sale: true }],
   scroll: [[0, 0], [9, 0]],
   stills: [{ at: 8.8, name: "live-feed" }],
+};
+
+/** awning.sh/live as it is right now, always from the live site: every real opening and sale with
+ *  its transaction on BaseScan (the page prints its lines as it loads). */
+export const liveReal = {
+  id: "live-real",
+  where: "live",
+  path: "/live",
+  startFrozen: true,
+  duration: 6,
+  points: (page) =>
+    page.evaluate(() => {
+      const a = document.querySelector(".lv-tx a");
+      if (!a) return { tx: { x: 990, y: 336 } };
+      const r = a.getBoundingClientRect();
+      return { tx: { x: Math.round(r.left + r.width * 0.45), y: Math.round(r.top + r.height * 0.6) } };
+    }),
+  cursor: [[0, 1520, 840], [2.4, 1520, 840], [3.8, "tx", "out"], [6, "tx"]],
+  scroll: [[0, 0], [6, 0]],
+  stills: [{ at: 5.8, name: "live-real" }],
 };
 
 /** A live storefront from the hero to the "Buy with your AI agent" slip. The cursor picks the
@@ -119,4 +140,4 @@ export const draft = {
   stills: [{ at: 0.5, name: "draft-top" }],
 };
 
-export const SHOTS = [landingHero, forAgents, directory, directoryResults, live, storefront, draft];
+export const SHOTS = [landingHero, forAgents, directory, directoryResults, live, liveReal, storefront, draft];

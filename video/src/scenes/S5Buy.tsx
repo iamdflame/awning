@@ -5,7 +5,7 @@ import { C, EASE } from "../brand/tokens";
 import { ProductClip } from "../components/ProductClip";
 import { PromptBubble, RecordingBeat, beatIsReal, beatOf, frameOfSource } from "../components/Recording";
 import { Stamp } from "../components/Kinetic";
-import { TwoAgents } from "../components/TerminalFrame";
+import { TwoChats } from "../components/AgentFrames";
 import { BUSINESS } from "../story";
 import { Ground, Sfx, Voice, wordsOf, type SceneProps } from "./common";
 import { saleFacts } from "./facts";
@@ -15,17 +15,17 @@ const FW = 1180;
 const FH = Math.round((FW * 9) / 16);
 
 /**
- * vo-05 "Now a different agent goes shopping for a coffee tasting in Accra. It finds Ridge Roast on
- * its own. Five dollars in USDC, one approval, paid straight to the owner's wallet. Ridge Roast's
- * first customer was an AI."
- * A different agent: Claude Code in a terminal (P3, P4, the 5.00 approval), against the browser
- * agent that opened the shop; the sale prints as a receipt with the real wallet and transaction;
- * then awning.sh/live, where the SOLD line has printed.
+ * vo-05 "Now, in a fresh chat, an agent goes shopping for a coffee tasting in Accra. It finds Ridge
+ * Roast on its own. Five dollars in USDC, one approval, paid straight to the owner's wallet. Ridge
+ * Roast's first customer was an AI."
+ * A second Claude conversation that knows nothing about the shop (P3, P4, the 5.00 approval),
+ * against the owner's chat that opened it; the sale prints as a receipt with the real wallet and
+ * transaction; then awning.sh/live, where the SOLD line has printed.
  */
 export const S5Buy: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const f = useCurrentFrame();
   const w = wordsOf(take, timing);
-  const tDifferent = w("different");
+  const tFresh = w("fresh");
   const tFive = w("Five");
   const tApproval = w("approval,");
   const tPaid = w("paid");
@@ -61,9 +61,9 @@ export const S5Buy: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <Sfx src={assets.sfx.print} at={tOwners} volume={0.26} />
       <Sfx src={assets.sfx.pop} at={tWallet + 8} volume={0.32} />
 
-      {/* a different agent: the browser one opened the shop, the terminal one buys */}
+      {/* the owner's chat opened it; a fresh chat, which knows nothing about it, finds it and buys */}
       <div style={{ position: "absolute", left: 70, top: 34, opacity: 1 - frameOut }}>
-        <TwoAgents p={interpolate(f, [tDifferent - 8, tDifferent + 6], [0, 1], { ...clamp, easing: EASE.out })} />
+        <TwoChats p={interpolate(f, [tFresh - 8, tFresh + 6], [0, 1], { ...clamp, easing: EASE.out })} />
       </div>
 
       <div style={{ position: "absolute", left: 70, top: 108, transform: `translateX(${frameOut * -1400}px)` }}>
@@ -113,7 +113,7 @@ export const S5Buy: React.FC<SceneProps> = ({ timing, take, assets }) => {
             width={800}
             size={28}
             rotate={-1.2}
-            head={[BUSINESS.name.toUpperCase(), sale.mock ? "LOCAL MOCK" : "SOLD"]}
+            head={[BUSINESS.name.toUpperCase(), sale.mock ? "BUYER TAKE PENDING" : "SOLD"]}
             lines={[
               { l: BUSINESS.tasting.title, r: `1 × ${sale.amount}`, at: tPaid },
               { l: "paid by", r: "an AI agent", at: tStraight, tone: "agent" },

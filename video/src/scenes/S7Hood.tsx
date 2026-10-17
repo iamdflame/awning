@@ -156,7 +156,7 @@ export const S7Hood: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <AbsoluteFill style={{ opacity: 1 - ph2, transform: `translateY(${ph2 * -30}px)` }}>
         <Card x={60} y={300} w={290} h={220} at={tUnder}>
           <Title>Your agent</Title>
-          <Sub>Claude, in a browser or a terminal, with PayBox</Sub>
+          <Sub>Claude, with PayBox connected</Sub>
         </Card>
         {/* PayBox */}
         <div style={{ position: "absolute", left: 470, top: 150, width: 700, height: 580, borderRadius: 34, background: "rgba(0,59,35,.65)", boxShadow: "inset 0 0 0 2px rgba(247,246,237,.1)", opacity: interpolate(f, [tUnder + 2, tUnder + 12], [0, 1], clamp) }}>
@@ -236,7 +236,7 @@ export const S7Hood: React.FC<SceneProps> = ({ timing, take, assets }) => {
           <>
             <Card x={80} y={170} w={520} h={260} at={tSales - 8} dark>
               <Title size={52} color={C.c50}>A buyer's agent</Title>
-              <Sub color="rgba(205,243,219,.8)">Claude Code, paying with PayBox</Sub>
+              <Sub color="rgba(205,243,219,.8)">a fresh chat, paying with PayBox</Sub>
             </Card>
             <Card x={1300} y={170} w={540} h={260} at={tSales - 4} glow={interpolate(f, [tOwners + 20, tOwners + 30], [0, 1], clamp)}>
               <Title size={52}>The owner's wallet</Title>

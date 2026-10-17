@@ -4,6 +4,9 @@
 import { staticFile } from "remotion";
 import { getAudioDurationInSeconds } from "@remotion/media-utils";
 import vo from "./vo.json";
+import edlJson from "../edl.json";
+
+const edl = edlJson as unknown as Record<"owner" | "buyer" | "owner2", { file: string }>;
 import { approxWords, type Take, type Word } from "./timeline";
 
 export const VO_IDS = vo.lines.map((l) => l.id);
@@ -129,15 +132,24 @@ export async function resolveAssets(): Promise<Assets> {
   for (const id of SFX_IDS) sfx[id] = await pick(`audio/sfx/${id}.wav`, `audio/sfx/${id}.mp3`);
   return {
     capture,
+    // edl.json names each founder recording (owner1.mp4, buyer.mp4, owner-2.mp4); the film plays the
+    // edit-friendly copy from scripts/prep-rec.mjs when it exists (same times, a keyframe every second)
     rec: {
-      owner: await pick("rec/owner.mp4", "rec/owner.mov", "rec/owner.mkv"),
-      buyer: await pick("rec/buyer.mp4", "rec/buyer.mov", "rec/buyer.mkv"),
-      owner2: await pick("rec/owner-2.mp4", "rec/owner-2.mov", "rec/owner-2.mkv"),
+      owner: await pickRec(edl.owner.file),
+      buyer: await pickRec(edl.buyer.file),
+      owner2: await pickRec(edl.owner2.file),
     },
     stock,
     music: await resolveMusic(),
     sfx,
   };
+}
+
+async function pickRec(file: string): Promise<string | null> {
+  if (!(await exists(file))) return null;
+  const name = file.split("/").pop()!.replace(/.[a-z0-9]+$/i, "");
+  const prepared = `rec/prepared/${name}.mp4`;
+  return (await exists(prepared)) ? prepared : file;
 }
 
 /** The founder's track (audio/music.mp3) wins over the licensed stock track; the normalised copy

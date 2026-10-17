@@ -8,7 +8,6 @@ import { ProductClip } from "../components/ProductClip";
 import { TypeOn } from "../components/Kinetic";
 import { BUSINESS, PROMPTS } from "../story";
 import { Ground, Sfx, Voice, wordsOf, type SceneProps } from "./common";
-import { saleFacts } from "./facts";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -47,7 +46,6 @@ export const S1Open: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const frameX = (1920 - frameW) / 2;
   const frameY = interpolate(up, [0, 1], [236, 70]);
   const shot = assets.capture.shots["storefront"];
-  const sale = saleFacts(assets);
 
   return (
     <Ground>
@@ -87,7 +85,7 @@ export const S1Open: React.FC<SceneProps> = ({ timing, take, assets }) => {
           <div style={{ fontFamily: FONT.text, fontWeight: 600, fontSize: 30, letterSpacing: "0.02em", color: "rgba(250,202,75,.72)", marginBottom: 34, opacity: interpolate(f, [typeStart - 8, typeStart], [0, 1], clamp) }}>
             You, to your agent
           </div>
-          <div style={{ fontFamily: FONT.display, fontWeight: 700, fontStretch: "112%", fontSize: 66, lineHeight: 1.2, letterSpacing: "-0.015em", color: C.sun, textShadow: "0 2px 0 rgba(140,95,10,.55)", textWrap: "pretty", minHeight: 66 * 1.2 * 3 }}>
+          <div style={{ fontFamily: FONT.display, fontWeight: 700, fontStretch: "112%", fontSize: 56, lineHeight: 1.2, letterSpacing: "-0.015em", color: C.sun, textShadow: "0 2px 0 rgba(140,95,10,.55)", textWrap: "pretty", minHeight: 56 * 1.2 * 5 }}>
             <TypeOn at={typeStart} text={text} cps={cps} caretColor={C.sun} />
           </div>
         </div>
@@ -117,7 +115,7 @@ export const S1Open: React.FC<SceneProps> = ({ timing, take, assets }) => {
               { l: "paid by", r: "an AI agent", at: tOther, tone: "agent" },
               { l: "to", r: "the owner's wallet", at: tAgents },
             ]}
-            total={{ amount: `+${BUSINESS.tasting.priceUsdc}`, label: <>USDC FROM AN AGENT<br />{sale.mock ? "LOCAL MOCK DATA" : "STRAIGHT TO THE OWNER"}</>, at: tBuy }}
+            total={{ amount: `+${BUSINESS.tasting.priceUsdc}`, label: <>USDC FROM AN AGENT<br />STRAIGHT TO THE OWNER</>, at: tBuy }}
           />
         </div>
       ) : null}

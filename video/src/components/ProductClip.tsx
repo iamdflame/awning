@@ -23,7 +23,8 @@ export const ProductClip: React.FC<{
   style?: React.CSSProperties;
   label?: string;
   holdAt?: number; // freeze on this source second (e.g. before the page starts to scroll)
-}> = ({ shot, width, height, startSec = 0, cam, url, overlay, frame = true, urlHighlight, style, label, holdAt }) => {
+  dark?: boolean; // a dark window, to sit next to the founder's dark-mode recording
+}> = ({ shot, width, height, startSec = 0, cam, url, overlay, frame = true, urlHighlight, style, label, holdAt, dark }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const c = camAt(cam, f);
@@ -52,7 +53,7 @@ export const ProductClip: React.FC<{
       </div>
     );
   return (
-    <BrowserFrame width={width} height={height} url={url ?? shot?.displayUrl ?? "awning.sh"} tag={tag} style={style} urlHighlight={urlHighlight}>
+    <BrowserFrame width={width} height={height} url={url ?? shot?.displayUrl ?? "awning.sh"} tag={tag} style={style} urlHighlight={urlHighlight} dark={dark}>
       {inner}
     </BrowserFrame>
   );

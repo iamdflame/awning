@@ -4,7 +4,7 @@ import { Receipt, Ticket } from "./brand/Paper";
 import { C, EASE } from "./brand/tokens";
 import { Captions } from "./components/Captions";
 import { Stamp } from "./components/Kinetic";
-import { TwoAgents } from "./components/TerminalFrame";
+import { TwoChats } from "./components/AgentFrames";
 import { ProductClip } from "./components/ProductClip";
 import { RecordingBeat } from "./components/Recording";
 import { CAPTION_SUBS, resolveAssets, resolveTakes } from "./data";
@@ -32,7 +32,7 @@ const C3Buy: React.FC<SceneProps> = ({ timing, assets }) => {
   const out = interpolate(f, [a - 4, a + 12], [0, 1], { ...clamp, easing: EASE.inOut });
   const liveIn = interpolate(f, [b, b + 14], [0, 1], { ...clamp, easing: EASE.out });
   const caps: Caption[] = [
-    { from: 4, to: a - 2, text: "A different agent.", words: [] },
+    { from: 4, to: a - 2, text: "A fresh chat finds it on its own.", words: [] },
     { from: a, to: b - 2, text: `${sale.amount} USDC, straight to the owner.`, words: [] },
     { from: b, to: n - 4, text: "Its first customer was an AI agent.", words: [] },
   ].map((c) => ({ ...c, words: c.text.split(" ").map((w) => ({ w, from: c.from, to: c.to })) }));
@@ -43,7 +43,7 @@ const C3Buy: React.FC<SceneProps> = ({ timing, assets }) => {
       <Sfx src={assets.sfx.print} at={a + 14} volume={0.26} />
       <Sfx src={assets.sfx.pop} at={a + 26} volume={0.3} />
       <div style={{ position: "absolute", left: 70, top: 34, opacity: 1 - out }}>
-        <TwoAgents p={interpolate(f, [2, 14], [0, 1], { ...clamp, easing: EASE.out })} />
+        <TwoChats p={interpolate(f, [2, 14], [0, 1], { ...clamp, easing: EASE.out })} />
       </div>
       <div style={{ position: "absolute", left: 70, top: 108, transform: `translateX(${out * -1400}px)` }}>
         <RecordingBeat who="buyer" beat="p4-buy" file={assets.rec.buyer} width={FW} height={FH} slot={a} chime={assets.sfx.chime} />
@@ -64,7 +64,7 @@ const C3Buy: React.FC<SceneProps> = ({ timing, assets }) => {
             width={640}
             size={23}
             rotate={-1.2}
-            head={[BUSINESS.name.toUpperCase(), sale.mock ? "LOCAL MOCK" : "SOLD"]}
+            head={[BUSINESS.name.toUpperCase(), sale.mock ? "BUYER TAKE PENDING" : "SOLD"]}
             lines={[
               { l: BUSINESS.tasting.title, r: `1 × ${sale.amount}`, at: a + 6 },
               { l: "paid by", r: "an AI agent", at: a + 12, tone: "agent" },
