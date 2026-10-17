@@ -135,8 +135,8 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
         </div>
       ) : null}
       {f >= tReal - 2 ? (
-        <div style={{ position: "absolute", left: real ? 1180 : 1250, top: real ? 630 : 420, whiteSpace: "nowrap" }}>
-          <Stamp at={tReal} size={real ? 38 : 46} rotate={-7}>
+        <div style={{ position: "absolute", left: real ? 1296 : 1250, top: real ? 640 : 420, whiteSpace: "nowrap" }}>
+          <Stamp at={tReal} size={real ? 32 : 46} rotate={-7}>
             Registered, paid, live
           </Stamp>
         </div>
