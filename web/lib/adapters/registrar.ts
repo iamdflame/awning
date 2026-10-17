@@ -88,7 +88,11 @@ export class PorkbunRegistrar implements Registrar {
     const method = await this.methodFor(cents, signal);
     const body: Record<string, unknown> = { cost: cents, agreeToTerms: "yes" };
     if (method === "usdc") body.payWith = "usdc";
-    let res = await this.post(`/domain/create/${domain}`, body, { idem: idempotencyKey, signal, timeoutMs: 15000 });
+    // Porkbun binds an Idempotency-Key to one request body, so the key names the payment method.
+    // In USDC mode the unpaid request only fetches the 402 terms: it carries no key, so the paid
+    // request (the one that registers) is the only call bound to it, and a retry replays that.
+    const idem = `${idempotencyKey}-${method}`;
+    let res = await this.post(`/domain/create/${domain}`, body, { idem: method === "usdc" ? undefined : idem, signal, timeoutMs: 15000 });
 
     if (res.status === 402 && method === "usdc") {
       const header = res.headers.get("payment-required");
@@ -96,7 +100,7 @@ export class PorkbunRegistrar implements Registrar {
       const { payX402Challenge } = await import("../x402/buyer");
       const signature = await payX402Challenge(header, BigInt(cents) * 10_000n);
       res = await this.post(`/domain/create/${domain}`, body, {
-        idem: idempotencyKey,
+        idem,
         signal,
         timeoutMs: 20000,
         headers: { "PAYMENT-SIGNATURE": signature },
