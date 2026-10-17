@@ -121,4 +121,4 @@ We may change these terms. We will update the date at the top and, for material 
 
 ## 17. Contact
 
-Questions, reports about a business, and requests: open an issue at [github.com/iamdflame/awning](https://github.com/iamdflame/awning/issues). For anything private, including security issues, use the repository's [private reporting](https://github.com/iamdflame/awning/security/advisories/new).
+Questions and requests: email abuse@awning.sh. To report a business, use [awning.sh/report](https://awning.sh/report). Security issues: follow our [security policy](../../SECURITY.md).

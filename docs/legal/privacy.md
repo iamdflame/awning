@@ -114,7 +114,7 @@ Awning is not for people under 18. We do not knowingly collect data from childre
 
 ## 10. Contact
 
-Privacy questions and requests: open an issue at [github.com/iamdflame/awning](https://github.com/iamdflame/awning/issues) without personal details, and we will arrange a private channel; or use the repository's [private reporting](https://github.com/iamdflame/awning/security/advisories/new).
+Privacy questions and requests: email abuse@awning.sh with "Privacy" in the subject.
 
 ## 11. Changes
 

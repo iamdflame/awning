@@ -2,11 +2,9 @@
 
 ## Reporting a vulnerability
 
-Report vulnerabilities privately through GitHub's private vulnerability reporting:
+Report vulnerabilities privately by email to **abuse@awning.sh**, with "Security" in the subject.
 
-**https://github.com/iamdflame/awning/security/advisories/new**
-
-Do not open a public issue, pull request or discussion for a security problem.
+Do not disclose a security problem publicly before we have fixed it.
 
 Please include:
 
@@ -17,7 +15,7 @@ Please include:
 
 Do not include anyone else's personal data, owner tokens or private keys in the report. If you obtained a secret by accident, tell us so we can rotate it, and do not use it.
 
-We will acknowledge the report in the advisory, keep you updated while we fix it, and credit you in the advisory if you want.
+We will acknowledge the report, keep you updated while we fix it, and credit you if you want.
 
 ## PayBox platform issues
 
