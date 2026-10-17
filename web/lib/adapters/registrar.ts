@@ -117,7 +117,13 @@ export class PorkbunRegistrar implements Registrar {
     const res = await this.post(`/domain/create/${domain}`, body, { signal, timeoutMs: 6000 });
     const r = obj(res.json);
     // With payWith usdc a passing rehearsal may also answer 402 (terms only, nothing charged).
-    if (res.status === 402 || (res.ok && r.status === "SUCCESS")) return;
+    if (res.status === 402) return;
+    // A dry run answers SUCCESS even when the real call would fail: wouldSucceed carries the verdict.
+    if (res.ok && r.status === "SUCCESS" && r.wouldSucceed !== false) return;
+    if (res.ok && r.status === "SUCCESS") {
+      const why = r.sufficientFunds === false ? `insufficient credit (cost ${String(r.cost)}, balance ${String(r.balance)})` : excerpt(String(r.message ?? r.reason ?? "dry run says it would fail"));
+      throw new ProviderError("porkbun", `registration would fail: ${why}`, res.status, "WOULD_NOT_SUCCEED");
+    }
     throw new ProviderError("porkbun", `registration would fail (${String(r.code ?? res.status)}): ${excerpt(String(r.message ?? res.text))}`, res.status, String(r.code ?? ""));
   }
 
