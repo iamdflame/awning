@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 const [url, out, w, h, waitMs = '1500', scale = '1'] = process.argv.slice(2);
 const browser = await chromium.launch({ executablePath: 'C:/Users/Dflame/AppData/Local/ms-playwright/chromium-1243/chrome-win64/chrome.exe' });
-const page = await browser.newPage({ viewport: { width: Number(w), height: Number(h) }, deviceScaleFactor: Number(scale) });
+const page = await browser.newPage({ viewport: { width: Number(w), height: Number(h) }, deviceScaleFactor: Number(scale), reducedMotion: process.env.REDUCED ? 'reduce' : 'no-preference' });
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts && document.fonts.ready);
 await page.waitForTimeout(Number(waitMs));

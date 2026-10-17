@@ -31,34 +31,42 @@
 <main id="main">
 <!-- ============ HERO: the product working ============ -->
 <section class="hero" aria-labelledby="h1">
-  <h1 id="h1" class="display">Open for business in one sentence.</h1>
-  <div class="stage" role="img" aria-label="A sentence to an AI agent becomes a live coffee shop website with its own domain, a phone line that rings, and a first order paid by another AI agent.">
-    <div class="sign" id="sign" aria-hidden="true">
-      <svg class="chain" viewBox="0 0 62 60"><path d="M8 60 31 4l23 56" fill="none" stroke="var(--g-900)" stroke-width="2"/><circle cx="31" cy="4" r="3.5" fill="var(--g-900)"/></svg>
-      <div class="board"><div class="face closed">CLOSED</div><div class="face open">OPEN</div></div>
-    </div>
-    <div class="window" aria-hidden="true">
-      <div class="glass" id="glass">
-        <div class="mini" id="mini"></div>
-        <div class="lettering" id="lettering"><p><span class="who">You, to your agent</span><span id="typed"></span><span class="caret"></span></p></div>
+  <div class="hero-top">
+    <h1 id="h1" class="display"><span>Open for business</span> <span>in one sentence.</span></h1>
+    <div class="hero-copy">
+      <p class="lede">Tell your AI agent what you sell. Awning opens it for real: a domain, a storefront, a phone that answers and a checkout that pays your wallet. Other agents can shop there too.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#open">Open yours</a>
+        <a class="btn btn-ghost" href="#live">See what opened today</a>
       </div>
-      <div class="sill"></div>
-    </div>
-    <div class="ring" id="ring" aria-hidden="true"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span><span><small id="ringLabel">Phone line</small><strong id="ringNum">&nbsp;</strong></span></div>
-    <div class="receipt" id="receipt" aria-hidden="true">
-      <h4><span id="rcName">OPENING</span><span id="rcTime">10:02</span></h4>
-      <ul id="rcLines"></ul>
-      <div class="total" id="rcTotal"><small id="rcAgent">PAID BY AN AGENT<br>TO YOUR WALLET</small><b id="rcAmt">+5.00</b></div>
     </div>
   </div>
-  <div class="hero-copy">
-    <p class="lede">Tell your AI agent what you sell. Awning gives it a real domain, a storefront, a phone that answers and a checkout that pays your own wallet. Then other agents can buy from it too.</p>
-    <div class="ctas">
-      <a class="btn btn-primary" href="#open">Open yours<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18M5 9l1.5-5h11L19 9M5 9v11h14V9M10 20v-6h4v6"/></svg></a>
-      <a class="btn btn-ghost" href="#live">See what opened today</a>
+  <div class="hstreet" role="img" aria-label="A street of small shops. In the gap, a sentence typed to an AI agent becomes a new shop: Ridge Roast, with its own domain, website, phone line and a first order paid by another AI agent.">
+    <div class="hstage">
+      <div class="hrow hrow-l" id="rowL" aria-hidden="true"></div>
+      <div class="lot" id="lot" aria-hidden="true">
+        <div class="facade" id="facade">
+          <span class="cornice"></span>
+          <div class="signboard"><span id="fName">Ridge Roast</span></div>
+          <div class="f-awning"></div>
+          <div class="f-front">
+            <div class="f-win"><div class="f-glass" id="glass"><div class="mini" id="mini"></div></div></div>
+            <div class="f-door"><div class="sign" id="sign"><svg class="chain" viewBox="0 0 62 40"><path d="M10 40 31 4l21 36" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="31" cy="4" r="3.5" fill="currentColor"/></svg><div class="board"><div class="face closed">CLOSED</div><div class="face open">OPEN</div></div></div></div>
+          </div>
+        </div>
+        <div class="hoarding" id="hoarding"><p><span class="who">You, to your agent</span><span id="typed"></span><span class="caret"></span></p></div>
+      </div>
+      <div class="hrow hrow-r" id="rowR" aria-hidden="true"></div>
+      <div class="ring" id="ring" aria-hidden="true"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span><span><small id="ringLabel">Phone line</small><strong id="ringNum">&nbsp;</strong></span></div>
+      <div class="receipt" id="receipt" aria-hidden="true">
+        <h4><span id="rcName">OPENING</span><span id="rcTime">10:02</span></h4>
+        <ul id="rcLines"></ul>
+        <div class="total" id="rcTotal"><small id="rcAgent">PAID BY AN AGENT<br>TO YOUR WALLET</small><b id="rcAmt">+5.00</b></div>
+      </div>
     </div>
-    <p class="works">A PayBox plugin. Works in <b>Claude</b>, <b>ChatGPT</b> and any agent with PayBox.</p>
+    <div class="curb"></div>
   </div>
+  <p class="works wrap">A PayBox plugin. Works in <b>Claude</b>, <b>ChatGPT</b> and any agent with PayBox.</p>
 </section>
 
 <!-- ============ HOW IT WORKS: three beats ============ -->

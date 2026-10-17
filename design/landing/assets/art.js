@@ -25,7 +25,7 @@
   <path id="arcTop" d="M 222 330 A 78 78 0 0 1 378 330" fill="none"/>
   <text font-family="${p.displayFont}" font-size="25" fill="${p.ink}" letter-spacing="2"><textPath href="#arcTop" startOffset="50%" text-anchor="middle">${name.toUpperCase()}</textPath></text>
   <text x="300" y="352" text-anchor="middle" font-family="${p.displayFont}" font-size="58" fill="${p.accent}">250g</text>
-  <text x="300" y="392" text-anchor="middle" font-family="${p.textFont}" font-weight="600" font-size="15" letter-spacing="3" fill="${p.ink}">VOLTA · WASHED</text>
+  <text x="300" y="392" text-anchor="middle" font-family="${p.textFont}" font-weight="600" font-size="13" letter-spacing="2.5" fill="${p.ink}">VOLTA WASHED</text>
 </g>
 ${beans}
 </svg>`;
