@@ -9,7 +9,7 @@ import { newId, shortCode } from "../ids";
 import { errorMessage, log } from "../log";
 import { atomicToUsd, atomicToUsdString, MAX_QTY, orderTotalAtomic } from "../money";
 import { BASE_NETWORK } from "../x402/constants";
-import { handlePaidRequest, type WorkResult } from "../x402/flow";
+import { handlePaidRequest, replayIfSeen, type WorkResult } from "../x402/flow";
 import type { Charge } from "../x402/seller";
 import { getBusinessBySlug, getOffer } from "./businesses";
 import { emitEvent } from "./events";
@@ -77,6 +77,8 @@ export async function quoteBuy(slug: string, sku: string, body: z.infer<typeof b
 
 /** POST /x402/b/:slug/:sku — buy from a business; payTo is the owner's own wallet. */
 export async function buy(req: Request, slug: string, sku: string, body: z.infer<typeof buyBodySchema>): Promise<Response> {
+  const replay = await replayIfSeen(req);
+  if (replay) return replay;
   const q = await quoteBuy(slug, sku, body, new URL(req.url));
   if (q instanceof Response) return q;
   const { business, offer, qty, charge, quote } = q;

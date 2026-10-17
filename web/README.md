@@ -60,6 +60,12 @@ Full list with comments: [`../.env.example`](../.env.example). Every provider is
 
 Responses that used mocks say so: a Pro open lists `simulated: [...]`.
 
+**Real money never buys simulated provisioning.** With a real facilitator, Pro is offered only when the registrar,
+hosting, telephony and receptionist adapters are all real; otherwise the plan's `packages[pro]` says
+`available: false` with the reason, and `/x402/open` answers `503 pro_unavailable {missing}` without a challenge. The free
+path and sales (paid to the owner) work in every configuration. For fully mocked local runs, use the local facilitator
+(`AWNING_FACILITATOR_URL=mock`), under which no money moves.
+
 ## Endpoints
 
 Auth: plugin endpoints need `x-awning-plugin-key` (PayBox injects it as a brokered header). Owner endpoints also need

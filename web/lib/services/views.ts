@@ -2,6 +2,7 @@ import type { BusinessRow, EventRow, OfferRow, OrderRow, PlanRow } from "../db/s
 import { businessUrl, env, subdomainUrl } from "../env";
 import { atomicToUsd, atomicToUsdString, PRO_FEE_ATOMIC } from "../money";
 import { apiUrl } from "../api";
+import { proReadiness } from "./readiness";
 
 export function offerView(o: OfferRow) {
   return { sku: o.sku, title: o.title, description: o.description, priceUsd: atomicToUsd(o.priceAtomic), kind: o.kind };
@@ -66,12 +67,15 @@ export function directoryEntryView(b: BusinessRow, offers: OfferRow[]) {
 export function packagesView(plan: PlanRow, business: BusinessRow) {
   const recommended = plan.domains.find((d) => d.domain === plan.recommendedDomain && d.available);
   const root = env.rootDomain();
+  const ready = proReadiness();
+  const proAvailable = ready.available && !!recommended;
   return [
     {
       id: "free" as const,
       label: "Free",
       includes: [`Storefront at ${business.slug}.${root}`, "Listed in the Awning directory", "x402 checkout paid straight to your wallet"],
       priceUsd: 0,
+      available: true,
     },
     {
       id: "pro" as const,
@@ -84,6 +88,11 @@ export function packagesView(plan: PlanRow, business: BusinessRow) {
       ],
       priceUsd: recommended ? atomicToUsd(BigInt(recommended.totalAtomic)) : null,
       ...(recommended ? { domain: recommended.domain } : {}),
+      available: proAvailable,
+      ...(!proAvailable
+        ? { unavailableReason: !recommended ? "No domain from this plan is available." : `Not configured on this server: ${ready.missing.join(", ")}. Open for free instead.` }
+        : {}),
+      ...(ready.simulated ? { simulated: true } : {}),
     },
   ];
 }

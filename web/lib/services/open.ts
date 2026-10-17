@@ -10,11 +10,12 @@ import { errorMessage, log } from "../log";
 import { atomicToUsd, PRO_FEE_ATOMIC } from "../money";
 import { runSaga, type Step } from "../orchestrator/machine";
 import { MAX_TIMEOUT_SECONDS } from "../x402/constants";
-import { handlePaidRequest, type SettleInfo, type WorkResult } from "../x402/flow";
+import { handlePaidRequest, replayIfSeen, type SettleInfo, type WorkResult } from "../x402/flow";
 import type { Charge } from "../x402/seller";
 import { getBusinessById } from "./businesses";
 import { emitEvent } from "./events";
 import { getPlan } from "./plans";
+import { proReadiness } from "./readiness";
 
 export const openBodySchema = z.object({
   domain: z.string().trim().toLowerCase().max(253).optional(),
@@ -40,8 +41,14 @@ export async function quoteOpen(planId: string, body: z.infer<typeof openBodySch
   if (!business) return apiError(404, "plan_not_found", `Plan ${planId} has no business`);
   const payTo = treasury();
   if (!payTo) return apiError(503, "misconfigured", "AWNING_TREASURY_ADDRESS is not configured");
-
   const alreadyPro = plan.status === "opened" && plan.openPackage === "pro";
+  if (!alreadyPro) {
+    const ready = proReadiness();
+    if (!ready.available) {
+      // No challenge is issued: real money must never buy simulated provisioning.
+      return apiError(503, "pro_unavailable", `Pro opening is not available on this server (not configured: ${ready.missing.join(", ")}). Open for free instead.`, { missing: ready.missing });
+    }
+  }
   const wanted = (alreadyPro ? plan.openDomain : null) ?? body.domain ?? url.searchParams.get("domain")?.toLowerCase() ?? plan.recommendedDomain;
   if (!wanted) return apiError(409, "no_domain_available", "None of this plan's domains is available. Create a new plan or open for free.");
   const domain = plan.domains.find((d) => d.domain === wanted);
@@ -186,6 +193,8 @@ function mocksInUse(): string[] {
 
 /** POST /x402/open/:planId — x402-paid Pro open, idempotent by plan. */
 export async function openPro(req: Request, planId: string, body: z.infer<typeof openBodySchema>): Promise<Response> {
+  const replay = await replayIfSeen(req);
+  if (replay) return replay;
   const paid = !!(req.headers.get("payment-signature") || req.headers.get("x-payment"));
   const q = await quoteOpen(planId, body, new URL(req.url), paid);
   if (q instanceof Response) return q;

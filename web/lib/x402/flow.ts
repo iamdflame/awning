@@ -79,6 +79,21 @@ async function finish(key: string, status: PaymentStatus, response: StoredRespon
   return respond(response);
 }
 
+/**
+ * A payment we have already answered gets the same answer again — before any
+ * quote is recomputed, so a later change (offer removed, plan expired, config
+ * changed) can never turn a completed purchase into an error or a new charge.
+ */
+export async function replayIfSeen(req: Request): Promise<Response | null> {
+  const extracted = extractPayment(req);
+  if (extracted.kind !== "payment") return null;
+  const d = await db();
+  const [seen] = await d.select().from(schema.payments).where(eq(schema.payments.key, paymentKey(extracted.payment.authorization))).limit(1);
+  if (seen?.response) return respond(seen.response);
+  if (seen) return respondInProgress();
+  return null;
+}
+
 export async function handlePaidRequest(o: PaidFlowOptions): Promise<Response> {
   const extracted = extractPayment(o.req);
   if (extracted.kind === "none") return paymentRequiredResponse(o.charge, { extra: o.quote });
