@@ -14,7 +14,7 @@ window.AWNING_BUSINESSES = [
     domain: 'ridgeroast.co',
     phone: '+1 (512) 555-0143',
     receptionist: 'Ama',
-    hours: [['Mon–Fri', '7:00–17:00'], ['Sat', '8:00–14:00 · tastings at 10'], ['Sun', 'Closed']],
+    hours: [['Mon–Fri', '7:00–17:00'], ['Sat', '8:00–14:00, tastings at 10'], ['Sun', 'Closed']],
     offers: [
       { id: 'tasting', title: 'Saturday tasting', desc: 'Three roasts, one hour, with the roaster. Sit at the bar on the hill.', price: '5.00', unit: 'per seat', featured: true },
       { id: 'bag-250', title: 'Volta Highlands, 250 g', desc: 'Washed. Stone fruit, cocoa nib, a clean finish. Roasted Tuesday.', price: '14.00', unit: 'per bag' },
@@ -40,7 +40,7 @@ window.AWNING_BUSINESSES = [
     domain: 'spokeandchain.bike',
     phone: '+1 (737) 555-0119',
     receptionist: 'Rosa',
-    hours: [['Tue–Fri', '8:00–19:00'], ['Sat', '9:00–17:00'], ['Sun', 'Mobile repair · by booking'], ['Mon', 'Closed']],
+    hours: [['Tue–Fri', '8:00–19:00'], ['Sat', '9:00–17:00'], ['Sun', 'Mobile repair by booking'], ['Mon', 'Closed']],
     offers: [
       { id: 'tuneup', title: 'Full tune-up', desc: 'Gears, brakes, wheels trued, chain cleaned. Same day if you’re in by ten.', price: '45.00', unit: 'per bike', featured: true },
       { id: 'flat', title: 'Flat fixed while you wait', desc: 'Tube, labor and a tire check. Fifteen minutes, coffee on us.', price: '12.00', unit: 'per wheel' },
@@ -66,7 +66,7 @@ window.AWNING_BUSINESSES = [
     domain: 'barro.studio',
     phone: '+351 21 555 0172',
     receptionist: 'Inês',
-    hours: [['Wed–Fri', '11:00–19:00'], ['Sat', '10:00–13:00 · wheel class'], ['Sun–Tue', 'By appointment']],
+    hours: [['Wed–Fri', '11:00–19:00'], ['Sat', '10:00–13:00, wheel class'], ['Sun–Tue', 'By appointment']],
     offers: [
       { id: 'class', title: 'Saturday wheel class', desc: 'Three hours on the wheel. Clay, glaze and firing included; collect in two weeks.', price: '65.00', unit: 'per person', featured: true },
       { id: 'bowl', title: 'Tejo bowl', desc: 'Stoneware, 14 cm, river-blue glaze. From a batch of twelve.', price: '38.00', unit: 'each' },
