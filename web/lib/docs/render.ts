@@ -216,7 +216,7 @@ function transform(nodes: ElementContent[], ctx: Ctx): ElementContent[] {
         out.push(
           el("figure", { className: ["md-diagram", "has-svg"] }, [
             caption,
-            el("div", { className: ["md-svg"], style: `--w:${Math.round(svg.width)}px`, role: "img", tabIndex: 0, ariaLabel: `${kind} diagram. Its Mermaid source follows.` }, [
+            el("div", { className: svg.width > 1200 ? ["md-svg", "is-wide"] : ["md-svg"], style: `--w:${Math.round(svg.width)}px`, role: "img", tabIndex: 0, ariaLabel: `${kind} diagram. Its Mermaid source follows.` }, [
               { type: "raw", value: svg.markup } as unknown as ElementContent,
             ]),
             el("div", { className: ["md-diagram-foot"] }, [

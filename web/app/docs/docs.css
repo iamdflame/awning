@@ -6,7 +6,7 @@
 .dc-hero{padding:clamp(28px,4.5vw,72px) 0 clamp(36px,5vw,72px)}
 .dc-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:clamp(32px,6vw,112px);align-items:start}
 .dc-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 22px;font-weight:600;font-size:15px;color:var(--g-600)}
-.dc-crumbs a{text-decoration:none}
+.dc-crumbs a{display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;text-decoration:none}
 .dc-crumbs a:hover{text-decoration:underline;text-underline-offset:4px}
 .dc-crumbs i{width:5px;height:5px;border-radius:50%;background:var(--c-300)}
 .dc-crumbs span{color:var(--muted);font-weight:500}
@@ -216,6 +216,8 @@
 }
 @media (max-width: 560px){
   .md{font-size:16.5px}
+  .md-copy,.md-zoom{height:44px}
+  .md-code figcaption{min-height:52px}
   .md-table.cols-3 table{min-width:540px}
   .md-table.cols-4 table{min-width:660px}
   .md-table.cols-5 table{min-width:760px}
@@ -237,6 +239,7 @@
 .md-svg{overflow-x:auto;padding:22px 20px;scrollbar-width:thin;overscroll-behavior-x:contain;
   background:linear-gradient(90deg,var(--c-0) 30%,oklch(0.99 0.006 105/0)) left/48px 100% no-repeat local,linear-gradient(270deg,var(--c-0) 30%,oklch(0.99 0.006 105/0)) right/48px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,oklch(0.25 0.05 158/.16),transparent) left/14px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,oklch(0.25 0.05 158/.16),transparent) right/14px 100% no-repeat scroll,var(--c-0)}
 .md-svg svg{display:block;margin:0 auto;width:max(100%,min(calc(var(--w) * .72),720px));max-width:var(--w);height:auto}
+.md-svg.is-wide svg{width:100%}
 .md-svg.is-zoomed svg{width:var(--w)}
 .md-zoom{height:36px;padding:0 14px;border:0;border-radius:99px;background:var(--g-50);color:var(--g-700);font:600 14px/1 var(--font-text);cursor:pointer;transition:background-color var(--dur-color),transform var(--dur-micro) var(--ease-out)}
 .md-zoom:hover{background:var(--g-100)}
@@ -248,3 +251,7 @@
 .md-diagram-foot summary{display:inline-flex;align-items:center;min-height:40px;cursor:pointer;font-weight:600;color:var(--g-700)}
 .md-diagram-foot details pre{margin:4px 0 10px;padding:14px 16px;border-radius:12px;background:var(--c-50);box-shadow:inset 0 0 0 1px var(--line)}
 .md .md-diagram-foot a{display:inline-flex;align-items:center;min-height:40px;font-weight:600;white-space:nowrap}
+@media (max-width: 560px){
+  .md-zoom{height:44px}
+}
+.md .md-alias{position:absolute;top:0;left:0;scroll-margin-top:20px}
