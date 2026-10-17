@@ -34,8 +34,8 @@ Start recording, then:
 2. Wait for the plan (name, offers, domains with prices). Let it sit on screen for 3 seconds.
 3. Click the **preview link**. Let the draft storefront load, scroll slowly to the offers, pause 2 seconds, go back to the chat.
 4. Type and send (use the `.shop` domain the plan lists, at the price it shows):
-   > Open it on Awning at ridgeroast.shop.
-5. The PayBox approval appears: let the amount be readable for 2 seconds, then **approve with your passkey**.
+   > Open it on Awning with Pro at ridgeroast.shop. Don't open the free version first.
+5. The **PayBox signing window** appears in the chat (inline or beside it): let the amount be readable for 2 seconds, then confirm. **Sign within 5 minutes**: the payment proposal expires after that and the window fails (seen in a take). If it expires, ask Claude to open it again for a fresh request.
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
 
