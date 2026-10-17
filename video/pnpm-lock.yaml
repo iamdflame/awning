@@ -17,6 +17,9 @@ importers:
       '@remotion/install-whisper-cpp':
         specifier: 4.0.533
         version: 4.0.533
+      '@remotion/media':
+        specifier: 4.0.533
+        version: 4.0.533(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@remotion/media-utils':
         specifier: 4.0.533
         version: 4.0.533(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

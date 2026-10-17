@@ -1,33 +1,71 @@
 # Creative review: the Awning demo film
 
-How it was judged: stills at every scene's key moments (`npm run review`, 4 per scene, looked at one by one and as contact sheets), frames pulled across every transition from a half-size preview of the whole cut, the mix measured with `loudnorm` (speech, gaps and the end card separately), and each type size checked at phone scale (a 1920-wide frame shown 390 px wide is 0.2×: captions at 50 px read as 10 px, receipt totals at 64 px as 13 px; the receipts' line items are texture, the totals and captions carry the meaning).
+**What's in the film now:** the founder's three real takes, cut to their strong moments, and the real product filmed from awning.sh. Ridge Roast opened on Pro at ridgeroast.shop for 11.06 USDC (tx `0x285a4e…881c4c`). A fresh Claude.ai chat that knew nothing about the shop then bought its 5.00 USDC tasting, paid straight to the owner's wallet (tx `0x893b3f…9e7651`, booking RID-7R4G4U). Nothing in the film is mocked or staged, and no LOCAL MOCK or RE-CAPTURE tag remains.
 
-The main cut runs **1:49.7** (3,292 frames at 30 fps) against the founder's final narration (Eleven v4, 98 s of speech), every scene sized from its take plus designed breathing room; the mix is brought to −16 LUFS / −1.5 dBTP after rendering. The 30 s cut is exactly 900 frames.
+**How it was judged:**
+- Every take was read end to end: contact sheets at one frame per second (`npm run edl-helper`), cropped half-second sheets around each cut, and luminance-change probes to find the exact frame of each paste, send, "Payment sent" and answer.
+- The cut was reviewed on half-size previews at one frame every 2 s, and every 0.5 s through the three agent scenes.
+- Key frames were then rendered at full size (`out/stills/`).
+- The mix was measured with `loudnorm`, and type was checked at phone scale (a 1920-wide frame shown 390 px wide is 0.2×).
+
+**Length:** the main cut runs about 1:51 against the founder's narration. The 30 s cut is exactly 900 frames.
+
+## How the takes were cut
+
+Nothing was reordered, and nothing was sped up: every result follows its request. Waits were cut.
+
+- **owner1.mp4 (6:01 → 21 s used):**
+  - The prompt pasted (6.65 s) and sent (14.8 s).
+  - The plan's offers.
+  - The three real domain quotes, with ridgeroast.shop 11.06 underlined.
+  - The private preview.
+  - The PayBox panel turning from "Sending payment…" to "Payment sent" at 228.07 s, spotlit, ringed and chimed.
+  - "Ridge Roast is live on Pro", with ridgeroast.shop underlined.
+  - Cut: 40 s of loading, two permission prompts, the reopen request, and the failed first approval window.
+  - The owner token appears in this take; it is never in frame, and an opaque box covers it anyway.
+- **buyer.mp4 (2:30 → 14 s used):**
+  - The prompt and the send.
+  - "I'll look up Awning through PayBox".
+  - The match ("Ridge Roast's Tasting Session is the match at 5.00 USDC"), underlined.
+  - The 5.00 USDC panel turning to "Payment sent" at 102.33 s.
+  - "You're booked" with the booking code.
+  - Cut: a stray first paste with a "1." list marker, 20 s of tool loading, the buy permission prompt, and a 40 s wait.
+- **owner2.mp4 (2:30 → 8 s used):**
+  - The offer prompt and its send.
+  - "The Monthly Subscription Box is now live on Ridge Roast at $30".
+  - The sales answer: "first sale: one Tasting Session for $5 … the transaction is 0x893b3f…".
+  - Cut: the page's scroll right after sending (it briefly passes the old owner token) and 14 to 18 s of tool calls.
 
 ## The three strongest moments
 
-1. **The opening (0:00–0:11).** The canopy unrolls on the rod, the founder's exact sentence is lettered in sun gold on a green hoarding (the landing's own gesture, at film scale), and on "a real business" the hoarding lifts to the real storefront while Awning's canopy steps aside; on "other AI agents" a receipt prints +5.00. The wow is on screen before the 8 s mark, in the brand's language, with no stock look.
-2. **The audit (0:22–0:29).** Two hundred shopfronts in the street's own palettes build while "In a September audit…" is said; on "only thirty-eight" 162 go grey and roll up their awnings, the number rolls from 200 to 38 and the 38 keep a small tomato OPEN light. One number, sourced on screen (Blend Commerce, Sept 2026), told as a street.
-3. **Under the hood (1:17–1:35).** The mechanism drawn on a dark board: the plugin card says "no wallet, no keys", the proposal ticket travels to "You", the passkey button presses, the x402 payment crosses to Awning and the saga ticks verify → preflight → hosting → register_domain → dns → go_live with **settle last** ("USDC moves now"); then the same run fails at register_domain, everything after is struck through and "Not charged" lands; then a sale arcs straight from the buyer's agent to the owner's wallet while Awning sits below on a dashed line that never touches it, stamped "Holds 0.00".
+1. **"One approval" is a real approval (0:40–0:48).** The founder's own PayBox panel shows $11.06. Everything else dims, a tomato ring lands with the chime the instant it turns to "Payment sent", and the 11.06 ticket beside it gets its APPROVED stamp. Then Claude's answer reads "Ridge Roast is live on Pro", and on "On its own domain" ridgeroast.shop is underlined while a price tag with the domain swings in. "A real one." cuts to the storefront loading at ridgeroast.shop, stamped REGISTERED, PAID, LIVE. All of it is real footage, and the cut follows the narration word for word.
+2. **The proof chain for the first sale (0:56–1:18).** A fresh chat that never heard of the shop finds it and pays 5.00 USDC; the panel turns to "Payment sent" and the receipt prints to the owner's real wallet. /live shows the SOLD line above the OPENED line. Later, the owner's own chat reports the same sale and transaction. Then the film follows the /live link with a cut to the real BaseScan page: "Transfer 5 USDC to 0x1CD2B147…3ae3dbB37", Success. One payment, seen from four independent places.
+3. **The opening (0:00–0:11).** The canopy unrolls and the Awning lockup unrolls on the hoarding for "This is Awning." Then the founder's actual prompt is lettered in sun gold. On "a real business" the hoarding lifts to the live ridgeroast.shop storefront, and on "other AI agents" a receipt prints +5.00.
 
 ## The three weakest moments, and what changed
 
-1. **The approval beat lost its right-hand column.** "One approval." and the PayBox ticket vanished at the start of the scene. Cause: the word clock matched "On" to "One" (a prefix match), so everything keyed to "On its own domain" fired at the first word. Fixed in `timeline.ts` (exact words first, a prefix only as a fallback); "One approval." also ran off the right edge and now sits in a 540 px column at 96 px. The beat now pushes the camera into the address bar on "On its own domain" (scale 1.6, the URL underlined in tomato) and eases back for "A real one." with its stamp, instead of a 16 % lean nobody would notice.
-2. **The audit opened on an empty canvas for 1.3 s** ("In a September audit of…" said over nothing), and the canopy came down while "only thirty-eight" was still landing. The street now builds from the first word of the sentence, the number arrives on "two hundred", and the scene holds 1.5 s after the line before the act break.
-3. **Type that broke or hid.** "A new kind of customer: / AI agents with wallets." wrapped into three ragged lines (now one line each at 118 px); the street's "Born agent-payable." sat behind the shopfronts (now above them, one line, the street lower); the directory push-in cropped "The whole street." (now framed whole, then into the search box); the "Registered, paid, live" stamp collided with the re-capture tag; and the RE-CAPTURE tag of the outgoing scene showed through the canopy during the act break (each side of a transition is now its own stacking context).
+1. **Dead frames from cutting real footage.**
+   - The first cut of the owner's offer beat started 0.2 s early, while Claude's page was still scrolling past the old owner token. It now starts once the new message has settled, at 8.6 s.
+   - The directory results arrived mid-scroll, so the shop's card was never framed. The clip now starts at the end of its glide and pushes in on the card.
+   - The draft preview's push-in cut off the "R" of Ridge Roast; it now keeps the name whole.
+2. **Causality in the overlays.**
+   - The storefront is now live with three offers, including the $30 box added later in the story. So in the opening and in "A real one." the camera frames the two offers it opened with, and the plan's receipt prints the plan's own two offers. The $30 box first appears when the owner adds it.
+   - The APPROVED stamp landed before its ticket had appeared. The ticket now arrives first.
+   - The OPEN sign dropped through the fading ticket; it now waits for the ticket to clear.
+3. **Empty or muddy frames.**
+   - "This is Awning." played over an empty green hoarding for 2.4 s; the lockup now unrolls there.
+   - "And there's a new kind of customer" began on an empty canvas with the tops of hidden words peeking through the mask. The line now rises with the voice, and words wait fully hidden.
+   - The /live → BaseScan crossfade mixed two pages. It is now a cut on the link the cursor reaches, and BaseScan is shown as a short, wide strip pushed in on the transfer line. BaseScan's gambling ads are hidden; nothing of the transaction is touched.
+   - The buyer's card in the sale diagram vanished into the dark board; it is now a paper card like every other actor.
+   - The /live framing cut half a headline at the left edge; it now frames only the receipt paper.
 
-Also changed in review: the sale receipt is the hero of its beat (800 px, 28 px type, mid-frame) before it steps aside for awning.sh/live; captions now break on the picture's beats ("And there's a new kind of customer now:" / "AI agents with wallets.") instead of filling 64 characters, and read at 54 px; the owner's beats push out and the directory pushes in instead of a muddy dissolve; the dark roasting clip is lifted; the live feed push ends on the newest sale's "on BaseScan" link with the cursor on it; the end card's lockup, line and CTA were enlarged; the music was too timid (gaps measured −27 LUFS against −16 LUFS speech) and now sits about 7 dB under the voice in the gaps, 16 dB under while words are spoken, and lifts on the end card; the local mock server is restarted before footage so its live feed shows exactly one sale; stock clips under Mixkit's Restricted (non-commercial) license were swapped for Free-license ones; renders that stalled on 3K frame extraction (a stock clip's odd timestamps, a too-high extraction thread count) were fixed by re-encoding stock to clean 30 fps, giving the captures a keyframe every second and rendering with 6 tabs and a patient frame timeout.
+**Also fixed in this pass:**
+- Rendering stalled with "No frame found at position" (OffthreadVideo's frame cache under memory pressure with 3K captures and 1080p takes). All footage now plays through `@remotion/media`'s `<Video>`, which decodes in the tab.
+- Captures, stock and takes are encoded without B-frames and with a keyframe every half to one second.
+- The buyer is a fresh Claude.ai chat everywhere: frames, labels, captions and the 30 s cut. Nothing says "different agent", "different person", ChatGPT or Claude Code.
 
-## What is still placeholder, on purpose
+## Still worth a look by a human
 
-- **The founder's three recordings** (`public/rec/owner.mp4`, `buyer.mp4`, `owner-2.mp4`, see `launch/RECORDING-RUNBOOK.md`): until they exist, and until `edl.json` gives each beat its segments, the agent scenes show a striped card that says "Founder recording goes here" with the beat and the prompt typing. The buyer is a different agent, Claude Code in a terminal, drawn in a terminal window; the owner is Claude in the browser.
-- **Footage of shops that did not exist on awning.sh yet** (the storefront, the draft preview, /live with a sale, /directory with Ridge Roast) comes from a local production build with every provider mocked, and carries a red "LOCAL MOCK · RE-CAPTURE FROM AWNING.SH" tag; receipts fed by that data say LOCAL MOCK. After the founder's session, `npm run capture` films the real shop on its domain, the real sale on /live and the real directory, and the tags disappear on their own.
-- **Two values to confirm against the take** in `src/story.ts`: the domain opened (ridgeroast.shop) and its total (11.06 USDC).
-
-## Finishing the film when the founder's files arrive
-
-1. Drop `owner.mp4`, `buyer.mp4` and `owner-2.mp4` into `public/rec/`.
-2. `npm run edl-helper -- owner` (then `buyer`, `owner2`): timestamped contact sheets with a 10 % grid land in `out/edl/`. Fill each beat in `edl.json`: `segments` (in/out seconds, waits cut, nothing sped up), `type` (first and last keystroke of the prompt), `approve.at` and its rect, `zoom` keys, and a `blur` box wherever the owner token `awn_ot_…` shows.
-3. Once Ridge Roast and its sale exist on awning.sh: `npm run capture`. The storefront on its domain, /live with the real sale and /directory with the real shop are filmed from awning.sh; the RE-CAPTURE tags and the LOCAL MOCK receipt labels disappear on their own, and the receipts print the real wallet and transaction.
-4. Check `src/story.ts` (domain, opening total) against the owner take.
-5. `npm run render:all`: main cut, 30 s cut, thumbnail and SRT.
+- **The music** ("Music and Life", Mixkit) was picked by analysis, not by ear: tempo, build and a clean ending. Dropping the founder's own `public/audio/music.mp3` replaces it on the next render.
+- **The domain takes a few minutes to resolve.** If ridgeroast.shop stops answering, `npm run capture` falls back to ridge-roast.awning.sh for the storefront, and the address bar shows that instead.
+- **BaseScan's page shows "31 mins ago"** next to the timestamp because it was captured half an hour after the sale; the absolute time (Oct-17-2026 06:33:05 PM +UTC) is also on the page.

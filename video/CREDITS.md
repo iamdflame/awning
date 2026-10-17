@@ -47,5 +47,6 @@ All from [Google Fonts](https://github.com/google/fonts) under the [SIL Open Fon
 
 - **Narration:** the founder's own voice (an ElevenLabs clone the founder made and generated, `scripts/generate-voice.mjs`). The Windows text-to-speech scratch voice (`npm run scratch-voice`) is only for timing and never ships.
 - **Captions:** timed with whisper.cpp (`@remotion/install-whisper-cpp`, MIT) on the final takes, worded from the script.
-- **Product footage:** filmed from awning.sh with Playwright (`npm run capture`); the agent scenes are the founder's own screen recordings. Footage from the local mock build carries a visible RE-CAPTURE tag and is replaced by re-capturing from awning.sh.
+- **Product footage:** filmed from awning.sh and ridgeroast.shop with Playwright (`npm run capture`): the landing, /for-agents, /directory, /live and the live storefront. The agent scenes are the founder's own screen recordings (`public/rec/`: owner1.mp4, buyer.mp4, owner2.mp4), cut with `edl.json`.
+- **BaseScan:** one screenshot of the sale's public transaction page (basescan.org, `0x893b3f…9e7651`), shown as the on-chain record it is; the page's third-party ads are hidden, nothing of the transaction is changed.
 - **Logo, palette, the street, receipts and every drawn object:** Awning's own design (`design/`).

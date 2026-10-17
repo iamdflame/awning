@@ -37,8 +37,8 @@ export const Thumbnail: React.FC<ThumbProps> = ({ still, url, mock }) => (
     </div>
     <Canopy sw={64} height={78} />
     <div style={{ position: "absolute", left: 52, top: 172, width: 600 }}>
-      <div style={{ ...display(86), color: C.c900 }}>One sentence.</div>
-      <div style={{ ...display(86), color: C.g600, marginTop: 6 }}>A real shop.</div>
+      <div style={{ ...display(72), color: C.c900, whiteSpace: "nowrap" }}>One sentence.</div>
+      <div style={{ ...display(72), color: C.g600, marginTop: 8, whiteSpace: "nowrap" }}>A real shop.</div>
       <div style={{ fontFamily: FONT.text, fontWeight: 600, fontSize: 30, lineHeight: 1.3, color: C.c700, marginTop: 30, maxWidth: 520 }}>Its first customer was an AI agent.</div>
       <div style={{ ...display(40, { fontStretch: "112%", letterSpacing: "-0.02em" }), color: C.g600, marginTop: 70 }}>awning.sh</div>
     </div>

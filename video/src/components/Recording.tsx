@@ -1,5 +1,6 @@
 import React from "react";
-import { Audio, Easing, Freeze, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Audio, Easing, Freeze, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Clip } from "./Clip";
 import edlJson from "../../edl.json";
 import { BrowserFrame } from "./BrowserFrame";
 import { C, EASE, FONT, receipt } from "../brand/tokens";
@@ -169,13 +170,13 @@ export const RecordingBeat: React.FC<{ who: Who; beat: string; file: string | nu
           acc += len;
           return (
             <Sequence key={i} from={from} durationInFrames={len} layout="none">
-              <OffthreadVideo src={src} trimBefore={Math.round(a * fps)} muted style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+              <Clip src={src} trimBefore={Math.round(a * fps)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
             </Sequence>
           );
         })}
         {f >= total ? (
           <Freeze frame={Math.round(lastSeg[1] * fps) - 1}>
-            <OffthreadVideo src={src} muted style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+            <Clip src={src} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
           </Freeze>
         ) : null}
         {(b.focus ?? [])

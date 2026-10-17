@@ -28,6 +28,7 @@
     "@remotion/bundler": "4.0.533",
     "@remotion/cli": "4.0.533",
     "@remotion/install-whisper-cpp": "4.0.533",
+    "@remotion/media": "4.0.533",
     "@remotion/media-utils": "4.0.533",
     "@remotion/paths": "4.0.533",
     "@remotion/renderer": "4.0.533",

@@ -37,7 +37,7 @@ const C3Buy: React.FC<SceneProps> = ({ timing, assets }) => {
   const ticketOut = interpolate(f, [a - 6, a + 4], [0, 1], { ...clamp, easing: EASE.inOut });
   const liveIn = interpolate(f, [b, b + 12], [0, 1], { ...clamp, easing: EASE.out });
   const caps: Caption[] = [
-    { from: 4, to: a - 2, text: "A fresh chat finds it and pays.", words: [] },
+    { from: 18, to: a - 2, text: "A fresh chat finds it and pays.", words: [] },
     { from: a, to: b - 2, text: `${sale.amount} USDC, straight to the owner.`, words: [] },
     { from: b, to: n - 4, text: "Its first customer was an AI agent.", words: [] },
   ].map((c) => ({ ...c, words: c.text.split(" ").map((w) => ({ w, from: c.from, to: c.to })) }));

@@ -149,7 +149,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
             <ProductClip shot={assets.capture.shots["directory"]} width={BW} height={BH} startSec={1.3} cam={[{ at: 0, x: 0.5, y: 0.5, z: 1.0 }, { at: 40, x: 0.55, y: 0.56, z: 1.12, ease: "inOut" }]} label="awning.sh/directory" />
           </Sequence>
           <Sequence from={dirResults} layout="none">
-            <ProductClip shot={assets.capture.shots["directory-results"]} width={BW} height={BH} startSec={0.4} cam={[{ at: 0, x: 0.5, y: 0.45, z: 1 }, { at: 50, x: 0.36, y: 0.55, z: 1.3, ease: "inOut" }]} label="directory results" />
+            <ProductClip shot={assets.capture.shots["directory-results"]} width={BW} height={BH} startSec={2.7} cam={[{ at: 0, x: 0.42, y: 0.52, z: 1.15 }, { at: 50, x: 0.3, y: 0.56, z: 1.55, ease: "inOut" }]} label="directory results" />
           </Sequence>
         </div>
       ) : null}
@@ -163,7 +163,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
               width={BW}
               height={BH}
               startSec={Math.max(0.5, 6.85 - (slotChain - slotLive) / 30)}
-              cam={[{ at: 0, x: 0.62, y: 0.4, z: 1.3 }, { at: Math.max(16, tReceipt - slotLive + 4), x: 0.62, y: 0.37, z: 2.0, ease: "inOut" }]}
+              cam={[{ at: 0, x: 0.67, y: 0.4, z: 1.5 }, { at: Math.max(16, tReceipt - slotLive + 4), x: 0.63, y: 0.37, z: 2.0, ease: "inOut" }]}
               label="awning.sh/live"
             />
           </Sequence>
@@ -171,7 +171,7 @@ export const S6Run: React.FC<SceneProps> = ({ timing, take, assets }) => {
             // a cut, like following the link: the same transaction on BaseScan
             <Sequence from={slotChain} layout="none">
               <div style={{ position: "absolute", left: 0, top: 110 }}>
-                <PageStill src={scan.still} url={scan.displayUrl} width={BW} height={560} keys={[{ at: 0, x: 84, y: 236, w: 1010 }, { at: 70, x: 96, y: 266, w: 730 }]} mark={{ at: 14, x: 161, y: 311, w: 545 }} />
+                <PageStill src={scan.still} url={scan.displayUrl} width={BW} height={560} keys={[{ at: 0, x: 84, y: 236, w: 1010 }, { at: 66, x: 104, y: 270, w: 620 }]} mark={{ at: 14, x: 161, y: 311, w: 545 }} />
               </div>
             </Sequence>
           ) : null}

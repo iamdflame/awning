@@ -1,5 +1,6 @@
 import React from "react";
-import { Freeze, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Freeze, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Clip } from "./Clip";
 import type { CaptureShot } from "../data";
 import { BrowserFrame } from "./BrowserFrame";
 import { camAt, camTransform, type CamKey } from "./camera";
@@ -36,7 +37,7 @@ export const ProductClip: React.FC<{
     const startFrame = Math.round(startSec * fps);
     const endSec = holdAt != null ? Math.min(holdAt, total / shot.fps) : total / shot.fps;
     const last = Math.max(0, Math.floor((endSec - startSec) * fps) - 2);
-    const video = <OffthreadVideo src={staticFile(shot.file)} trimBefore={startFrame} muted style={{ width: "100%", height: "100%", display: "block" }} />;
+    const video = <Clip src={staticFile(shot.file)} trimBefore={startFrame} style={{ width: "100%", height: "100%", display: "block" }} />;
     inner = (
       <div style={{ position: "absolute", left: 0, top: 0, width, height, transformOrigin: "0 0", transform: camTransform(c, width, height) }}>
         {f > last ? <Freeze frame={last}>{video}</Freeze> : video}

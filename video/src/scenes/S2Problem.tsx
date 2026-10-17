@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Clip } from "../components/Clip";
 import { HangingTag } from "../brand/Paper";
 import { C, EASE, FONT, display } from "../brand/tokens";
 import { Rise } from "../components/Kinetic";
@@ -16,7 +17,7 @@ const Broll: React.FC<{ src: string | null; from?: number; push?: number; label:
   return (
     <AbsoluteFill style={{ background: C.g900, overflow: "hidden" }}>
       {src ? (
-        <OffthreadVideo src={staticFile(src)} trimBefore={Math.round(from * 30)} muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${s})`, filter: grade }} />
+        <Clip src={staticFile(src)} trimBefore={Math.round(from * 30)} objectFit="cover" style={{ width: "100%", height: "100%", transform: `scale(${s})`, filter: grade }} />
       ) : (
         <AbsoluteFill style={{ display: "grid", placeItems: "center", color: "rgba(247,246,237,.5)", fontFamily: FONT.text, fontSize: 30 }}>stock: {label} (run npm run assets)</AbsoluteFill>
       )}
@@ -160,7 +161,7 @@ export const S2Problem: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <Sequence from={partB} durationInFrames={partC - partB + 10} name="new customer">
         <Ground>
           <AbsoluteFill style={{ padding: "0 150px", justifyContent: "center", opacity: interpolate(f, [partC - 2, partC + 8], [1, 0], clamp) }}>
-            <Rise at={tNew - partB - 8} style={{ ...display(118), color: C.c900, marginTop: -70 }}>{"A new kind of customer:"}</Rise>
+            <Rise at={Math.max(6, tNew - partB - 22)} style={{ ...display(118), color: C.c900, marginTop: -70 }}>{"A new kind of customer:"}</Rise>
             <Rise at={tAI - partB - 4} stagger={4} style={{ ...display(118), color: C.g600, marginTop: 18 }}>{"AI agents with wallets."}</Rise>
           </AbsoluteFill>
         </Ground>

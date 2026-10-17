@@ -46,6 +46,8 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
   const slotA = real ? Math.max(tAnd - 2, approveAt + 24) : tAnd - 2;
   // "A real one.": the storefront itself, loading at its own address
   const slotStore = storeOnDomain ? tA - 4 : w("one.") + 16;
+  // the ticket is in place before the payment is stamped on it
+  const ticketAt = Math.min(tPayBox - 6, approveAt - 16);
 
   return (
     <Ground>
@@ -96,7 +98,7 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
         }}
       >
         <Rise at={tOne - 4} stagger={5} style={{ ...display(96), color: C.c900 }}>{"One\napproval."}</Rise>
-        <div style={{ marginTop: 72, opacity: interpolate(f, [tPayBox - 6, tPayBox + 4], [0, 1], clamp), transform: `translateY(${interpolate(f, [tPayBox - 6, tPayBox + 8], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
+        <div style={{ marginTop: 72, opacity: interpolate(f, [ticketAt, ticketAt + 10], [0, 1], clamp), transform: `translateY(${interpolate(f, [ticketAt, ticketAt + 14], [30, 0], { ...clamp, easing: EASE.out })}px)` }}>
           <Ticket
             width={470}
             scale={0.92}
@@ -117,8 +119,8 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
       </div>
 
       {/* "open": the sign drops where the ticket was, and flips */}
-      {f >= tOpen - 8 ? (
-        <div style={{ position: "absolute", left: 1450, top: interpolate(f, [tOpen - 8, tOpen + 6], [-320, 150], { ...clamp, easing: EASE.unroll }), opacity: interpolate(f, [tOn - 10, tOn - 3], [1, 0], clamp) }}>
+      {f >= tOpen - 4 ? (
+        <div style={{ position: "absolute", left: 1450, top: interpolate(f, [tOpen - 4, tOpen + 9], [-320, 150], { ...clamp, easing: EASE.unroll }), opacity: interpolate(f, [tOn - 10, tOn - 3], [1, 0], clamp) }}>
           <OpenSign at={tOpen} width={320} chain={C.c700} />
         </div>
       ) : null}
@@ -133,7 +135,7 @@ export const S4Approve: React.FC<SceneProps> = ({ timing, take, assets }) => {
         </div>
       ) : null}
       {f >= tReal - 2 ? (
-        <div style={{ position: "absolute", left: real ? 1236 : 1250, top: real ? 640 : 420, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: real ? 1180 : 1250, top: real ? 630 : 420, whiteSpace: "nowrap" }}>
           <Stamp at={tReal} size={real ? 38 : 46} rotate={-7}>
             Registered, paid, live
           </Stamp>

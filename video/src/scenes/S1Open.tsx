@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import { Canopy } from "../brand/Canopy";
-import { Logo } from "../brand/Logo";
+import { Logo, Mark, Wordmark } from "../brand/Logo";
 import { Receipt } from "../brand/Paper";
 import { C, EASE, FONT } from "../brand/tokens";
 import { ProductClip } from "../components/ProductClip";
@@ -81,6 +81,13 @@ export const S1Open: React.FC<SceneProps> = ({ timing, take, assets }) => {
           padding: "0 110px",
         }}
       >
+        {/* "This is Awning.": the lockup on the hoarding, then it makes way for the sentence */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 30, opacity: interpolate(f, [typeStart - 12, typeStart - 2], [1, 0], clamp), transform: `translateY(${interpolate(f, [typeStart - 12, typeStart - 2], [0, -30], { ...clamp, easing: EASE.inOut })}px)` }}>
+          <Mark size={190} t={interpolate(f, [12, 40], [0, 1], clamp)} green={C.sun} canvas={C.g800} />
+          <div style={{ opacity: interpolate(f, [24, 36], [0, 1], clamp), transform: `translateX(${interpolate(f, [24, 40], [-24, 0], { ...clamp, easing: EASE.out })}px)` }}>
+            <Wordmark height={132} reversed />
+          </div>
+        </div>
         <div>
           <div style={{ fontFamily: FONT.text, fontWeight: 600, fontSize: 30, letterSpacing: "0.02em", color: "rgba(250,202,75,.72)", marginBottom: 34, opacity: interpolate(f, [typeStart - 8, typeStart], [0, 1], clamp) }}>
             You, to your agent

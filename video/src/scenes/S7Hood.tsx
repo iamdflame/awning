@@ -234,9 +234,9 @@ export const S7Hood: React.FC<SceneProps> = ({ timing, take, assets }) => {
       <AbsoluteFill style={{ opacity: ph2 }}>
         {ph2 > 0 ? (
           <>
-            <Card x={80} y={170} w={520} h={260} at={tSales - 8} dark>
-              <Title size={52} color={C.c50}>A buyer's agent</Title>
-              <Sub color="rgba(205,243,219,.8)">a fresh chat, paying with PayBox</Sub>
+            <Card x={80} y={170} w={520} h={260} at={tSales - 8}>
+              <Title size={52}>A buyer's agent</Title>
+              <Sub size={28}>a fresh chat, paying with PayBox</Sub>
             </Card>
             <Card x={1300} y={170} w={540} h={260} at={tSales - 4} glow={interpolate(f, [tOwners + 20, tOwners + 30], [0, 1], clamp)}>
               <Title size={52}>The owner's wallet</Title>
