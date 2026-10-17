@@ -33,7 +33,9 @@ export const GET = handler(async () => {
   // Refunds: a real treasury key that controls the treasury address (else Pro is not sold).
   checks.refunds = treasuryRefundProblem() ? "unavailable" : "ok";
   const pro = proReadiness();
-  checks.pro = pro.available ? (pro.simulated ? "available (simulated payments)" : "available") : `unavailable (${pro.missing.join(", ")})`;
+  checks.pro = pro.available
+    ? `${pro.simulated ? "available (simulated payments)" : "available"}${pro.phone ? "" : ` without phone line (${pro.phoneMissing.join(", ")})`}`
+    : `unavailable (${pro.missing.join(", ")})`;
   let facilitatorName = "unknown";
   try {
     const f = facilitator();

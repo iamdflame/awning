@@ -68,6 +68,12 @@ function offerLine(o: z.infer<typeof offerOut>): string {
  * Exact total to open on `domain` with the Pro package: Awning's own per-domain `totalUsd`
  * (first-year domain + Pro service), the amount /x402/open charges. Null when there is none.
  */
+/** What Pro includes for this plan: the phone line and receptionist only when the server lists them. */
+function proFeatures(plan: { packages: { id: string; includes: string[] }[] }): string {
+  const pro = plan.packages.find((p) => p.id === "pro");
+  return pro && pro.includes.some((i) => /phone/i.test(i)) ? "custom domain, phone line, AI receptionist" : "custom domain";
+}
+
 function openPriceAtomic(plan: UpPlan, domain: string): string | null {
   const entry = plan.domains.find((d) => d.domain.toLowerCase() === domain.toLowerCase());
   if (!entry || !entry.available || entry.totalUsd === undefined || entry.totalUsd === null) return null;
@@ -133,7 +139,7 @@ function createServer() {
       tools: [
         { name: "awning_plan", use: "Draft a business from the user's sentence; returns a private preview, offers, domain options and prices.", cost: "Free" },
         { name: "awning_open_free", use: "Open a planned business on its free awning.sh subdomain.", cost: "Free" },
-        { name: "awning_open", use: "Open a planned business with a custom domain, phone line and AI receptionist (Pro), or upgrade one already open free from the same plan. Only when the plan's Pro package is available.", cost: "Paid: openPriceUsd from the plan, as an x402 proposal the user approves in PayBox" },
+        { name: "awning_open", use: "Open a planned business on Pro: a custom domain, plus a phone line with an AI receptionist when the plan's Pro package lists one; or upgrade one already open free from the same plan. Only when the plan's Pro package is available.", cost: "Paid: openPriceUsd from the plan, as an x402 proposal the user approves in PayBox" },
         { name: "awning_find", use: "Search live Awning businesses and offers.", cost: "Free" },
         { name: "awning_business", use: "Read one business and its exact offer prices.", cost: "Free" },
         { name: "awning_buy", use: "Buy an offer (price x quantity), paid directly to the owner's wallet.", cost: "Paid: an x402 proposal the user approves in PayBox" },
@@ -158,7 +164,7 @@ function createServer() {
     return {
       content: text([
         "Awning: one sentence becomes a real business that AI agents can buy from (USDC on Base, paid to the owner's wallet).",
-        "Start a business: awning_plan, then awning_open_free (free subdomain) or awning_open (paid: custom domain, phone line, AI receptionist).",
+        "Start a business: awning_plan, then awning_open_free (free subdomain) or awning_open (paid: custom domain, plus phone line and AI receptionist when Pro lists them).",
         "Buy: awning_find, awning_business, then awning_buy (the user approves the payment in PayBox).",
         "Owners: awning_add_offer and awning_orders with the ownerToken from opening.",
       ].join("\n")),
@@ -169,7 +175,7 @@ function createServer() {
   // ------------------------------------------------------------ awning_plan
   server.registerTool("awning_plan", {
     title: "Plan a business from one sentence",
-    description: "Drafts a business from one sentence the user wrote (e.g. \"small-batch coffee roaster in Accra selling bags and tasting sessions\"). Awning names it, writes the copy, prices 3-5 offers, checks real domain availability and prices, and serves a private draft preview at previewUrl. Free: no money moves, nothing is registered, and the draft is neither listed nor buyable. Show the user the name, offers and preview link, then ask how to open: awning_open_free (free awning.sh subdomain) or, when the Pro package is available, awning_open (custom domain, phone line and AI receptionist, paid in USDC at the openPriceUsd shown for the chosen domain). When Pro is unavailable (for example no domain is available), only awning_open_free applies. Each call creates a new draft; the plan expires at expiresAt.",
+    description: "Drafts a business from one sentence the user wrote (e.g. \"small-batch coffee roaster in Accra selling bags and tasting sessions\"). Awning names it, writes the copy, prices 3-5 offers, checks real domain availability and prices, and serves a private draft preview at previewUrl. Free: no money moves, nothing is registered, and the draft is neither listed nor buyable. Show the user the name, offers and preview link, then ask how to open: awning_open_free (free awning.sh subdomain) or, when the Pro package is available, awning_open (custom domain, plus a phone line with an AI receptionist when the Pro package lists one; paid in USDC at the openPriceUsd shown for the chosen domain). When Pro is unavailable (for example no domain is available), only awning_open_free applies. Each call creates a new draft; the plan expires at expiresAt.",
     inputSchema: z.object({
       sentence: z.string().trim().min(3).max(600).describe("The user's own description of the business, in one or two sentences: what it sells, to whom, and where (3-600 characters)."),
       ownerWallet: z.string().trim().regex(/^0x(?!0{40}$)[0-9a-fA-F]{40}$/, "a 0x-prefixed 20-byte EVM address, not the zero address")
@@ -219,7 +225,7 @@ function createServer() {
         "Offers:",
         ...structured.business.offers.map(offerLine),
         proBlocked === null
-          ? `Open with a custom domain, phone line and AI receptionist (awning_open, planId ${structured.planId}):\n${available.map((d) => `  - ${d.domain}: ${d.openPriceUsd} USDC`).join("\n")}`
+          ? `Open on Pro: ${proFeatures(plan)} (awning_open, planId ${structured.planId}):\n${available.map((d) => `  - ${d.domain}: ${d.openPriceUsd} USDC`).join("\n")}`
           : `Pro unavailable: ${proBlocked}. awning_open cannot be used for this plan.`,
         `${proBlocked === null ? "Or open" : "Open"} free on the subdomain with awning_open_free (planId ${structured.planId}).`,
         `Ask the user which option they want before opening. Plan expires at ${structured.expiresAt}.`,
@@ -266,7 +272,7 @@ function createServer() {
   // ------------------------------------------------------------ awning_open
   server.registerTool("awning_open", {
     title: "Open a business with a custom domain (paid)",
-    description: "Prepares the paid Pro opening of a planned business: custom domain registered and connected, a phone line, and an AI receptionist that answers it. It also upgrades a business already open free from the same plan (while the plan has not expired); a business already on Pro is refused. Pass the planId, the domain the user chose and the exact openPriceUsd awning_plan showed for it; the tool re-reads the plan and Awning's live x402 quote and refuses on any mismatch, when the plan's Pro package is unavailable, or when the live quote is not a payable 402 (then use awning_open_free). It does not pay: it returns a PayBox x402 payment proposal (USDC on Base, maximum = the quoted price) for the user to approve in PayBox. After approval PayBox sends the paid request; the response (live URL, phone number, ownerToken, receipt) arrives through the PayBox request, so poll that request and do not call awning_open again. If provisioning fails after payment, Awning refunds the USDC and the response says refunded: true.",
+    description: "Prepares the paid Pro opening of a planned business: custom domain registered and connected, plus a phone line with an AI receptionist when the plan's Pro package lists one. It also upgrades a business already open free from the same plan (while the plan has not expired); a business already on Pro is refused. Pass the planId, the domain the user chose and the exact openPriceUsd awning_plan showed for it; the tool re-reads the plan and Awning's live x402 quote and refuses on any mismatch, when the plan's Pro package is unavailable, or when the live quote is not a payable 402 (then use awning_open_free). It does not pay: it returns a PayBox x402 payment proposal (USDC on Base, maximum = the quoted price) for the user to approve in PayBox. After approval PayBox sends the paid request; the response (live URL, phone number when included, ownerToken, receipt) arrives through the PayBox request, so poll that request and do not call awning_open again. If provisioning fails, the payment is not settled and nothing is charged; a failure discovered after settlement is refunded and the response says refunded: true.",
     inputSchema: z.object({
       planId,
       domain: z.string().trim().toLowerCase().min(3).max(253).regex(/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/, "a domain from the plan, e.g. ridgeroast.co")
@@ -323,13 +329,13 @@ function createServer() {
       ...proposal,
       content: text([
         upgrade
-          ? `Payment proposal ready: ${formatUsdc(quoted)} USDC on Base to upgrade ${name} from Free to Pro at ${domain} (custom domain, phone line, AI receptionist). It stays live on its free subdomain until the upgrade completes.`
-          : `Payment proposal ready: ${formatUsdc(quoted)} USDC on Base to open ${name} at ${domain} (custom domain, phone line, AI receptionist).`,
+          ? `Payment proposal ready: ${formatUsdc(quoted)} USDC on Base to upgrade ${name} from Free to Pro at ${domain} (${proFeatures(plan)}). It stays live on its free subdomain until the upgrade completes.`
+          : `Payment proposal ready: ${formatUsdc(quoted)} USDC on Base to open ${name} at ${domain} (${proFeatures(plan)}).`,
         `PayBox will ask the user to approve ${formatUsdc(quoted)} USDC. Nothing has been paid yet; the proposal expires at ${expiresAt}.`,
         `After approval PayBox sends POST ${apiBase()}${openPath(id)} with the payment. Poll the returned PayBox request until it is terminal; do not call awning_open again.`,
         upgrade
-          ? "The paid response contains the new URL and phone number; the owner token does not change. If it says refunded: true, provisioning failed and the USDC was returned (refundTx)."
-          : "The paid response contains the live URL, phone number and ownerToken (the user must keep it for awning_add_offer and awning_orders). If it says refunded: true, provisioning failed and the USDC was returned (refundTx).",
+          ? "The paid response contains the new URL (and phone number when Pro includes one); the owner token does not change. If opening fails before payment settles, nothing is charged; if it says refunded: true, the USDC was returned (refundTx)."
+          : "The paid response contains the live URL, the phone number when Pro includes one, and ownerToken (the user must keep it for awning_add_offer and awning_orders). If opening fails before payment settles, nothing is charged; if it says refunded: true, the USDC was returned (refundTx).",
         "Amount checked against Awning's live x402 quote.",
       ].join("\n")),
     };

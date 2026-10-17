@@ -82,10 +82,11 @@ export function packagesView(plan: PlanRow, business: BusinessRow) {
       label: "Pro",
       includes: [
         recommended ? `Custom domain ${recommended.domain} (first year)` : "Custom domain (first year)",
-        "Phone line with an AI receptionist",
+        ...(ready.phone ? ["Phone line with an AI receptionist"] : []),
         "Everything in Free",
-        `$${atomicToUsdString(PRO_FEE_ATOMIC)} first month of phone + receptionist`,
+        ready.phone ? `${atomicToUsdString(PRO_FEE_ATOMIC)} first month of phone + receptionist` : `${atomicToUsdString(PRO_FEE_ATOMIC)} first month of Pro (custom-domain hosting)`,
       ],
+      phoneLine: ready.phone,
       priceUsd: recommended ? atomicToUsd(BigInt(recommended.totalAtomic)) : null,
       ...(recommended ? { domain: recommended.domain } : {}),
       available: proAvailable,

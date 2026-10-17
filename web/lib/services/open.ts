@@ -96,6 +96,8 @@ type OpenState = {
 
 function proSteps(): Step<OpenState>[] {
   const a = adapters();
+  // No real phone provider: Pro opens without a phone line (the plan's Pro includes said so).
+  const phone = () => proReadiness().phone;
   return [
     {
       name: "preflight",
@@ -111,6 +113,7 @@ function proSteps(): Step<OpenState>[] {
     {
       name: "phone",
       timeoutMs: 9000,
+      when: phone,
       run: async (s, signal) => {
         const n = await a.telephony.buy(
           {
@@ -132,6 +135,7 @@ function proSteps(): Step<OpenState>[] {
     {
       name: "receptionist",
       timeoutMs: 9000,
+      when: phone,
       run: async (s, signal) => {
         const r = s.plan.prepared.receptionist;
         // The prompt was written for the recommended domain; point it at the one being opened.
@@ -147,7 +151,7 @@ function proSteps(): Step<OpenState>[] {
       name: "connect_phone",
       timeoutMs: 9000,
       // A mock number cannot be imported into a real voice provider and vice versa.
-      when: () => !a.telephony.mock && !a.receptionist.mock,
+      when: () => phone() && !a.telephony.mock && !a.receptionist.mock,
       run: async (s, signal) => {
         const { phoneId } = await a.receptionist.attachNumber({ agentId: s.prov.receptionistAgentId!, number: s.prov.phoneNumber!, label: s.business.name }, signal);
         s.prov.receptionistPhoneId = phoneId;
