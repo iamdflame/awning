@@ -6,6 +6,7 @@ import { MockTelephony, makeTelephony } from "./telephony";
 import { MockReceptionist, makeReceptionist } from "./receptionist";
 import { TemplateDrafter, makeDrafter } from "./drafter";
 import { LogNotifier, makeNotifier } from "./notifier";
+import { MockImager, makeImager } from "./imager";
 import { MockRefunder, makeRefunder } from "./refunder";
 import type { Adapters } from "./types";
 
@@ -20,7 +21,8 @@ const WHY: Record<keyof Adapters, string> = {
   hosting: "VERCEL_TOKEN/VERCEL_PROJECT_ID not set — custom domains are not attached",
   telephony: "TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN not set — fictional 555-01xx numbers",
   receptionist: "ELEVENLABS_API_KEY not set — phone answers with the TwiML receptionist",
-  drafter: "ANTHROPIC_API_KEY not set — deterministic template drafts",
+  drafter: "neither ANTHROPIC_API_KEY nor AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — deterministic template drafts",
+  imager: "no AI Gateway credentials (AI_GATEWAY_API_KEY / VERCEL_OIDC_TOKEN) — storefronts use their drawn poster art",
   notifier: "Twilio not configured — owner notifications are logged",
   refunder: "AWNING_TREASURY_PRIVATE_KEY not set — refunds are simulated",
 };
@@ -35,6 +37,7 @@ function build(): Adapters {
         drafter: new TemplateDrafter(),
         notifier: new LogNotifier(),
         refunder: new MockRefunder(),
+        imager: new MockImager(),
       }
     : {
         registrar: makeRegistrar(),
@@ -45,6 +48,7 @@ function build(): Adapters {
         notifier: makeNotifier(),
         // Simulated payments must never trigger real refunds.
         refunder: env.facilitatorUrl() === "mock" ? new MockRefunder() : makeRefunder(),
+        imager: makeImager(),
       };
   for (const [k, v] of Object.entries(a) as [keyof Adapters, Adapters[keyof Adapters]][]) {
     if (v.mock) announceMock(k, forceMocks() ? "AWNING_FORCE_MOCKS=1" : WHY[k]);

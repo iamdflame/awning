@@ -1,4 +1,5 @@
 import type { OfferKind, Palette } from "../db/schema";
+import type { Imager } from "./imager";
 
 export type DnsRecord = { type: "A" | "CNAME"; name: string; content: string };
 
@@ -108,6 +109,7 @@ export interface Refunder {
 }
 
 export type Adapters = {
+  imager: Imager;
   registrar: Registrar;
   hosting: Hosting;
   telephony: Telephony;

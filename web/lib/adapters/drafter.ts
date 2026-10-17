@@ -3,6 +3,7 @@ import { env } from "../env";
 import { log, errorMessage } from "../log";
 import { CATEGORY_LABELS, categoryByLabel } from "../plan/catalog";
 import { detectPricedOffers, templateDraft } from "../plan/template";
+import { GATEWAY_URL, gatewayConfigured, gatewayEnv, gatewayToken } from "./gateway";
 import { ProviderError, excerpt, http, obj } from "./http";
 import type { BusinessDraft, DraftInput, Drafter } from "./types";
 
@@ -94,13 +95,7 @@ export class AnthropicDrafter implements Drafter {
   ) {}
 
   async draft(input: DraftInput, signal?: AbortSignal): Promise<BusinessDraft> {
-    const user = [
-      `Owner's sentence: ${JSON.stringify(input.sentence)}`,
-      input.ownerName ? `Owner's name: ${JSON.stringify(input.ownerName)}` : null,
-      input.country ? `Country: ${input.country}` : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
+    const user = userMessage(input);
     const res = await http("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": this.apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -122,6 +117,108 @@ export class AnthropicDrafter implements Drafter {
     const parsed = draftSchema.safeParse(block.input);
     if (!parsed.success) throw new ProviderError("anthropic", `draft failed validation: ${parsed.error.issues[0]?.message ?? "invalid"}`);
     return { ...parsed.data, city: parsed.data.city ?? null, offers: parsed.data.offers.map((o) => ({ ...o, description: o.description ?? "" })) };
+  }
+}
+
+function userMessage(input: DraftInput): string {
+  return [
+    `Owner's sentence: ${JSON.stringify(input.sentence)}`,
+    input.ownerName ? `Owner's name: ${JSON.stringify(input.ownerName)}` : null,
+    input.country ? `Country: ${input.country}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * The same draft schema as the Anthropic tool, as an OpenAI-style `json_schema`
+ * response format. `city` is a plain string ("" when the owner named no place)
+ * because not every provider behind the gateway accepts union types.
+ */
+const GATEWAY_FORMAT = {
+  type: "json_schema",
+  json_schema: {
+    name: TOOL.name,
+    description: TOOL.description,
+    strict: true,
+    schema: {
+      ...TOOL.input_schema,
+      properties: { ...TOOL.input_schema.properties, city: { type: "string", description: "The city the owner named, or an empty string." } },
+    },
+  },
+} as const;
+
+/** Strips code fences and surrounding prose, then parses the first JSON object in a completion. */
+function jsonFromText(text: string): unknown {
+  const t = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try {
+    return JSON.parse(t);
+  } catch {
+    const a = t.indexOf("{");
+    const b = t.lastIndexOf("}");
+    if (a >= 0 && b > a) return JSON.parse(t.slice(a, b + 1));
+    throw new ProviderError("ai-gateway", "completion was not JSON");
+  }
+}
+
+/** Parses an AI Gateway chat completion into a validated draft (same rules as the Anthropic drafter). */
+export function parseGatewayDraft(body: unknown): BusinessDraft {
+  const choices = obj(body).choices;
+  const message = obj(Array.isArray(choices) ? obj(choices[0]).message : undefined);
+  const content = Array.isArray(message.content)
+    ? message.content.map((part) => (typeof part === "string" ? part : String(obj(part).text ?? ""))).join("")
+    : message.content;
+  if (typeof content !== "string" || !content.trim()) throw new ProviderError("ai-gateway", "empty completion");
+  let raw: unknown;
+  try {
+    raw = jsonFromText(content);
+  } catch (err) {
+    throw err instanceof ProviderError ? err : new ProviderError("ai-gateway", "completion was not JSON");
+  }
+  const parsed = draftSchema.safeParse(raw);
+  if (!parsed.success) throw new ProviderError("ai-gateway", `draft failed validation: ${parsed.error.issues[0]?.message ?? "invalid"}`);
+  return {
+    ...parsed.data,
+    city: parsed.data.city?.trim() ? parsed.data.city.trim() : null,
+    offers: parsed.data.offers.map((o) => ({ ...o, description: o.description ?? "" })),
+  };
+}
+
+/**
+ * Vercel AI Gateway chat completions (OpenAI-compatible) with a strict JSON schema.
+ * Used when there is no Anthropic key: the free tier serves google/gemini-2.5-flash.
+ * Reasoning is switched off: the draft must fit inside the plan's LLM budget.
+ */
+export class GatewayDrafter implements Drafter {
+  readonly name = "ai-gateway";
+  readonly mock = false;
+  constructor(
+    private readonly model: string,
+    private readonly token: () => Promise<string> = gatewayToken,
+  ) {}
+
+  async draft(input: DraftInput, signal?: AbortSignal): Promise<BusinessDraft> {
+    const token = await this.token();
+    const res = await http(`${GATEWAY_URL}/chat/completions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: "system", content: `${SYSTEM}\nAnswer with one JSON object that matches the draft_business schema, nothing else.` },
+          { role: "user", content: userMessage(input) },
+        ],
+        response_format: GATEWAY_FORMAT,
+        reasoning: { effort: "none" },
+        max_tokens: 1500,
+        temperature: 0.6,
+        stream: false,
+      }),
+      signal,
+      timeoutMs: 15000,
+    });
+    if (!res.ok) throw new ProviderError("ai-gateway", `chat completion failed (${res.status}): ${excerpt(res.text)}`, res.status);
+    return parseGatewayDraft(res.json);
   }
 }
 
@@ -211,8 +308,10 @@ export async function draftBusiness(drafter: Drafter, input: DraftInput): Promis
   return { draft: finalizeDraft(templateDraft(input), input), source: "template" };
 }
 
+/** Anthropic when ANTHROPIC_API_KEY is set; else the AI Gateway when it has credentials; else the template. */
 export function makeDrafter(): Drafter {
   const key = env.anthropicKey();
   if (key) return new AnthropicDrafter(key, env.anthropicModel());
+  if (gatewayConfigured()) return new GatewayDrafter(gatewayEnv.llmModel());
   return new TemplateDrafter();
 }
