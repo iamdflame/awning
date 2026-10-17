@@ -7,11 +7,11 @@ The film needs screen recordings that only you can make, because the payments ar
 **PayBox**
 - Awning is enabled in your PayBox account (Plugins → Unofficial plugins → Awning → Enable).
 - **One PayBox account, two agents.** Until PayBox publishes Awning, only your developer account can use it, so both takes use your account: **Claude.ai** (browser) is the owner, **Claude Code** (terminal) is the buyer.
-- **Set up Claude Code with the PayBox CLI** (once, not recorded). In a terminal agent PayBox uses its CLI, not MCP (PayBox docs: agents on a computer with no connector screen use the CLI; it signs on your machine):
-  1. In PowerShell: `npm install -g @anthropic-ai/claude-code @paybox-sh/sdk`, then close and reopen the terminal.
-  2. `mkdir C:demo-buyer; cd C:demo-buyer`, run `claude` and sign in to your Claude account if asked.
-  3. Ask Claude Code: *"Set up the PayBox CLI on this machine: run paybox login --no-open and paybox connect --no-open and give me the links."* Open each link: approve the login with your PayBox account (same email and passkey as before), then match the emoji row it shows (same kind of check you did in Claude.ai).
-  4. Check: *"Run paybox --json whoami and paybox --json plugins list awning."* It should say canSign: true and list Awning.
+- **Set up the buyer: Claude Code in its own VS Code window, with the PayBox CLI** (once, not recorded). PayBox's guidance for agents without a connector screen is its CLI, which signs on your machine:
+  1. In PowerShell: `npm install -g @paybox-sh/sdk`.
+  2. VS Code → File → **New Window** → Open Folder `C:UsersDflameideosdemo-buyer` → open the **Claude Code** panel → start a **new conversation** (not the one building Awning).
+  3. Ask: *"Set up the PayBox CLI on this machine: run paybox login --no-open and paybox connect --no-open and give me the links."* When Claude Code asks to run `paybox`, choose **Yes, and don't ask again** (so the take has no permission prompts). Open each link: approve the login with your PayBox account (same email and passkey), then pick the matching emoji row.
+  4. Check: *"Run paybox --json whoami and paybox --json plugins list awning."* Expect canSign: true and Awning in the list.
 - Quick check before recording, in a **new chat**: *"Using PayBox, run the Awning plugin's awning_about tool."* It should describe Awning. If it can't find the plugin, enable it again (PayBox → Plugins → Unofficial plugins) and check the PayBox connector is on for the chat.
 - **One-time agent verification, before recording (no money, no clock).** PayBox asks a new agent connection to match emojis the first time it signs. Do it with a plain message signature, not a payment: in Claude, ask *"Use PayBox to sign the message 'Verify my agent' with my Base wallet."*, then in the signing window match the emojis and approve with your passkey. Do the same once in Claude Code before the buyer take.
 - **Ask for Pro directly**, never the free version first (an upgrade adds a step and a second plan).
@@ -38,9 +38,9 @@ Start recording, then:
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
 
-## Buyer take → `buyer.mp4` (Claude Code in a terminal, same PayBox account)
+## Buyer take → `buyer.mp4` (Claude Code in its own VS Code window, same PayBox account)
 
-Terminal maximized, font enlarged (Ctrl + = a few times, about 18 pt), dark theme is fine. Start `claude` in the demo folder, start recording, then:
+The buyer VS Code window maximized, the Claude Code panel wide (drag it to fill most of the window), editor zoom up (Ctrl + = twice), a new conversation. Start recording, then:
 
 1. Type and send:
    > Using the PayBox CLI, find a coffee tasting in Accra on Awning and book one for Saturday morning.
