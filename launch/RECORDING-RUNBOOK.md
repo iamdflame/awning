@@ -1,13 +1,15 @@
 # Recording runbook: the two agent takes
 
-The film needs two screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a different agent buys from it). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
+The film needs screen recordings that only you can make, because the payments are approved with your passkey: the **owner take** (you open Ridge Roast in Claude) and the **buyer take** (a different agent, ChatGPT, buys from it). Everything else in the film (the site, the live receipt, the diagram, the captions, your voice) is already built around them. Don't talk while recording; the narration is added in the edit. Don't worry about waits or typos either: keep recording, and the edit cuts them.
 
 ## Before you start (10 minutes)
 
 **PayBox**
 - Awning is enabled in your PayBox account (Plugins → Unofficial plugins → Awning → Enable).
-- **Owner account:** PayBox connected to **Claude.ai** (Settings → Connectors → PayBox). Its Base wallet holds **at least 12 USDC** (the Ridge Roast opening on `ridgeroast.shop` costs 11.06 USDC: 2.06 for the domain's first year plus 9.00 for Pro).
-- **Buyer:** a **second PayBox account** (another email) connected to **ChatGPT**, with Awning enabled there too and **at least 6 USDC** on Base. If you only have one PayBox account, use ChatGPT on the same account and tell me: I'll change the line "someone else asks their agent" to "a different agent".
+- **One PayBox account, two agents.** Until PayBox publishes Awning, only your developer account can use it, so both takes use your account: **Claude.ai** is the owner, **ChatGPT** is the buyer. Connect PayBox to both (Claude: Settings → Connectors; ChatGPT: Settings → Connectors / Apps).
+- **Two wallets, so the sale visibly moves money:**
+  - **Paying wallet** (your PayBox Base wallet): at least **17 USDC** (11.06 for the Ridge Roast opening on `ridgeroast.shop`: 2.06 domain + 9.00 Pro, then 5.00 for the tasting).
+  - **Sales wallet** (where Ridge Roast's sales land): a **different** Base address you own. Either a second wallet in PayBox, if your account lets you add one, or any wallet you control (Coinbase Wallet, MetaMask, …). Copy its address.
 - Quick check before recording: in Claude, ask *"Use the Awning plugin's awning_about tool."* It should answer with what Awning is. If it can't find the plugin, enable it again and start a new chat.
 
 **Screen**
@@ -20,7 +22,7 @@ The film needs two screen recordings that only you can make, because the payment
 Start recording, then:
 
 1. New chat. Type exactly and send:
-   > Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags and a $5 tasting session. Sales go to my PayBox wallet.
+   > Start a business: Ridge Roast, small-batch coffee from Accra. Sell 250 g bags and a $5 tasting session. Sales go to my wallet 0x… (paste your sales wallet address).
 2. Wait for the plan (name, offers, domains with prices). Let it sit on screen for 3 seconds.
 3. Click the **preview link**. Let the draft storefront load, scroll slowly to the offers, pause 2 seconds, go back to the chat.
 4. Type and send (use the `.shop` domain the plan lists, at the price it shows):
@@ -29,7 +31,7 @@ Start recording, then:
 6. Wait for the result ("live at …"). Open the **awning.sh address** it gives (`liveNowAt`, it works at once; the new domain can take a few minutes). Scroll slowly from the top to the **"Buy with your AI agent"** box.
 7. Stop recording.
 
-## Buyer take → `buyer.mp4` (ChatGPT, the second account)
+## Buyer take → `buyer.mp4` (ChatGPT, same PayBox account)
 
 Start recording, then:
 
@@ -37,7 +39,7 @@ Start recording, then:
    > Find a coffee tasting in Accra and book one for Saturday morning.
 2. When it shows Ridge Roast and the $5 tasting, type and send:
    > Yes, book it.
-3. The PayBox approval shows **5.00 USDC** to the owner's wallet: hold 2 seconds, **approve**.
+3. The PayBox approval shows **5.00 USDC** to the sales wallet: hold 2 seconds, **approve** (paying from your PayBox wallet).
 4. Wait for the confirmation with the order code. Hold 3 seconds. Stop recording.
 
 ## Owner take 2 → `owner-2.mp4` (Claude, same chat as before)

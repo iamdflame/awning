@@ -30,7 +30,7 @@ const LINES = {
   "02": "Starting a small business still means a website, a domain, a checkout. And there's a new kind of customer now: AI agents with wallets. In a September audit of two hundred retailers, only thirty-eight could take their money.",
   "03": "Here's Ridge Roast, a coffee roaster in Accra. Awning names it, prices the offers, checks real domains, and puts up a private preview. Nothing is paid yet.",
   "04": "One approval in PayBox, and Ridge Roast is open. On its own domain. A real one.",
-  "05": "Now someone else asks their agent for a coffee tasting in Accra. Five dollars in U-S-D-C, approved in their PayBox, paid straight to the owner's wallet. Ridge Roast's first customer was an AI.",
+  "05": "Now a different agent goes shopping for a coffee tasting in Accra. It finds Ridge Roast on its own. Five dollars in U-S-D-C, one approval, paid straight to the owner's wallet. Ridge Roast's first customer was an AI.",
   "06": "The owner runs the shop from the same chat: add a subscription box, check the orders. Every shop is listed where any agent can find it, and every sale lands on a public receipt you can check on chain.",
   "07": "Under the hood, the plugin never moves money. It proposes, and PayBox asks you. Awning only takes the payment after the shop is live, so if anything fails, you're not charged. Sales go straight to the owner's wallet. Awning never holds them.",
   "08": "Every business on Awning... is born agent-payable.",
