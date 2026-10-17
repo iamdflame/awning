@@ -49,7 +49,7 @@ Full list with comments: [`../.env.example`](../.env.example). Every provider is
 | `AWNING_FACILITATOR_URL` | x402 `/verify` + `/settle` | PayAI `https://facilitator.payai.network`; `mock` = local signature check, no settlement (dev/test only) |
 | `BASE_RPC_URL` | Refund transfers, on-chain `authorizationState` checks | `https://mainnet.base.org` |
 | `DATABASE_URL` | Neon/Postgres (`@neondatabase/serverless`, drizzle) | PGlite in `web/.data/` |
-| `ANTHROPIC_API_KEY`, `AWNING_LLM_MODEL` | Business drafts (`claude-sonnet-5-5`, forced tool call → strict JSON) | deterministic template drafter |
+| `ANTHROPIC_API_KEY`, `AWNING_LLM_MODEL`, `AWNING_LLM_TIMEOUT_MS` | Business drafts (`claude-sonnet-5-5`, forced tool call → strict JSON, validated and normalised); domain checks run in parallel; over budget (default 6500 ms) or on error → template | deterministic template drafter |
 | `PORKBUN_API_KEY`, `PORKBUN_SECRET_KEY`, `PORKBUN_PAY_WITH` | Availability/price, registration, DNS (`credit` or `usdc` over x402) | deterministic mock registrar with snapshot prices |
 | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | Attach custom domains to the project | mock hosting |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Buy local numbers, TwiML receptionist, owner SMS | fictional `+1 202 555 01xx` numbers, logged notifications |
@@ -71,7 +71,7 @@ the unpaid request is a quote and **never has side effects** — no DB writes, n
 | Method & path | Auth | Returns |
 |---|---|---|
 | `GET /v1/health` | public | `{ok, version, lastOpenAt, lastOrderAt, checks, facilitator, adapters}`; 503 when not ok |
-| `POST /v1/plan` | plugin | `{planId, expiresAt, status, business{slug,name,tagline,description,category,city?,palette,offers[],status:"draft"}, previewUrl, domains[{domain, available, priceUsd, totalUsd, totalAtomic}], recommendedDomain, packages[{id,label,includes,priceUsd}], openUrl}` (201) |
+| `POST /v1/plan` `{sentence (≤600), ownerWallet, ownerName?, ownerEmail?, ownerPhone? (E.164, for order SMS), country?}` | plugin | `{planId, expiresAt, status, business{slug,name,tagline,description,category,city?,palette,offers[],status:"draft"}, previewUrl, domains[{domain, available, priceUsd, totalUsd, totalAtomic}], recommendedDomain, packages[{id,label,includes,priceUsd}], openUrl}` (201) |
 | `GET /v1/plans/:planId` | plugin | same shape, current status |
 | `POST /v1/open-free` `{planId}` | plugin | `{business{slug,name,url,domain:null,phone:null,status:"live",package:"free"}, ownerToken, steps}`; idempotent (`alreadyOpen: true`, same token) |
 | `GET /v1/businesses?q=&category=&limit=` | public | `{businesses:[{slug,name,tagline,category,city,url,phone?,offers[{sku,title,priceUsd,kind}],openedAt,salesCount}]}` (live only; `q` also searches offers) |

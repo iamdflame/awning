@@ -21,7 +21,7 @@ describe("x402 protocol compatibility and concurrency", () => {
     const v1 = await readJson(challenge);
     expect(v1.x402Version).toBe(1);
     const buyer = newBuyer();
-    const client = x402Client.fromConfig({ schemes: [{ network: "base", client: new ExactEvmSchemeV1(buyer), x402Version: 1 }], spendControls: false });
+    const client = x402Client.fromConfig({ schemes: [{ network: "base" as `${string}:${string}`, client: new ExactEvmSchemeV1(buyer), x402Version: 1 }], spendControls: false });
     const payload = await client.createPaymentPayload(v1);
     expect(payload.x402Version).toBe(1);
     const res = await buy(slug, sku, { qty: 1 }, { "X-PAYMENT": encodePaymentSignatureHeader(payload) });

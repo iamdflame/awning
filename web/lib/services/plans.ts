@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { getAddress, isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 import { adapters } from "../adapters";
-import { draftBusiness } from "../adapters/drafter";
+import { finalizeDraft } from "../adapters/drafter";
+import { templateDraft } from "../plan/template";
 import type { DomainCheck } from "../adapters/types";
 import { db, schema } from "../db/client";
 import type { PlanDomain, PlanRow, PreparedPlan } from "../db/schema";
@@ -90,8 +91,55 @@ async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, ms: number
  */
 export async function createPlan(input: PlanInput) {
   const a = adapters();
-  const { draft, source } = await draftBusiness(a.drafter, { sentence: input.sentence, ownerName: input.ownerName, country: input.country });
+  const draftInput = { sentence: input.sentence, ownerName: input.ownerName, country: input.country };
   const country = countryCode(input.country);
+
+  // Latency: the template draft is instant, so domain checks and the phone
+  // search start immediately, in parallel with the LLM draft. When the LLM
+  // names the business differently, its own domains are checked (bounded);
+  // if that cannot finish, the template draft is used so name and domains agree.
+  const template = finalizeDraft(templateDraft(draftInput), draftInput);
+  const checkFor = (name: string, city: string | null, ms: number) => {
+    const c = domainCandidates(slugify(name), city);
+    const checks = withTimeout((s) => a.registrar.check([...c.primary, ...c.variants], s), ms).catch((err) => {
+      log.warn("domain check failed", { error: errorMessage(err) });
+      return [] as DomainCheck[];
+    });
+    return { ...c, checks };
+  };
+  const firstCheck = checkFor(template.name, template.city, 8000);
+  const phoneSearch = withTimeout((s) => a.telephony.search(country, s), 5000).catch((err) => {
+    log.warn("phone search failed", { error: errorMessage(err) });
+    return [] as string[];
+  });
+  const llmDraft = a.drafter.mock
+    ? Promise.resolve(null)
+    : withTimeout((s) => a.drafter.draft(draftInput, s), env.llmTimeoutMs())
+        .then((raw) => finalizeDraft(raw, draftInput))
+        .catch((err) => {
+          log.warn("LLM draft failed; using template", { error: errorMessage(err) });
+          return null;
+        });
+
+  let draft = template;
+  let source: "llm" | "template" = "template";
+  let domainSet = firstCheck;
+  const llm = await llmDraft;
+  if (llm) {
+    draft = llm;
+    source = "llm";
+    const label = domainCandidates(slugify(llm.name), llm.city).label;
+    if (label !== firstCheck.label) {
+      const second = checkFor(llm.name, llm.city, 3500);
+      if ((await second.checks).length) domainSet = second;
+      else {
+        draft = template;
+        source = "template";
+      }
+    }
+  }
+  const { primary, variants } = domainSet;
+  const [checks, phoneCandidates] = await Promise.all([domainSet.checks, phoneSearch]);
 
   // Offers: validated prices (whole cents, in range) and unique SKUs.
   const takenSkus = new Set<string>();
@@ -107,18 +155,6 @@ export async function createPlan(input: PlanInput) {
 
   const d = await db();
   let slug = await allocateSlug(draft.name, draft.city);
-  const { primary, variants } = domainCandidates(slug, draft.city);
-
-  const [checks, phoneCandidates] = await Promise.all([
-    withTimeout((s) => a.registrar.check([...primary, ...variants], s), 9000).catch((err) => {
-      log.warn("domain check failed", { error: errorMessage(err) });
-      return [] as DomainCheck[];
-    }),
-    withTimeout((s) => a.telephony.search(country, s), 5000).catch((err) => {
-      log.warn("phone search failed", { error: errorMessage(err) });
-      return [] as string[];
-    }),
-  ]);
   const domains = pickDomains(checks, primary, variants).map(toPlanDomain);
   const recommended = domains.find((x) => x.available)?.domain ?? null;
 
