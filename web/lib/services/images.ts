@@ -93,11 +93,13 @@ export async function generateBusinessImages(slug: string): Promise<GenerateResu
   try {
     const prompts = photoPrompts({ ...business, offers: await offersFor(business.id) });
     const d = await db();
-    const results = await Promise.allSettled(
-      roles.map(async (role) => {
+    const created: ImageRole[] = [];
+    // One at a time: the gateway's image models are rate limited per minute.
+    for (const role of roles) {
+      try {
         const t0 = Date.now();
-        const img = await imager.generate(prompts[role]);
-        if (!img) return null;
+        const img = await withRateLimitRetry(() => imager.generate(prompts[role]));
+        if (!img) continue;
         const webp = await encodeWebp(img.bytes);
         await d
           .insert(businessImages)
@@ -114,18 +116,28 @@ export async function generateBusinessImages(slug: string): Promise<GenerateResu
             dataB64: webp.data.toString("base64"),
           })
           .onConflictDoNothing();
+        created.push(role);
         log.info("image generated", { slug, role, ms: Date.now() - t0, kb: Math.round(webp.data.length / 1024) });
-        return role;
-      }),
-    );
-    const created: ImageRole[] = [];
-    for (const r of results) {
-      if (r.status === "fulfilled" && r.value) created.push(r.value);
-      else if (r.status === "rejected") log.warn("image generation failed", { slug, error: errorMessage(r.reason) });
+      } catch (err) {
+        log.warn("image generation failed", { slug, role, error: errorMessage(err) });
+      }
     }
     return { created };
   } finally {
     g.__awningImagesInflight = Math.max(0, (g.__awningImagesInflight ?? 0) - roles.length);
+  }
+}
+
+/** Retries once when the provider says how long to wait (HTTP 429, "Retry after Ns"), up to 20 s. */
+async function withRateLimitRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    const msg = errorMessage(err);
+    const wait = /\(429\)/.test(msg) ? Number(/retry after (\d+)\s*s/i.exec(msg)?.[1] ?? 10) : NaN;
+    if (!Number.isFinite(wait) || wait > 20) throw err;
+    await new Promise((r) => setTimeout(r, (wait + 1) * 1000));
+    return fn();
   }
 }
 
@@ -136,6 +148,7 @@ export async function generateBusinessImages(slug: string): Promise<GenerateResu
  */
 export function scheduleBusinessImages(slug: string): void {
   if (adapters().imager.mock) return;
+  lastAttempt.set(slug, Date.now());
   try {
     after(() =>
       generateBusinessImages(slug).catch((err) => {
@@ -145,4 +158,18 @@ export function scheduleBusinessImages(slug: string): void {
   } catch (err) {
     log.warn("image generation not scheduled", { slug, error: errorMessage(err) });
   }
+}
+
+const lastAttempt: Map<string, number> = ((globalThis as unknown as { __awningImageAttempts?: Map<string, number> }).__awningImageAttempts ??= new Map());
+
+/**
+ * A storefront without its photos (a rate limit, an outage, a business opened
+ * before photography existed) asks for them again after it renders, at most
+ * once every 10 minutes per business; the hourly cap still applies.
+ */
+export function backfillBusinessImages(slug: string, missing: boolean): void {
+  if (!missing || adapters().imager.mock) return;
+  const last = lastAttempt.get(slug) ?? 0;
+  if (Date.now() - last < 10 * 60_000) return;
+  scheduleBusinessImages(slug);
 }

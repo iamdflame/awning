@@ -24,7 +24,7 @@ const SCENES: Scene[] = [
   },
   {
     re: /ceramic|pottery|potter|\bclay\b|stoneware|porcelain|kiln/i,
-    hero: "a bright ceramics studio: a potter's wheel with a freshly thrown bowl, wooden shelves of glazed stoneware, bags of clay, soft daylight from large windows",
+    hero: "a bright ceramics studio: a potter's wheel with a freshly thrown bowl, wooden shelves of glazed stoneware, soft daylight from large windows",
     detail: "a close-up of handmade stoneware bowls and cups with flowing, drippy glaze on a linen cloth",
   },
   {

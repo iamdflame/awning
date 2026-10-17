@@ -4,7 +4,7 @@ import { cache, type CSSProperties, type ReactNode } from "react";
 import { businessUrl } from "@/lib/env";
 import { buildStoreView, usd, type StoreOffer, type StoreView } from "@/lib/design/storefront";
 import { getBusinessByDomain, getBusinessBySlug, offersFor } from "@/lib/services/businesses";
-import { imagesFor } from "@/lib/services/images";
+import { backfillBusinessImages, imagesFor } from "@/lib/services/images";
 import { StoreClient } from "./store-client";
 import "./storefront.css";
 import "./storefront-live.css";
@@ -294,6 +294,7 @@ export default async function Storefront({ params }: Props) {
   if (!data) notFound();
   const v = data.view;
   if (v.status === "suspended") return <Closed v={v} />;
+  backfillBusinessImages(v.slug, !v.photos.hero || !v.photos.detail);
   const draft = v.status === "draft";
   const f = v.featured;
   const detail = v.photos.detail;

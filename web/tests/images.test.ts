@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { GatewayImager, MockImager, parseImageResponse, type GeneratedImage, type Imager } from "@/lib/adapters/imager";
 import { ProviderError } from "@/lib/adapters/http";
 import { photoPrompts, colorWords } from "@/lib/plan/photos";
-import { generateBusinessImages, imagesFor, scheduleBusinessImages } from "@/lib/services/images";
+import { backfillBusinessImages, generateBusinessImages, imagesFor, scheduleBusinessImages } from "@/lib/services/images";
 import { getBusinessBySlug } from "@/lib/services/businesses";
 import { GET as imgGET } from "@/app/img/[id]/route";
 import { db, schema } from "@/lib/db/client";
@@ -101,6 +101,36 @@ describe("imager", () => {
     const d = await db();
     await d.update(schema.businesses).set({ status: "suspended" }).where(eq(schema.businesses.slug, p.business.slug));
     expect((await generateBusinessImages(p.business.slug)).skipped).toBe("suspended");
+  });
+
+  it("generates one photo at a time and retries once when the provider rate-limits", async () => {
+    let calls = 0;
+    const limited: Imager = {
+      name: "limited",
+      mock: false,
+      async generate() {
+        calls++;
+        if (calls === 1) throw new ProviderError("ai-gateway", 'image generation failed (429): {"error":{"message":"Rate limit exceeded. Retry after 0s."}}', 429);
+        return { bytes: await png(), model: "test/fake-model" };
+      },
+    };
+    await freshWorld({ imager: limited });
+    const p = await createPlan();
+    expect((await generateBusinessImages(p.business.slug)).created).toEqual(["hero", "detail"]);
+    expect(calls).toBe(3);
+  });
+
+  it("a storefront missing photos asks for them again, at most once per 10 minutes", async () => {
+    await freshWorld({ imager: new FakeImager() });
+    const p = await createPlan(); // the plan itself scheduled generation
+    scheduled.length = 0;
+    backfillBusinessImages(p.business.slug, true);
+    expect(scheduled).toHaveLength(0); // just attempted by the plan
+    backfillBusinessImages("some-other-shop", true);
+    expect(scheduled).toHaveLength(1);
+    backfillBusinessImages("some-other-shop", true);
+    backfillBusinessImages("complete-shop", false);
+    expect(scheduled).toHaveLength(1);
   });
 
   it("parses the gateway's images response and sends the documented request", async () => {
