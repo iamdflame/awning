@@ -3,6 +3,7 @@ import { adapters } from "../adapters";
 import { db, schema } from "../db/client";
 import type { PaymentRow, StoredResponse } from "../db/schema";
 import { errorMessage, log } from "../log";
+import { alertOperator } from "../ops/alert";
 import { atomicToUsd } from "../money";
 import { facilitator } from "./facilitator";
 import type { Authorization } from "./seller";
@@ -71,7 +72,7 @@ async function releasePlan(p: PaymentRow, why: string) {
     .set({ status: live ? "opened" : "quoted", openPaymentKey: null, lastError: why.slice(0, 500), updatedAt: new Date() })
     .where(and(eq(schema.plans.id, plan.id), eq(schema.plans.openPaymentKey, p.key)));
   // Steps that finished before the interruption may have created provider resources.
-  log.error("OPERATOR: interrupted paid open — check provider resources for this plan", { planId: plan.id, steps: plan.openSteps, provisioning: biz?.provisioning });
+  await alertOperator("interrupted paid open: check provider resources for this plan", { planId: plan.id, steps: plan.openSteps, provisioning: biz?.provisioning });
 }
 
 export async function reconcilePayments(opts: { now?: number; limit?: number } = {}): Promise<ReconcileOutcome[]> {
@@ -123,7 +124,7 @@ export async function reconcilePayments(opts: { now?: number; limit?: number } =
       } catch (err) {
         const body = { refunded: false, charged: true, paidUsd, message: "Your payment settled but the opening could not be completed. Awning's operator has been alerted and will refund it; keep this response." };
         await store(p.key, "settled", { status: 502, body }, { error: `${reason}; refund failed: ${errorMessage(err)}` });
-        log.error("OPERATOR: REFUND REQUIRED", { key: p.key, payer: p.payer, amountAtomic: p.amountAtomic, error: errorMessage(err) });
+        await alertOperator("REFUND REQUIRED: automatic refund failed", { key: p.key, payer: p.payer, amountAtomic: p.amountAtomic, error: errorMessage(err) });
         out.push({ key: p.key, from: "working", to: "settled", note: "refund failed; operator alerted" });
       }
       await releasePlan(p, reason);
@@ -133,7 +134,7 @@ export async function reconcilePayments(opts: { now?: number; limit?: number } =
     if (p.status === "working" && used) {
       const body = { error: "delivery_failed", message: "Payment settled to the seller but the order could not be recorded. Contact the seller with this payment.", charged: true, refunded: false, paidUsd };
       await store(p.key, "settled", { status: 502, body }, { error: "order settled but not recorded (reconciled)" });
-      log.error("OPERATOR: order settled to the seller but not recorded", { key: p.key, refId: p.refId, payer: p.payer, payTo: p.payTo, amountAtomic: p.amountAtomic });
+      await alertOperator("order settled to the seller but not recorded", { key: p.key, refId: p.refId, payer: p.payer, payTo: p.payTo, amountAtomic: p.amountAtomic });
       out.push({ key: p.key, from: "working", to: "settled", note: "order not recorded; operator alerted" });
       continue;
     }
@@ -146,7 +147,7 @@ export async function reconcilePayments(opts: { now?: number; limit?: number } =
 
     if (neverSettles) {
       await store(p.key, "failed", p.response ?? { status: 200, body: { ok: true } }, { error: "delivered but the authorization never settled (reconciled)" });
-      log.error("OPERATOR: delivered without settlement", { key: p.key, purpose: p.purpose, refId: p.refId, amountAtomic: p.amountAtomic });
+      await alertOperator("delivered without settlement", { key: p.key, purpose: p.purpose, refId: p.refId, amountAtomic: p.amountAtomic });
       out.push({ key: p.key, from: "unconfirmed", to: "failed", note: "never settled; operator alerted" });
       continue;
     }

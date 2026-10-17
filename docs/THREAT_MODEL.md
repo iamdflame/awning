@@ -264,7 +264,7 @@ There is no deletion endpoint and no retention job on `main`. In mock mode, the 
 5. **Storefront page for suspended businesses.** At `fdfb2ac`, `web/app/s/[slug]/page.tsx` still renders a suspended business as a preview with its buy prompts; checkout itself is refused. A closed-for-review view is being built.
 6. **Delivered without settlement.** When the facilitator's answer was unclear and the authorization never settles, the reconciler marks the payment `failed` and alerts the operator, but the business stays open or the order stays recorded; reversing it is manual.
 7. **Order settled but not recorded.** If a sale settles to the owner and the order cannot be recorded, the buyer is told to contact the seller and the operator is alerted; Awning cannot refund it.
-8. **Report griefing.** Reports from three distinct networks can suspend any business until an operator restores it.
+8. **Report griefing (narrowed).** Reports from three distinct networks still hold a *new or barely used* business (open < 14 days or < 3 sales) until an operator reviews it. Established businesses are never held by reports alone; the operator is paged instead (`isEstablished` in `web/lib/policy/safety.ts`).
 9. **Screening coverage.** English keyword rules and a fixed brand list; other languages and unlisted brands pass.
 10. **Owner-token retry window.** For 10 minutes after a free opening, anyone with the `planId` and the plugin key can read the owner token from `/v1/open-free`.
-11. **Operator alerts are log lines.** `OPERATOR:` and `REFUND FAILED` messages go to the server log; nothing pages a person yet.
+11. **Operator paging depends on configuration.** `alertOperator` (`web/lib/ops/alert.ts`) logs every alert and also posts it to `AWNING_OPS_WEBHOOK_URL` (Slack/Discord-compatible) and texts `AWNING_OPERATOR_PHONE` when those are set; with neither set, alerts are log lines only.

@@ -7,6 +7,7 @@ import type { BusinessRow, Provisioning } from "../db/schema";
 import { env } from "../env";
 import { newId } from "../ids";
 import { errorMessage, log } from "../log";
+import { alertOperator } from "../ops/alert";
 import type { PolicyResult } from "./screen";
 
 /** Thrown by services when published text breaks the acceptable use policy (→ 422). */
@@ -86,8 +87,18 @@ export const reportSchema = z.object({
   contact: z.string().trim().max(200).optional(),
 });
 
-/** Distinct reporters within 24 h that pause a business's checkout until a person reviews it. */
+/** Distinct reporter networks within 24 h that pause a business's checkout until a person reviews it. */
 export const AUTO_HOLD_REPORTERS = 3;
+/**
+ * Automatic holds are for new or barely used businesses, where phishing lives. An established
+ * business (open for 14 days with 3+ sales) is never taken down by reports alone: a person is paged.
+ */
+const ESTABLISHED_AGE_MS = 14 * 24 * 3600_000;
+const ESTABLISHED_SALES = 3;
+
+export function isEstablished(b: Pick<BusinessRow, "openedAt" | "salesCount">, now = Date.now()): boolean {
+  return !!b.openedAt && now - new Date(b.openedAt).getTime() >= ESTABLISHED_AGE_MS && b.salesCount >= ESTABLISHED_SALES;
+}
 const REPORTS_PER_REPORTER_PER_DAY = 5;
 
 /** The reporter's network, not their address: IPv4 /24, IPv6 /48. Three reports from one network count once. */
@@ -139,8 +150,13 @@ export async function fileReport(input: z.infer<typeof reportSchema>, reporter: 
     .where(and(eq(schema.events.type, "report"), eq(schema.events.slug, b.slug), gt(schema.events.at, since)));
   let held = b.status === "suspended";
   if (!held && (distinct?.n ?? 0) >= AUTO_HOLD_REPORTERS) {
-    await setBusinessStatus(b, "suspended", `held after ${distinct!.n} reports in 24 hours`, "reports");
-    held = true;
+    if (isEstablished(b)) {
+      await alertOperator("reports against an established business: review", { slug: b.slug, reporters: distinct!.n, reason: input.reason });
+    } else {
+      await setBusinessStatus(b, "suspended", `held after ${distinct!.n} reports in 24 hours`, "reports");
+      await alertOperator("business held after reports: review", { slug: b.slug, reporters: distinct!.n, reason: input.reason });
+      held = true;
+    }
   }
   return { status: "received", held, reportId };
 }
@@ -176,7 +192,7 @@ async function togglePhoneAgent(b: BusinessRow, to: "suspended" | "restored"): P
       prov.receptionistPhoneId = phoneId;
     }
   } catch (err) {
-    log.error("OPERATOR: could not toggle the phone agent", { slug: b.slug, to, error: errorMessage(err) });
+    await alertOperator("could not toggle the phone agent", { slug: b.slug, to, error: errorMessage(err) });
   }
   return prov;
 }

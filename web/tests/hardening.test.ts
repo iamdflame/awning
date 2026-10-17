@@ -5,6 +5,7 @@ import { MockRefunder, UnavailableRefunder, makeRefunder, treasuryRefundProblem 
 import { db } from "@/lib/db/client";
 import { blockedOnTenantHost, resolveHost } from "@/lib/host";
 import { STALE_AFTER_MS, reconcilePayments } from "@/lib/x402/reconcile";
+import { recentAlerts } from "@/lib/ops/alert";
 import { OPTIONS as buyOPTIONS } from "@/app/x402/b/[slug]/[sku]/route";
 import { TREASURY, buy, createPlan, freshWorld, newBuyer, openFree, readJson, rows, signPayment } from "./helpers";
 
@@ -130,6 +131,7 @@ describe("reconciler", () => {
     const keyD = keyFor(payerC, NONCE(4));
     await insertPayment({ key: keyD, purpose: "order", refId: "biz:tasting", status: "working", payer: payerC, payTo: payerA.toLowerCase(), amount: 5_000_000n, ageMs: 5_000 });
 
+    recentAlerts.length = 0;
     // Two reconcilers at once (cron + health): still one refund.
     const [r1, r2] = await Promise.all([reconcilePayments(), reconcilePayments()]);
     const refunds = (world.adapters.refunder as MockRefunder).refunds;
@@ -145,6 +147,10 @@ describe("reconciler", () => {
     expect(byKey[keyC].status).toBe("settled");
     expect(byKey[keyC].response.body).toMatchObject({ error: "delivery_failed", charged: true });
     expect(byKey[keyD].status).toBe("working");
+    // People are paged for what needs them: the unrecorded order and the interrupted open.
+    const subjects = recentAlerts.map((a) => a.subject);
+    expect(subjects).toContain("order settled to the seller but not recorded");
+    expect(subjects.some((x) => /interrupted paid open/.test(x))).toBe(true);
 
     const [p] = (await rows("plans")).filter((x) => x.id === plan.planId);
     expect(p.status).toBe("quoted");

@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { screenName, screenText } from "@/lib/policy";
+import { recentAlerts } from "@/lib/ops/alert";
+import { db } from "@/lib/db/client";
+import { sql } from "drizzle-orm";
 import { POST as planPOST } from "@/app/v1/plan/route";
 import { POST as reportPOST } from "@/app/v1/reports/route";
 import { POST as adminPOST } from "@/app/v1/admin/businesses/[slug]/status/route";
@@ -167,6 +170,27 @@ describe("reports, automatic hold and operator review", () => {
     expect(await readJson(restored)).toEqual({ slug, status: "live" });
     expect((await buy(slug, p.business.offers[0].sku, {})).status).toBe(402);
     delete process.env.AWNING_ADMIN_KEY;
+  });
+
+  it("reports never take down an established business on their own: a person is paged", async () => {
+    const p = await createPlan();
+    await openFree(p.planId);
+    const slug = p.business.slug;
+    const d = await db();
+    await d.execute(sql`update businesses set opened_at = now() - interval '30 days', sales_count = 12 where slug = ${slug}`);
+    recentAlerts.length = 0;
+    for (const ip of ["203.0.113.9", "198.51.100.9", "192.0.2.9"]) expect((await readJson(await report(slug, ip))).held).toBe(false);
+    expect((await buy(slug, p.business.offers[0].sku, {})).status).toBe(402);
+    expect(recentAlerts[0]?.subject).toMatch(/established business/);
+  });
+
+  it("an automatic hold pages a person", async () => {
+    const p = await createPlan();
+    await openFree(p.planId);
+    recentAlerts.length = 0;
+    for (const ip of ["203.0.113.10", "198.51.100.10", "192.0.2.10"]) await report(p.business.slug, ip);
+    expect(recentAlerts.map((a) => a.subject)).toContain("business held after reports: review");
+    expect(recentAlerts[0]?.channels).toContain("log");
   });
 
   it("operator actions are off unless a key is configured", async () => {

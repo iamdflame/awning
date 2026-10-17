@@ -5,6 +5,7 @@ import { db, schema } from "../db/client";
 import type { PaymentStatus, StoredResponse } from "../db/schema";
 import { adapters } from "../adapters";
 import { errorMessage, log } from "../log";
+import { alertOperator } from "../ops/alert";
 import { atomicToUsd } from "../money";
 import { BASE_NETWORK, USDC_BASE } from "./constants";
 import { facilitator } from "./facilitator";
@@ -191,7 +192,7 @@ export async function handlePaidRequest(o: PaidFlowOptions): Promise<Response> {
       return finish(match.key, "refunded", { status: 502, body, headers }, { tx: info.tx, refundTx: refund.tx, error: reason });
     } catch (refundErr) {
       const body = { refunded: false, reason: PUBLIC_DELIVERY_FAILURE, charged: true, paidUsd: atomicToUsd(o.charge.amountAtomic), tx: info.tx, message: "The automatic refund could not be sent. Awning's operator has been alerted and will refund this payment; keep this response." };
-      log.error("REFUND FAILED — manual action required", { key: match.key, payer: match.payer, amountAtomic: o.charge.amountAtomic, error: errorMessage(refundErr) });
+      await alertOperator("REFUND REQUIRED: automatic refund failed", { key: match.key, payer: match.payer, amountAtomic: o.charge.amountAtomic, error: errorMessage(refundErr) });
       return finish(match.key, "settled", { status: 502, body, headers }, { tx: info.tx, error: `${reason}; refund failed: ${errorMessage(refundErr)}` });
     }
   }
