@@ -152,7 +152,7 @@ export type Caption = { from: number; to: number; words: CaptionWord[]; text: st
  * ("two hundred" → "200", "awning dot S-H." → "awning.sh."): the same words, never a paraphrase.
  * Chunks break at sentence ends and stay within two lines (about 64 characters).
  */
-export function buildCaptions(tl: Timeline, takes: Record<string, Take>, subs: { spoken: string; written: string }[], maxChars = 64, fps = FPS): Caption[] {
+export function buildCaptions(tl: Timeline, takes: Record<string, Take>, subs: { spoken: string; written: string }[], maxChars = 60, fps = FPS): Caption[] {
   const caps: Caption[] = [];
   for (const s of tl.scenes) {
     const t = s.vo ? takes[s.vo] : undefined;
@@ -171,37 +171,29 @@ export function buildCaptions(tl: Timeline, takes: Record<string, Take>, subs: {
         }
       }
     }
-    // chunk: sentence ends always break; otherwise pack up to maxChars, breaking after commas when possible
+    // sentences first; a short sentence joins the next when both fit; a long one is split into
+    // balanced pieces at its most natural breaks (after a comma or colon, else before "and", "that"…)
+    const sentences: CaptionWord[][] = [];
     let cur: CaptionWord[] = [];
-    const flush = () => {
-      if (!cur.length) return;
-      caps.push({ from: cur[0]!.from, to: cur[cur.length - 1]!.to, words: cur, text: cur.map((x) => x.w).join(" ") });
-      cur = [];
-    };
-    for (let i = 0; i < words.length; i++) {
-      const w = words[i]!;
-      const len = cur.map((x) => x.w).join(" ").length;
-      if (cur.length && len + 1 + w.w.length > maxChars) {
-        // back up to the last comma inside this chunk if it leaves a decent first part
-        const lastComma = cur.map((x) => /[,:]$/.test(x.w)).lastIndexOf(true);
-        if (lastComma >= 2 && lastComma < cur.length - 1) {
-          const rest = cur.slice(lastComma + 1);
-          cur = cur.slice(0, lastComma + 1);
-          flush();
-          cur = rest;
-        } else flush();
-      }
+    for (const w of words) {
       cur.push(w);
-      if (/[.?!]$/.test(w.w) && !/^(e\.g|i\.e)\.$/i.test(w.w)) {
-        // a very short sentence joins the next one when both fit
-        const next = words.slice(i + 1);
-        const sentEnd = next.findIndex((x) => /[.?!]$/.test(x.w));
-        const nextLen = sentEnd >= 0 ? next.slice(0, sentEnd + 1).map((x) => x.w).join(" ").length : 999;
-        const curLen = cur.map((x) => x.w).join(" ").length;
-        if (!(curLen <= 20 && curLen + 1 + nextLen <= maxChars)) flush();
+      if (/[.?!]$/.test(w.w)) {
+        sentences.push(cur);
+        cur = [];
       }
     }
-    flush();
+    if (cur.length) sentences.push(cur);
+    const text = (ws: CaptionWord[]) => ws.map((x) => x.w).join(" ");
+    const push = (ws: CaptionWord[]) => caps.push({ from: ws[0]!.from, to: ws[ws.length - 1]!.to, words: ws, text: text(ws) });
+    for (let i = 0; i < sentences.length; i++) {
+      let sent = sentences[i]!;
+      const nx = sentences[i + 1];
+      if (nx && text(sent).length <= 20 && text(sent).length + 1 + text(nx).length <= maxChars) {
+        sent = [...sent, ...nx];
+        i++;
+      }
+      for (const piece of splitBalanced(sent, maxChars)) push(piece);
+    }
   }
   // hold each caption until the next one (at most 0.7 s past its last word), never overlapping
   for (let i = 0; i < caps.length; i++) {
@@ -212,6 +204,46 @@ export function buildCaptions(tl: Timeline, takes: Record<string, Take>, subs: {
     c.from = Math.max(0, c.from - 2);
   }
   return caps;
+}
+
+const SOFT_BREAK_BEFORE = new Set(["and", "that", "so", "but", "or", "to", "with", "where", "who", "which", "after", "for", "in", "on", "at"]);
+
+/** Split one sentence into the fewest, most even pieces of at most maxChars, at natural breaks. */
+function splitBalanced(ws: CaptionWord[], maxChars: number): CaptionWord[][] {
+  const len = (i: number, j: number) => ws.slice(i, j).map((x) => x.w).join(" ").length;
+  const total = len(0, ws.length);
+  if (total <= maxChars) return [ws];
+  const n = ws.length;
+  const pieces = Math.ceil(total / maxChars);
+  const target = total / pieces;
+  const breakCost = (j: number) => {
+    // a break between ws[j-1] and ws[j]
+    if (j >= n) return 0;
+    if (/[,:;]$/.test(ws[j - 1]!.w)) return 0;
+    if (SOFT_BREAK_BEFORE.has(ws[j]!.w.toLowerCase().replace(/[^a-z]/g, ""))) return 18;
+    return 70;
+  };
+  const best: number[] = Array(n + 1).fill(Infinity);
+  const prev: number[] = Array(n + 1).fill(-1);
+  best[0] = 0;
+  for (let j = 1; j <= n; j++) {
+    for (let i = 0; i < j; i++) {
+      const bi = best[i]!;
+      if (bi === Infinity) continue;
+      const l = len(i, j);
+      if (l > maxChars) continue;
+      const short = l < 16 ? 260 : 0;
+      const c = bi + ((l - target) * (l - target)) / target + breakCost(j) + short;
+      if (c < best[j]!) {
+        best[j] = c;
+        prev[j] = i;
+      }
+    }
+  }
+  if (best[n] === Infinity) return [ws];
+  const out: CaptionWord[][] = [];
+  for (let j = n; j > 0; j = prev[j]!) out.unshift(ws.slice(prev[j]!, j));
+  return out;
 }
 
 export function srt(caps: Caption[], fps = FPS): string {

@@ -3,9 +3,11 @@
 // effects, fonts) into public/. Before taking a Mixkit clip it re-reads the clip's page and refuses
 // anything that is not under the Stock Video FREE license (Mixkit also has a Restricted,
 // non-commercial license). Files already present are kept unless --force.
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ffmpegPath } from "../capture/lib.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const VIDEO = path.resolve(here, "..");
@@ -13,6 +15,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(VIDEO, "assets.json"), "ut
 const args = process.argv.slice(2);
 const force = args.includes("--force");
 const verify = !args.includes("--no-verify");
+const onlyGroup = args.includes("--only") ? args[args.indexOf("--only") + 1] : null;
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36 awning-video-assets";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -35,6 +38,7 @@ async function get(url, asText) {
 
 let failed = 0;
 for (const group of ["fonts", "sfx", "music", "stock"]) {
+  if (onlyGroup && group !== onlyGroup) continue;
   for (const item of manifest[group] ?? []) {
     const out = path.join(VIDEO, item.file);
     if (fs.existsSync(out) && !force) {
@@ -50,7 +54,15 @@ for (const group of ["fonts", "sfx", "music", "stock"]) {
       }
       const buf = await get(item.url, false);
       fs.mkdirSync(path.dirname(out), { recursive: true });
-      fs.writeFileSync(out, buf);
+      if (group === "stock") {
+        // stock arrives at 24/25 fps with its own timestamps: re-encode the first 14 s as clean
+        // 30 fps H.264 (no audio) so every frame the film asks for exists
+        const src = out + ".src.mp4";
+        fs.writeFileSync(src, buf);
+        const r = spawnSync(ffmpegPath(), ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-t", "14", "-an", "-r", "30", "-c:v", "libx264", "-preset", "medium", "-crf", "17", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { encoding: "utf8" });
+        fs.rmSync(src, { force: true });
+        if (r.status !== 0) throw new Error("re-encode failed: " + r.stderr.slice(-300));
+      } else fs.writeFileSync(out, buf);
       console.log(`  got  ${item.file} (${(buf.length / 1e6).toFixed(2)} MB) ← ${item.title}, ${item.license}`);
     } catch (e) {
       failed++;

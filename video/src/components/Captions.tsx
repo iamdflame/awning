@@ -7,7 +7,7 @@ import { C, FONT } from "../brand/tokens";
  * Burned-in captions: the narration's own words, two lines at most, large enough for a phone,
  * on a dark band that reads over anything. The word being spoken is lit in sun yellow.
  */
-export const Captions: React.FC<{ captions: Caption[]; bottom?: number; size?: number; maxWidth?: number }> = ({ captions, bottom = 44, size = 50, maxWidth = 1500 }) => {
+export const Captions: React.FC<{ captions: Caption[]; bottom?: number; size?: number; maxWidth?: number }> = ({ captions, bottom = 44, size = 54, maxWidth = 1560 }) => {
   const frame = useCurrentFrame();
   const cap = captions.find((c) => frame >= c.from && frame <= c.to);
   if (!cap) return null;
