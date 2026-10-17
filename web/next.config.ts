@@ -1,10 +1,11 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import type { NextConfig } from "next";
-import { loadEnvConfig } from "@next/env";
 
-// Secrets live in the repo-root .env (one file for web/ and plugin/). Load it
-// before Next reads web/.env*; values already in process.env always win.
-loadEnvConfig(path.resolve(process.cwd(), ".."), process.env.NODE_ENV !== "production");
+// Secrets live in the repo-root .env (one file for web/ and plugin/). Values
+// already in process.env (shell, web/.env*, Vercel settings) always win.
+const rootEnv = path.resolve(process.cwd(), "..", ".env");
+if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
