@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],
   // Migrations are read from disk at runtime (auto-migrate on first DB use).
   outputFileTracingIncludes: { "/**": ["./drizzle/**/*"] },
+  // Baseline browser hardening on every page and API response. No CSP yet: storefronts load
+  // Google Fonts and generated images, and a strict policy needs its own review.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
